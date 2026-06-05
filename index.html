@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uk">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,7 +13,7 @@
     body {
       background: #0a0a0a;
       color: #e0e0e0;
-      font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-family: 'Inter', 'Helvetica Neue', sans-serif;
       min-height: 100dvh;
       display: flex;
       align-items: center;
@@ -29,271 +29,515 @@
       align-items: center;
       justify-content: center;
       padding: 2rem 1.5rem;
-      transition: opacity 0.5s ease, transform 0.5s ease;
+      transition: opacity 0.45s ease, transform 0.45s ease;
     }
+    .screen.out-up    { opacity: 0; transform: translateY(-40px); pointer-events: none; }
+    .screen.out-down  { opacity: 0; transform: translateY(40px);  pointer-events: none; }
+    .screen.in        { opacity: 1; transform: translateY(0);      pointer-events: auto; }
 
-    .screen.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    #screen-intro { transform: translateY(0); }
-    #screen-intro.hidden { transform: translateY(-40px); }
-
-    #screen-calc { transform: translateY(40px); opacity: 0; pointer-events: none; }
-    #screen-calc.visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
-
-    /* ── intro ── */
+    /* ── INTRO ── */
     .intro {
-      max-width: 520px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 2.5rem;
+      max-width: 520px; width: 100%;
+      display: flex; flex-direction: column; gap: 2.5rem;
     }
-
-    .intro-eyebrow {
-      font-size: 0.7rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: #3a3a3a;
-      font-weight: 400;
+    .eyebrow {
+      font-size: 0.7rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: #3a3a3a;
     }
-
-    .intro-headline {
+    h1 {
       font-size: clamp(2.4rem, 8vw, 4rem);
-      font-weight: 900;
-      line-height: 1.05;
-      letter-spacing: -0.03em;
-      color: #fff;
+      font-weight: 900; line-height: 1.05; letter-spacing: -0.03em; color: #fff;
     }
+    h1 em { font-style: normal; color: #555; }
+    .sub { font-size: clamp(1rem, 3vw, 1.2rem); font-weight: 300; color: #555; }
 
-    .intro-headline em {
-      font-style: normal;
-      color: #555;
-    }
-
-    .intro-sub {
-      font-size: clamp(1rem, 3vw, 1.25rem);
-      font-weight: 300;
-      color: #555;
-      line-height: 1.5;
-      letter-spacing: -0.01em;
-    }
-
-    .intro-sub strong {
-      color: #999;
-      font-weight: 400;
-    }
-
-    .btn {
+    /* magnetic button wrapper */
+    .btn-wrap {
+      align-self: flex-start;
       display: inline-block;
-      align-self: flex-start;
-      background: #fff;
-      color: #0a0a0a;
-      font-family: inherit;
-      font-size: 0.85rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 1rem 2rem;
-      border: none;
-      border-radius: 50px;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .btn {
+      display: block;
+      background: #fff; color: #0a0a0a;
+      font-family: inherit; font-size: 0.85rem;
+      font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 1rem 2rem; border: none; border-radius: 50px; cursor: pointer;
+      transition: background 0.2s;
+      will-change: transform;
+    }
+    .btn:hover  { background: #e0e0e0; }
+    .btn:active { filter: brightness(0.92); }
+
+    /* ── STEP screens ── */
+    .step-wrap {
+      max-width: 480px; width: 100%;
+      display: flex; flex-direction: column; align-items: center; gap: 2.5rem;
     }
 
-    .btn:hover { background: #e0e0e0; transform: scale(1.06); }
-    .btn:active { transform: scale(1.01); }
-
-    /* ── calc screen ── */
-    .calc {
-      max-width: 480px;
+    .step-header {
       width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 2.5rem;
+      display: flex; align-items: center; justify-content: space-between;
     }
-
     .back-btn {
-      background: none;
-      border: none;
-      color: #333;
-      font-family: inherit;
-      font-size: 0.7rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      cursor: pointer;
-      padding: 0;
-      align-self: flex-start;
-      transition: color 0.15s;
+      background: none; border: none; color: #333;
+      font-family: inherit; font-size: 0.7rem;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      cursor: pointer; transition: color 0.15s;
     }
     .back-btn:hover { color: #666; }
 
-    label {
-      font-size: 0.7rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: #333;
-      align-self: flex-start;
+    .step-dots { display: flex; gap: 6px; }
+    .dot {
+      width: 6px; height: 6px; border-radius: 50%; background: #222;
+      transition: background 0.3s;
+    }
+    .dot.active { background: #fff; }
+
+    .step-label {
+      font-size: 0.7rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: #333; align-self: flex-start;
     }
 
-    .input-wrap {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 0.6rem;
+    .num-row {
+      display: flex; align-items: center; gap: 1.5rem;
     }
+    .arrow-btn {
+      background: none; border: 1px solid #1e1e1e; border-radius: 50%;
+      width: 48px; height: 48px;
+      display: flex; align-items: center; justify-content: center;
+      color: #444; font-size: 1.2rem; cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, transform 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
+    }
+    .arrow-btn:hover  { border-color: #444; color: #aaa; transform: scale(1.08); }
+    .arrow-btn:active { transform: scale(0.95); }
 
-    input[type="date"] {
-      width: 100%;
-      background: #111;
-      border: 1px solid #1e1e1e;
-      border-radius: 6px;
-      color: #e0e0e0;
+    /* big editable input */
+    .big-num {
+      font-size: clamp(5rem, 22vw, 8rem);
+      font-weight: 900; letter-spacing: -0.04em; line-height: 1;
+      color: #fff; text-align: center;
+      background: none; border: none; outline: none;
       font-family: inherit;
-      font-size: clamp(1rem, 3vw, 1.15rem);
-      padding: 1rem 1.1rem;
-      outline: none;
-      transition: border-color 0.2s;
-      -webkit-appearance: none;
-      appearance: none;
-      color-scheme: dark;
+      -webkit-appearance: none; appearance: none;
+      caret-color: #fff;
+      cursor: text;
+      /* hide number spinners */
+      -moz-appearance: textfield;
     }
+    .big-num::-webkit-outer-spin-button,
+    .big-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .big-num::placeholder { color: #222; }
+    .big-num:focus { color: #fff; }
 
-    input[type="date"]:focus { border-color: #333; }
+    /* month grid */
+    .month-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 0.6rem; width: 100%;
+    }
+    .month-cell {
+      background: #111; border: 1px solid #1a1a1a; border-radius: 8px;
+      padding: 0.9rem 0.5rem; text-align: center;
+      font-size: 0.9rem; font-weight: 400; color: #555;
+      cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s, transform 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .month-cell:hover  { background: #181818; color: #ccc; }
+    .month-cell.sel    { background: #fff; color: #0a0a0a; border-color: #fff; font-weight: 700; }
 
-    .result {
+    .next-btn {
       width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      min-height: 8rem;
-      justify-content: center;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 0.45s ease, transform 0.45s ease;
+      background: #fff; color: #0a0a0a;
+      font-family: inherit; font-size: 0.85rem;
+      font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 1rem; border: none; border-radius: 50px; cursor: pointer;
+      transition: background 0.2s, transform 0.25s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s;
+      opacity: 0.25;
     }
+    .next-btn.ready        { opacity: 1; }
+    .next-btn.ready:hover  { background: #e0e0e0; transform: scale(1.03); }
+    .next-btn.ready:active { transform: scale(0.99); }
 
-    .result.visible {
-      opacity: 1;
-      transform: translateY(0);
+    /* ── RESULT ── */
+    .result-wrap {
+      max-width: 480px; width: 100%;
+      display: flex; flex-direction: column; gap: 0.6rem;
     }
-
-    .age-label {
-      font-size: 0.65rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: #2e2e2e;
-      font-weight: 400;
+    .res-label {
+      font-size: 0.65rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: #2e2e2e;
     }
-
-    .age-number {
-      font-size: clamp(5.5rem, 24vw, 8rem);
-      font-weight: 900;
-      letter-spacing: -0.04em;
-      line-height: 0.9;
+    .res-number {
+      font-size: clamp(6rem, 26vw, 9rem);
+      font-weight: 900; letter-spacing: -0.04em; line-height: 0.9;
       color: #fff;
     }
-
-    .feels {
-      margin-top: 0.8rem;
-      font-size: clamp(1rem, 3.5vw, 1.3rem);
-      color: #444;
-      font-weight: 300;
-      letter-spacing: -0.01em;
+    .res-feels-row {
+      margin-top: 1.2rem;
+      display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap;
     }
-
-    .feels span {
-      color: #888;
-      font-weight: 400;
+    .res-feels-label {
+      font-size: clamp(0.9rem, 3vw, 1.1rem);
+      color: #444; font-weight: 300;
     }
-
-    .divider {
-      width: 100%;
-      height: 1px;
-      background: #161616;
+    .res-feels-num {
+      font-size: clamp(3rem, 14vw, 5rem);
+      font-weight: 900; letter-spacing: -0.04em; line-height: 1;
+      color: #666;
     }
+    .res-again {
+      margin-top: 1.8rem; align-self: flex-start;
+      background: none; border: 1px solid #222; border-radius: 50px;
+      color: #444; font-family: inherit; font-size: 0.7rem;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      padding: 0.7rem 1.4rem; cursor: pointer;
+      transition: border-color 0.2s, color 0.2s, transform 0.2s;
+    }
+    .res-again:hover { border-color: #444; color: #aaa; transform: scale(1.04); }
   </style>
 </head>
 <body>
 
-  <!-- Intro screen -->
-  <div class="screen" id="screen-intro">
-    <div class="intro">
-      <div class="intro-eyebrow">калькулятор віку</div>
-      <h1 class="intro-headline">
-        Завжди хотіли дізнатися<br/>
-        <em>свій точний вік?</em>
-      </h1>
-      <p class="intro-sub">Гарні новини.</p>
+<!-- 0. Intro -->
+<div class="screen in" id="s-intro">
+  <div class="intro">
+    <div class="eyebrow">калькулятор віку</div>
+    <h1>Завжди хотіли дізнатися<br/><em>свій точний вік?</em></h1>
+    <p class="sub">Гарні новини.</p>
+    <div class="btn-wrap" id="btn-wrap">
       <button class="btn" id="btn-start">Дізнатися вік</button>
     </div>
   </div>
+</div>
 
-  <!-- Calc screen -->
-  <div class="screen" id="screen-calc">
-    <div class="calc">
-      <button class="back-btn" id="btn-back">← назад</button>
-      <div class="input-wrap">
-        <label for="dob">Дата народження</label>
-        <input type="date" id="dob" />
-      </div>
-      <div class="divider"></div>
-      <div class="result" id="result">
-        <div class="age-label">твій вік</div>
-        <div class="age-number" id="age-num"></div>
-        <div class="feels">відчувається як <span id="feels-num"></span></div>
+<!-- 1. Year -->
+<div class="screen out-down" id="s-year">
+  <div class="step-wrap">
+    <div class="step-header">
+      <button class="back-btn" data-to="s-intro">← назад</button>
+      <div class="step-dots">
+        <div class="dot active"></div><div class="dot"></div><div class="dot"></div>
       </div>
     </div>
+    <div class="step-label">Рік народження</div>
+    <div class="num-row">
+      <button class="arrow-btn" id="year-dec">−</button>
+      <input class="big-num" id="year-val" type="number" inputmode="numeric"
+             min="1900" max="2099" placeholder="????" />
+      <button class="arrow-btn" id="year-inc">+</button>
+    </div>
+    <button class="next-btn" id="year-next">Далі →</button>
   </div>
+</div>
 
-  <script>
-    const introScreen = document.getElementById('screen-intro');
-    const calcScreen  = document.getElementById('screen-calc');
-    const btnStart    = document.getElementById('btn-start');
-    const btnBack     = document.getElementById('btn-back');
-    const input       = document.getElementById('dob');
-    const result      = document.getElementById('result');
-    const ageNum      = document.getElementById('age-num');
-    const feelsNum    = document.getElementById('feels-num');
+<!-- 2. Month -->
+<div class="screen out-down" id="s-month">
+  <div class="step-wrap">
+    <div class="step-header">
+      <button class="back-btn" data-to="s-year">← назад</button>
+      <div class="step-dots">
+        <div class="dot"></div><div class="dot active"></div><div class="dot"></div>
+      </div>
+    </div>
+    <div class="step-label">Місяць народження</div>
+    <div class="month-grid" id="month-grid"></div>
+    <button class="next-btn" id="month-next">Далі →</button>
+  </div>
+</div>
 
-    btnStart.addEventListener('click', () => {
-      introScreen.classList.add('hidden');
-      calcScreen.classList.add('visible');
-    });
+<!-- 3. Day -->
+<div class="screen out-down" id="s-day">
+  <div class="step-wrap">
+    <div class="step-header">
+      <button class="back-btn" data-to="s-month">← назад</button>
+      <div class="step-dots">
+        <div class="dot"></div><div class="dot"></div><div class="dot active"></div>
+      </div>
+    </div>
+    <div class="step-label">День народження</div>
+    <div class="num-row">
+      <button class="arrow-btn" id="day-dec">−</button>
+      <input class="big-num" id="day-val" type="number" inputmode="numeric"
+             min="1" max="31" placeholder="??" />
+      <button class="arrow-btn" id="day-inc">+</button>
+    </div>
+    <button class="next-btn" id="day-next">Розрахувати</button>
+  </div>
+</div>
 
-    btnBack.addEventListener('click', () => {
-      calcScreen.classList.remove('visible');
-      introScreen.classList.remove('hidden');
-      result.classList.remove('visible');
-      input.value = '';
-    });
+<!-- 4. Result -->
+<div class="screen out-down" id="s-result">
+  <div class="result-wrap">
+    <div class="res-label">твій вік</div>
+    <div class="res-number" id="res-num">0</div>
+    <div class="res-feels-row">
+      <span class="res-feels-label">відчувається як</span>
+      <span class="res-feels-num" id="res-feels">0</span>
+    </div>
+    <button class="res-again" id="btn-again">↺ ще раз</button>
+  </div>
+</div>
 
-    function calcAge(dob) {
-      const today = new Date();
-      let age = today.getFullYear() - dob.getFullYear();
-      const m = today.getMonth() - dob.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
-      return age;
+<script>
+  // ── Audio ──
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let actx = null;
+  function initAudio() { if (!actx) actx = new AudioCtx(); }
+  function tick(freq = 880, dur = 0.03) {
+    if (!actx) return;
+    const o = actx.createOscillator();
+    const g = actx.createGain();
+    o.connect(g); g.connect(actx.destination);
+    o.frequency.value = freq;
+    o.type = 'square';
+    g.gain.setValueAtTime(0.04, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + dur);
+    o.start(); o.stop(actx.currentTime + dur);
+  }
+  function btnSound() {
+    if (!actx) return;
+    // soft click: sine burst
+    const o = actx.createOscillator();
+    const g = actx.createGain();
+    o.connect(g); g.connect(actx.destination);
+    o.frequency.setValueAtTime(520, actx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(280, actx.currentTime + 0.08);
+    o.type = 'sine';
+    g.gain.setValueAtTime(0.08, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + 0.1);
+    o.start(); o.stop(actx.currentTime + 0.1);
+  }
+
+  // ── Magnetic button ──
+  const btnWrap = document.getElementById('btn-wrap');
+  const btnEl   = document.getElementById('btn-start');
+  const STRENGTH = 0.35;
+
+  btnWrap.addEventListener('mousemove', e => {
+    const r = btnEl.getBoundingClientRect();
+    const cx = r.left + r.width / 2;
+    const cy = r.top  + r.height / 2;
+    const dx = (e.clientX - cx) * STRENGTH;
+    const dy = (e.clientY - cy) * STRENGTH;
+    btnEl.style.transform = `translate(${dx}px, ${dy}px) scale(1.06)`;
+  });
+  btnWrap.addEventListener('mouseleave', () => {
+    btnEl.style.transform = '';
+    btnEl.style.transition = 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1), background 0.2s';
+    setTimeout(() => { btnEl.style.transition = ''; }, 500);
+  });
+
+  // ── Screen transitions ──
+  function goTo(id, direction = 'forward') {
+    const current = document.querySelector('.screen.in');
+    if (current) {
+      current.classList.remove('in');
+      current.classList.add(direction === 'forward' ? 'out-up' : 'out-down');
     }
+    const next = document.getElementById(id);
+    next.classList.remove('out-up', 'out-down');
+    next.getBoundingClientRect(); // force reflow
+    next.classList.add('in');
+  }
 
-    input.addEventListener('change', () => {
-      const val = input.value;
-      if (!val) { result.classList.remove('visible'); return; }
-
-      const dob = new Date(val);
-      if (isNaN(dob)) { result.classList.remove('visible'); return; }
-
-      const age = calcAge(dob);
-      if (age < 0 || age > 130) { result.classList.remove('visible'); return; }
-
-      ageNum.textContent  = age;
-      feelsNum.textContent = Math.max(0, age - 5);
-
-      result.classList.remove('visible');
-      requestAnimationFrame(() => requestAnimationFrame(() => result.classList.add('visible')));
+  // ── Months ──
+  const MONTHS = ['Січень','Лютий','Березень','Квітень','Травень','Червень',
+                  'Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
+  const grid = document.getElementById('month-grid');
+  MONTHS.forEach((m, i) => {
+    const el = document.createElement('div');
+    el.className = 'month-cell';
+    el.textContent = m;
+    el.dataset.month = i + 1;
+    el.addEventListener('click', () => {
+      initAudio(); tick(660, 0.04);
+      document.querySelectorAll('.month-cell').forEach(c => c.classList.remove('sel'));
+      el.classList.add('sel');
+      state.month = i + 1;
+      document.getElementById('month-next').classList.add('ready');
     });
-  </script>
+    grid.appendChild(el);
+  });
+
+  // ── State ──
+  const state = { year: null, month: null, day: null };
+  const NOW = new Date();
+  const CUR_YEAR = NOW.getFullYear();
+
+  // ── Year ──
+  let yearVal = null;
+  const yearInput = document.getElementById('year-val');
+  const yearNext  = document.getElementById('year-next');
+
+  function setYear(v, silent) {
+    v = Math.max(CUR_YEAR - 120, Math.min(CUR_YEAR, v));
+    yearVal = v;
+    yearInput.value = v;
+    state.year = v;
+    yearNext.classList.add('ready');
+    if (!silent) tick(800, 0.025);
+  }
+
+  yearInput.addEventListener('input', () => {
+    const v = parseInt(yearInput.value, 10);
+    if (!isNaN(v) && String(yearInput.value).length === 4) {
+      initAudio();
+      setYear(v, true);
+      tick(700, 0.035);
+    } else {
+      state.year = null;
+      yearNext.classList.remove('ready');
+    }
+  });
+
+  document.getElementById('year-dec').addEventListener('click', () => {
+    initAudio(); setYear((yearVal ?? CUR_YEAR - 30) - 1);
+  });
+  document.getElementById('year-inc').addEventListener('click', () => {
+    initAudio(); setYear((yearVal ?? CUR_YEAR - 30) + 1);
+  });
+
+  // long-press repeat
+  function holdRepeat(btn, action) {
+    let timer, interval;
+    btn.addEventListener('pointerdown', () => {
+      action();
+      timer = setTimeout(() => { interval = setInterval(action, 80); }, 400);
+    });
+    const stop = () => { clearTimeout(timer); clearInterval(interval); };
+    btn.addEventListener('pointerup', stop);
+    btn.addEventListener('pointerleave', stop);
+  }
+  holdRepeat(document.getElementById('year-dec'), () => { initAudio(); setYear((yearVal ?? CUR_YEAR - 30) - 1); });
+  holdRepeat(document.getElementById('year-inc'), () => { initAudio(); setYear((yearVal ?? CUR_YEAR - 30) + 1); });
+
+  // ── Day ──
+  let dayVal = null;
+  const dayInput = document.getElementById('day-val');
+  const dayNext  = document.getElementById('day-next');
+
+  function maxDay() {
+    if (!state.month || !state.year) return 31;
+    return new Date(state.year, state.month, 0).getDate();
+  }
+  function setDay(v, silent) {
+    v = Math.max(1, Math.min(maxDay(), v));
+    dayVal = v;
+    dayInput.value = v;
+    state.day = v;
+    dayNext.classList.add('ready');
+    if (!silent) tick(800, 0.025);
+  }
+
+  dayInput.addEventListener('input', () => {
+    const v = parseInt(dayInput.value, 10);
+    if (!isNaN(v) && v >= 1 && v <= maxDay()) {
+      initAudio();
+      setDay(v, true);
+      tick(700, 0.035);
+    } else {
+      state.day = null;
+      dayNext.classList.remove('ready');
+    }
+  });
+
+  document.getElementById('day-dec').addEventListener('click', () => { initAudio(); setDay((dayVal ?? 1) - 1); });
+  document.getElementById('day-inc').addEventListener('click', () => { initAudio(); setDay((dayVal ?? 0) + 1); });
+  holdRepeat(document.getElementById('day-dec'), () => { initAudio(); setDay((dayVal ?? 1) - 1); });
+  holdRepeat(document.getElementById('day-inc'), () => { initAudio(); setDay((dayVal ?? 0) + 1); });
+
+  // ── Navigation ──
+  document.getElementById('btn-start').addEventListener('click', () => {
+    initAudio(); btnSound();
+    goTo('s-year');
+  });
+
+  document.getElementById('year-next').addEventListener('click', () => {
+    if (!yearNext.classList.contains('ready')) return;
+    initAudio(); tick(900, 0.04);
+    goTo('s-month');
+  });
+
+  document.getElementById('month-next').addEventListener('click', () => {
+    const btn = document.getElementById('month-next');
+    if (!btn.classList.contains('ready')) return;
+    initAudio(); tick(900, 0.04);
+    dayVal = Math.min(dayVal, maxDay());
+    setDay(dayVal);
+    goTo('s-day');
+  });
+
+  document.getElementById('day-next').addEventListener('click', () => {
+    if (!dayNext.classList.contains('ready')) return;
+    initAudio(); tick(1000, 0.05);
+    showResult();
+  });
+
+  document.querySelectorAll('[data-to]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      initAudio(); tick(600, 0.03);
+      goTo(btn.dataset.to, 'back');
+    });
+  });
+
+  document.getElementById('btn-again').addEventListener('click', () => {
+    initAudio();
+    state.year = null; state.month = null; state.day = null;
+    yearVal = null; dayVal = null;
+    yearInput.value = ''; yearNext.classList.remove('ready');
+    document.querySelectorAll('.month-cell').forEach(c => c.classList.remove('sel'));
+    document.getElementById('month-next').classList.remove('ready');
+    dayInput.value = ''; dayNext.classList.remove('ready');
+    goTo('s-intro', 'back');
+  });
+
+  // ── Age calc ──
+  function calcAge() {
+    const dob = new Date(state.year, state.month - 1, state.day);
+    let age = NOW.getFullYear() - dob.getFullYear();
+    const m = NOW.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && NOW.getDate() < dob.getDate())) age--;
+    return Math.max(0, age);
+  }
+
+  function animateCounter(el, target, onTick) {
+    const duration = 1600;
+    const start = performance.now();
+    function frame(now) {
+      const t = Math.min((now - start) / duration, 1);
+      const eased = t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+      const cur = Math.round(eased * target);
+      el.textContent = cur;
+      if (onTick) onTick(cur);
+      if (t < 1) requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function showResult() {
+    const age = calcAge();
+    // random offset between 3 and 7
+    const offset = 3 + Math.floor(Math.random() * 5); // 3,4,5,6,7
+    const feels  = Math.max(0, age - offset);
+
+    document.getElementById('res-num').textContent = '0';
+    document.getElementById('res-feels').textContent = '0';
+    goTo('s-result');
+
+    let lastTick = -1;
+    setTimeout(() => {
+      animateCounter(document.getElementById('res-num'), age, cur => {
+        if (cur !== lastTick) {
+          lastTick = cur;
+          tick(400 + cur * 8, 0.02);
+        }
+      });
+      setTimeout(() => {
+        animateCounter(document.getElementById('res-feels'), feels, null);
+      }, 400);
+    }, 300);
+  }
+</script>
 </body>
 </html>
