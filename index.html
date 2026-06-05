@@ -21,12 +21,83 @@
       overflow: hidden;
     }
 
+    /* ── Background blobs ── */
+    .bg {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 0;
+      overflow: hidden;
+    }
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0;
+      animation: blobMove var(--dur, 40s) ease-in-out infinite alternate;
+      will-change: transform, opacity;
+    }
+    .blob-1 {
+      width: 55vw; height: 55vw;
+      top: -15%; left: -10%;
+      background: radial-gradient(circle, #1a3a6a 0%, transparent 70%);
+      --dur: 38s;
+      animation-name: blobMove1;
+      opacity: 0.6;
+    }
+    .blob-2 {
+      width: 45vw; height: 45vw;
+      bottom: -10%; right: -8%;
+      background: radial-gradient(circle, #0f3020 0%, transparent 70%);
+      --dur: 52s;
+      animation-name: blobMove2;
+      opacity: 0.5;
+    }
+    .blob-3 {
+      width: 35vw; height: 35vw;
+      top: 40%; left: 55%;
+      background: radial-gradient(circle, #3a1a08 0%, transparent 70%);
+      --dur: 44s;
+      animation-name: blobMove3;
+      opacity: 0.4;
+    }
+    .blob-4 {
+      width: 30vw; height: 30vw;
+      top: 20%; right: 15%;
+      background: radial-gradient(circle, #1a1040 0%, transparent 70%);
+      --dur: 60s;
+      animation-name: blobMove4;
+      opacity: 0.45;
+    }
+
+    @keyframes blobMove1 {
+      0%   { transform: translate(0, 0) scale(1); }
+      33%  { transform: translate(8vw, 12vh) scale(1.08); }
+      66%  { transform: translate(3vw, 6vh) scale(0.95); }
+      100% { transform: translate(10vw, 18vh) scale(1.05); }
+    }
+    @keyframes blobMove2 {
+      0%   { transform: translate(0, 0) scale(1); }
+      33%  { transform: translate(-10vw, -8vh) scale(1.1); }
+      66%  { transform: translate(-5vw, -14vh) scale(0.92); }
+      100% { transform: translate(-12vw, -6vh) scale(1.06); }
+    }
+    @keyframes blobMove3 {
+      0%   { transform: translate(0, 0) scale(1); }
+      40%  { transform: translate(-8vw, 10vh) scale(1.12); }
+      100% { transform: translate(6vw, -8vh) scale(0.9); }
+    }
+    @keyframes blobMove4 {
+      0%   { transform: translate(0, 0) scale(1) rotate(0deg); }
+      50%  { transform: translate(-6vw, 12vh) scale(1.15) rotate(10deg); }
+      100% { transform: translate(4vw, -5vh) scale(0.88) rotate(-5deg); }
+    }
+
     /* ── screens ── */
     .screen {
       position: absolute;
       inset: 0;
       display: flex;
       align-items: center;
+      z-index: 1;
       justify-content: center;
       padding: 2rem 1.5rem;
       transition: opacity 0.45s ease, transform 0.45s ease;
@@ -42,7 +113,7 @@
     }
     .eyebrow {
       font-size: 0.7rem; letter-spacing: 0.2em;
-      text-transform: uppercase; color: #3a3a3a;
+      text-transform: uppercase; color: #666;
     }
     h1 {
       font-size: clamp(2.4rem, 8vw, 4rem);
@@ -95,7 +166,7 @@
 
     .step-label {
       font-size: 0.7rem; letter-spacing: 0.2em;
-      text-transform: uppercase; color: #333; align-self: flex-start;
+      text-transform: uppercase; color: #777; align-self: flex-start;
     }
 
     .num-row {
@@ -181,7 +252,7 @@
     .scroll-hint {
       margin-top: 2.5rem;
       font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
-      color: #1e1e1e;
+      color: #555;
       display: flex; align-items: center; gap: 0.5rem;
       opacity: 0; transition: opacity 0.6s ease 0.3s;
     }
@@ -194,7 +265,7 @@
     }
     .res-label {
       font-size: 0.65rem; letter-spacing: 0.2em;
-      text-transform: uppercase; color: #2e2e2e;
+      text-transform: uppercase; color: #666;
     }
     .res-number {
       font-size: clamp(6rem, 26vw, 9rem);
@@ -207,24 +278,24 @@
     }
     .res-feels-label {
       font-size: clamp(0.9rem, 3vw, 1.1rem);
-      color: #444; font-weight: 300;
+      color: #888; font-weight: 300;
     }
     .res-feels-num {
       font-size: clamp(3rem, 14vw, 5rem);
       font-weight: 900; letter-spacing: -0.04em; line-height: 1;
-      color: #666;
+      color: #e8956d; /* тепле теракотове */
     }
     .res-again {
       margin-top: 1.8rem; align-self: flex-start;
-      background: none; border: 1px solid #222; border-radius: 50px;
-      color: #444; font-family: inherit; font-size: 0.7rem;
+      background: none; border: 1px solid #2a2a2a; border-radius: 50px;
+      color: #666; font-family: inherit; font-size: 0.7rem;
       letter-spacing: 0.15em; text-transform: uppercase;
       padding: 0.7rem 1.4rem; cursor: pointer;
       transition: border-color 0.2s, color 0.2s, transform 0.2s;
     }
-    .res-again:hover { border-color: #444; color: #aaa; transform: scale(1.04); }
+    .res-again:hover { border-color: #555; color: #aaa; transform: scale(1.04); }
 
-    /* ── STATS ── */
+    /* ── STATS — дні / тижні / місяці / сезони (синій) ── */
     .stats {
       margin-top: 2rem;
       display: grid; grid-template-columns: 1fr 1fr;
@@ -234,28 +305,31 @@
     }
     .stats.visible { opacity: 1; transform: translateY(0); }
     .stat-card {
-      background: #0f0f0f; border: 1px solid #161616;
+      background: #0b0f18; border: 1px solid #151e30;
       border-radius: 10px; padding: 1rem 1.1rem;
       display: flex; flex-direction: column; gap: 0.3rem;
     }
     .stat-val {
       font-size: clamp(1.4rem, 5vw, 2rem);
-      font-weight: 900; letter-spacing: -0.03em; color: #fff; line-height: 1;
+      font-weight: 900; letter-spacing: -0.03em;
+      color: #6fa8f5; /* м'який синій */
+      line-height: 1;
     }
     .stat-label {
       font-size: 0.62rem; letter-spacing: 0.15em;
-      text-transform: uppercase; color: #333; font-weight: 400;
+      text-transform: uppercase; color: #3a5080; font-weight: 400;
     }
 
-    /* fun stats */
+    /* dividers */
     .fun-divider {
       margin-top: 1.8rem; margin-bottom: 0.8rem;
       font-size: 0.6rem; letter-spacing: 0.2em;
-      text-transform: uppercase; color: #252525;
+      text-transform: uppercase; color: #555;
       opacity: 0; transition: opacity 0.5s ease 0.15s;
     }
-    .stats.visible ~ .fun-divider,
     .fun-divider.visible { opacity: 1; }
+
+    /* ── FUN STATS — за твоє життя (зелений) ── */
     .fun-stats {
       display: grid; grid-template-columns: 1fr 1fr;
       gap: 0.8rem; width: 100%;
@@ -264,31 +338,49 @@
     }
     .fun-stats.visible { opacity: 1; transform: translateY(0); }
     .fun-card {
-      background: #0c0c0c; border: 1px solid #131313;
+      background: #0b130f; border: 1px solid #152010;
       border-radius: 10px; padding: 0.9rem 1rem;
       display: flex; flex-direction: column; gap: 0.25rem;
     }
     .fun-val {
       font-size: clamp(1.1rem, 4vw, 1.5rem);
-      font-weight: 900; letter-spacing: -0.02em; color: #ccc; line-height: 1;
+      font-weight: 900; letter-spacing: -0.02em;
+      color: #6bcf8f; /* м'який зелений */
+      line-height: 1;
     }
     .fun-label {
       font-size: 0.6rem; letter-spacing: 0.12em;
-      text-transform: uppercase; color: #2a2a2a; font-weight: 400;
+      text-transform: uppercase; color: #2a5030; font-weight: 400;
     }
-    /* zodiac card spans full width */
+
+    /* zodiac */
     .fun-card.wide {
       grid-column: 1 / -1;
       flex-direction: row; align-items: center;
       justify-content: space-between;
     }
     .fun-card.wide .fun-val { font-size: clamp(1.2rem, 4vw, 1.6rem); }
-    .zodiac-symbol {
-      font-size: 2.2rem; line-height: 1; opacity: 0.15;
+    .zodiac-symbol { font-size: 2.2rem; line-height: 1; opacity: 0.25; }
+
+    /* ── BIRTH STATS — рік народження (фіолетовий) ── */
+    #birth-stats .fun-card {
+      background: #100b18; border-color: #1e1230;
     }
+    #birth-stats .fun-val  { color: #b899f0; }
+    #birth-stats .fun-label { color: #3d2860; }
+
+    /* Кіану — золотий виділяємо окремо */
+    #stat-keanu { color: #f0c060; }
   </style>
 </head>
 <body>
+
+<div class="bg">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+  <div class="blob blob-4"></div>
+</div>
 
 <!-- 0. Intro -->
 <div class="screen in" id="s-intro">
@@ -397,6 +489,7 @@
         <div class="fun-card" style="grid-column:1/-1"><div class="fun-val" id="stat-presidents">—</div><div class="fun-label">президентів США змінилося</div></div>
         <div class="fun-card" style="grid-column:1/-1"><div class="fun-val" id="stat-km">—</div><div class="fun-label">км разом із Землею навколо Сонця</div></div>
         <div class="fun-card" style="grid-column:1/-1"><div class="fun-val" id="stat-heartbeats">—</div><div class="fun-label">серцебиттів ≈</div></div>
+        <div class="fun-card" style="grid-column:1/-1"><div class="fun-val" id="stat-keanu">—</div><div class="fun-label">років було Кіану Рівзу коли ти народився</div></div>
       </div>
 
       <div class="fun-divider" id="birth-divider">рік, коли ти народився</div>
@@ -830,7 +923,15 @@
     // Km with Earth around the Sun (~107,000 km/h)
     const kmBillion = Math.round(totalDays * 24 * 107000 / 1e9 * 10) / 10;
 
-    return { zodiac: z, terminators, mondays, beats, iphones, worldcups, starwars, olympics, presidents, kmBillion };
+    // Keanu Reeves age at user's birth (born Sep 2, 1964)
+    const keanuDob = new Date(1964, 8, 2);
+    const userDob  = new Date(state.year, state.month - 1, state.day);
+    let keanu = userDob.getFullYear() - keanuDob.getFullYear();
+    const km = userDob.getMonth() - keanuDob.getMonth();
+    if (km < 0 || (km === 0 && userDob.getDate() < keanuDob.getDate())) keanu--;
+    keanu = Math.max(0, keanu);
+
+    return { zodiac: z, terminators, mondays, beats, iphones, worldcups, starwars, olympics, presidents, kmBillion, keanu };
   }
 
   function calcStats() {
@@ -942,8 +1043,11 @@
 
   function showResult() {
     const age   = calcAge();
-    const base   = age > 40 ? 8 : 3;
-    const offset = base + Math.floor(Math.random() * 5);
+    let offset;
+    if      (age < 20)  offset = -(2 + Math.floor(Math.random() * 2)); // +2..+3
+    else if (age < 40)  offset =   4 + Math.floor(Math.random() * 5);  // -4..-8
+    else if (age < 60)  offset =   8 + Math.floor(Math.random() * 9);  // -8..-16
+    else                offset =  10 + Math.floor(Math.random() * 11); // -10..-20
     const feels  = Math.max(0, age - offset);
     const stats  = calcStats();
     const fun    = calcFunStats(stats.totalDays);
@@ -965,7 +1069,7 @@
     ['stat-days','stat-weeks','stat-months','stat-seasons',
      'stat-zodiac-name','stat-zodiac-sym','stat-terminators','stat-mondays',
      'stat-iphones','stat-worldcups','stat-starwars','stat-olympics',
-     'stat-presidents','stat-km','stat-heartbeats','stat-song','stat-movie',
+     'stat-presidents','stat-km','stat-heartbeats','stat-keanu','stat-song','stat-movie',
      'stat-genre','stat-population'
     ].forEach(id => { document.getElementById(id).textContent = '—'; });
     document.getElementById('s-result').scrollTop = 0;
@@ -1008,6 +1112,7 @@
         document.getElementById('stat-presidents').textContent  = fun.presidents;
         document.getElementById('stat-km').textContent = '~' + fun.kmBillion.toLocaleString('uk-UA') + ' млрд км';
         document.getElementById('stat-heartbeats').textContent = '~' + Math.round(fun.beats / 1e6).toLocaleString('uk-UA') + ' млн';
+        document.getElementById('stat-keanu').textContent = fun.keanu;
         document.getElementById('fun-divider').classList.add('visible');
         document.getElementById('fun-stats').classList.add('visible');
         chime();
