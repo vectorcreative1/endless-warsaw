@@ -6,14 +6,15 @@
   <title>Твій вік</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;900&family=Space+Grotesk:wght@300;400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background: #0a0a0a;
       color: #e0e0e0;
-      font-family: 'Space Grotesk', 'Helvetica Neue', sans-serif;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 300;
       min-height: 100dvh;
       display: flex;
       align-items: center;
@@ -86,7 +87,7 @@
     }
     h1 {
       font-size: clamp(2.4rem, 8vw, 4rem);
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Space Grotesk', sans-serif;
       font-weight: 900; line-height: 1.05; letter-spacing: -0.02em; color: #fff;
     }
     h1 em { font-style: normal; color: #555; }
@@ -101,7 +102,7 @@
       display: block;
       background: #fff; color: #0a0a0a;
       font-family: inherit; font-size: 0.85rem;
-      font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
       padding: 1rem 2rem; border: none; border-radius: 50px; cursor: pointer;
       transition: background 0.2s;
       will-change: transform;
@@ -157,7 +158,7 @@
 
     /* big editable input */
     .big-num {
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Space Grotesk', sans-serif;
       font-size: clamp(3.5rem, 18vw, 8rem);
       font-weight: 900; letter-spacing: -0.04em; line-height: 1;
       color: #fff; text-align: center;
@@ -193,7 +194,7 @@
       width: 100%;
       background: #fff; color: #0a0a0a;
       font-family: inherit; font-size: 0.85rem;
-      font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
       padding: 1rem; border: none; border-radius: 50px; cursor: pointer;
       transition: background 0.2s, transform 0.25s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s;
       opacity: 0.25;
@@ -240,7 +241,7 @@
     }
     .res-number {
       font-size: clamp(6rem, 26vw, 9rem);
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Space Grotesk', sans-serif;
       font-weight: 900; letter-spacing: -0.03em; line-height: 0.9;
       color: #fff;
     }
@@ -254,7 +255,7 @@
     }
     .res-feels-num {
       font-size: clamp(3rem, 14vw, 5rem);
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Space Grotesk', sans-serif;
       font-weight: 900; letter-spacing: -0.03em; line-height: 1;
       color: #e8956d;
     }
@@ -284,7 +285,7 @@
     }
     .stat-val {
       font-size: clamp(1.4rem, 5vw, 2rem);
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Space Grotesk', sans-serif;
       font-weight: 700; letter-spacing: -0.02em;
       color: #6fa8f5;
       line-height: 1;
@@ -318,7 +319,7 @@
     }
     .fun-val {
       font-size: clamp(1.1rem, 4vw, 1.5rem);
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Space Grotesk', sans-serif;
       font-weight: 700; letter-spacing: -0.01em;
       color: #6bcf8f;
       line-height: 1;
@@ -344,8 +345,35 @@
     #birth-stats .fun-val  { color: #b899f0; }
     #birth-stats .fun-label { color: #3d2860; }
 
-    /* Кіану — золотий виділяємо окремо */
+    /* Кіану — виділений блок */
     #stat-keanu { color: #f0c060; }
+    .keanu-card {
+      grid-column: 1 / -1;
+      background: #181208 !important;
+      border: 1px solid #3a2c00 !important;
+      border-radius: 12px;
+      padding: 0 !important;
+      overflow: hidden;
+      flex-direction: row !important;
+      align-items: stretch !important;
+      justify-content: space-between;
+      gap: 0 !important;
+    }
+    .keanu-text {
+      padding: 1.1rem 1.2rem;
+      display: flex; flex-direction: column; justify-content: center; gap: 0.4rem;
+      flex: 1;
+    }
+    .keanu-card .fun-label { color: #6a5010 !important; line-height: 1.4; }
+    .keanu-photo {
+      width: 80px;
+      object-fit: cover;
+      object-position: 20% top;
+      flex-shrink: 0;
+      filter: grayscale(25%) contrast(1.05);
+      border-left: 1px solid #3a2c00;
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -464,11 +492,19 @@
         <div class="fun-card" style="grid-column:1/-1"><div class="fun-val" id="stat-presidents">—</div><div class="fun-label">президентів США змінилося</div></div>
         <div class="fun-card" style="grid-column:1/-1"><div class="fun-val" id="stat-km">—</div><div class="fun-label">км разом із Землею навколо Сонця</div></div>
         <div class="fun-card" style="grid-column:1/-1"><div class="fun-val" id="stat-heartbeats">—</div><div class="fun-label">серцебиттів ≈</div></div>
-        <div class="fun-card" style="grid-column:1/-1"><div class="fun-val" id="stat-keanu">—</div><div class="fun-label">років було Кіану Рівзу коли ти народився</div></div>
       </div>
 
       <div class="fun-divider" id="birth-divider">рік, коли ти народився</div>
       <div class="fun-stats" id="birth-stats">
+        <div class="keanu-card fun-card">
+          <div class="keanu-text">
+            <div class="fun-val" id="stat-keanu">—</div>
+            <div class="fun-label">років було Кіану Рівзу<br/>коли ти народився</div>
+          </div>
+          <img class="keanu-photo" id="keanu-img" alt="Keanu Reeves"
+               referrerpolicy="no-referrer"
+               src="https://commons.wikimedia.org/wiki/Special:FilePath/Keanu_Reeves_2014.jpg?width=220" />
+        </div>
         <div class="fun-card" style="grid-column:1/-1">
           <div class="fun-val" id="stat-song">—</div>
           <div class="fun-label" id="stat-song-label">хіт-пісня року</div>
