@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Твій вік</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0a0a0a;
+      color: #e0e0e0;
+      font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* ── screens ── */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #screen-intro { transform: translateY(0); }
+    #screen-intro.hidden { transform: translateY(-40px); }
+
+    #screen-calc { transform: translateY(40px); opacity: 0; pointer-events: none; }
+    #screen-calc.visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
+
+    /* ── intro ── */
+    .intro {
+      max-width: 520px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+    }
+
+    .intro-eyebrow {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #3a3a3a;
+      font-weight: 400;
+    }
+
+    .intro-headline {
+      font-size: clamp(2.4rem, 8vw, 4rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      color: #fff;
+    }
+
+    .intro-headline em {
+      font-style: normal;
+      color: #555;
+    }
+
+    .intro-sub {
+      font-size: clamp(1rem, 3vw, 1.25rem);
+      font-weight: 300;
+      color: #555;
+      line-height: 1.5;
+      letter-spacing: -0.01em;
+    }
+
+    .intro-sub strong {
+      color: #999;
+      font-weight: 400;
+    }
+
+    .btn {
+      display: inline-block;
+      align-self: flex-start;
+      background: #fff;
+      color: #0a0a0a;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .btn:hover { background: #e0e0e0; transform: scale(1.06); }
+    .btn:active { transform: scale(1.01); }
+
+    /* ── calc screen ── */
+    .calc {
+      max-width: 480px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+    }
+
+    .back-btn {
+      background: none;
+      border: none;
+      color: #333;
+      font-family: inherit;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 0;
+      align-self: flex-start;
+      transition: color 0.15s;
+    }
+    .back-btn:hover { color: #666; }
+
+    label {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #333;
+      align-self: flex-start;
+    }
+
+    .input-wrap {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    input[type="date"] {
+      width: 100%;
+      background: #111;
+      border: 1px solid #1e1e1e;
+      border-radius: 6px;
+      color: #e0e0e0;
+      font-family: inherit;
+      font-size: clamp(1rem, 3vw, 1.15rem);
+      padding: 1rem 1.1rem;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+      appearance: none;
+      color-scheme: dark;
+    }
+
+    input[type="date"]:focus { border-color: #333; }
+
+    .result {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      min-height: 8rem;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+
+    .result.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .age-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #2e2e2e;
+      font-weight: 400;
+    }
+
+    .age-number {
+      font-size: clamp(5.5rem, 24vw, 8rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 0.9;
+      color: #fff;
+    }
+
+    .feels {
+      margin-top: 0.8rem;
+      font-size: clamp(1rem, 3.5vw, 1.3rem);
+      color: #444;
+      font-weight: 300;
+      letter-spacing: -0.01em;
+    }
+
+    .feels span {
+      color: #888;
+      font-weight: 400;
+    }
+
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: #161616;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Intro screen -->
+  <div class="screen" id="screen-intro">
+    <div class="intro">
+      <div class="intro-eyebrow">калькулятор віку</div>
+      <h1 class="intro-headline">
+        Завжди хотіли дізнатися<br/>
+        <em>свій точний вік?</em>
+      </h1>
+      <p class="intro-sub">Гарні новини.</p>
+      <button class="btn" id="btn-start">Дізнатися вік</button>
+    </div>
+  </div>
+
+  <!-- Calc screen -->
+  <div class="screen" id="screen-calc">
+    <div class="calc">
+      <button class="back-btn" id="btn-back">← назад</button>
+      <div class="input-wrap">
+        <label for="dob">Дата народження</label>
+        <input type="date" id="dob" />
+      </div>
+      <div class="divider"></div>
+      <div class="result" id="result">
+        <div class="age-label">твій вік</div>
+        <div class="age-number" id="age-num"></div>
+        <div class="feels">відчувається як <span id="feels-num"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const introScreen = document.getElementById('screen-intro');
+    const calcScreen  = document.getElementById('screen-calc');
+    const btnStart    = document.getElementById('btn-start');
+    const btnBack     = document.getElementById('btn-back');
+    const input       = document.getElementById('dob');
+    const result      = document.getElementById('result');
+    const ageNum      = document.getElementById('age-num');
+    const feelsNum    = document.getElementById('feels-num');
+
+    btnStart.addEventListener('click', () => {
+      introScreen.classList.add('hidden');
+      calcScreen.classList.add('visible');
+    });
+
+    btnBack.addEventListener('click', () => {
+      calcScreen.classList.remove('visible');
+      introScreen.classList.remove('hidden');
+      result.classList.remove('visible');
+      input.value = '';
+    });
+
+    function calcAge(dob) {
+      const today = new Date();
+      let age = today.getFullYear() - dob.getFullYear();
+      const m = today.getMonth() - dob.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+      return age;
+    }
+
+    input.addEventListener('change', () => {
+      const val = input.value;
+      if (!val) { result.classList.remove('visible'); return; }
+
+      const dob = new Date(val);
+      if (isNaN(dob)) { result.classList.remove('visible'); return; }
+
+      const age = calcAge(dob);
+      if (age < 0 || age > 130) { result.classList.remove('visible'); return; }
+
+      ageNum.textContent  = age;
+      feelsNum.textContent = Math.max(0, age - 5);
+
+      result.classList.remove('visible');
+      requestAnimationFrame(() => requestAnimationFrame(() => result.classList.add('visible')));
+    });
+  </script>
+</body>
+</html>
