@@ -572,14 +572,20 @@
   }
 
   yearInput.addEventListener('input', () => {
+    initAudio(); cashKey(0.4);
     const v = parseInt(yearInput.value, 10);
     if (!isNaN(v) && String(yearInput.value).length === 4) {
-      initAudio();
       setYear(v, true);
-      tick(700, 0.035);
     } else {
       state.year = null;
       yearNext.classList.remove('ready');
+    }
+  });
+
+  yearInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && yearNext.classList.contains('ready')) {
+      initAudio(); tick();
+      goTo('s-month');
     }
   });
 
@@ -623,14 +629,20 @@
   }
 
   dayInput.addEventListener('input', () => {
+    initAudio(); cashKey(0.4);
     const v = parseInt(dayInput.value, 10);
     if (!isNaN(v) && v >= 1 && v <= maxDay()) {
-      initAudio();
       setDay(v, true);
-      tick(700, 0.035);
     } else {
       state.day = null;
       dayNext.classList.remove('ready');
+    }
+  });
+
+  dayInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && dayNext.classList.contains('ready')) {
+      initAudio(); tick();
+      showResult();
     }
   });
 
