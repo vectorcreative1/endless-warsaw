@@ -124,6 +124,9 @@
       .card-overlay-title { font-size: 0.65rem !important; }
       .card-overlay-bio { font-size: 0.9rem !important; }
       .contact-sep { display: none !important; }
+      #txt-kluczowe { transform: translateX(0) !important; }
+      .co-robimy-float { left: 0 !important; }
+      #txt-robimy { margin-left: 0 !important; }
       .footer-title { font-size: 30px !important; }
       .footer-contacts a, .footer-contacts address { font-size: 22px !important; text-align: center; }
       .footer-contacts { flex-direction: column; gap: 0.5rem; align-items: center; }
@@ -1108,6 +1111,7 @@ function positionRobimy() {
 }
 
 function parallax() {
+  if (window.innerWidth <= 640) return;
   const vH = window.innerHeight;
   if (txRobimy && coRobimy) {
     const r  = coRobimy.getBoundingClientRect();
