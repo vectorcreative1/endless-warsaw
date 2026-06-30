@@ -104,11 +104,12 @@
       .btn-pill { min-width: 280px !important; font-size: 1.1rem !important; padding: 1rem 1.4rem 1rem 2rem !important; }
       .hero { justify-content: center !important; padding-bottom: 0; }
       .hero-content { margin-top: 15vh; }
-      .hero-title img { display: none; } .hero-title { word-spacing: 0.12em; font-size: clamp(3rem, 15vw, 5rem) !important; line-height: 0.92 !important; }
+      .hero-title img { display: none; } .hero-title { word-spacing: 0.12em; font-size: clamp(3rem, 15vw, 5rem) !important; line-height: 0.97 !important; }
       .hero-sub { margin-top: 8rem; white-space: normal; padding: 0 8vw; text-align: center; }
       .hero-video { inset: auto !important; top: 50% !important; left: 0 !important; right: auto !important; bottom: auto !important; transform: translateY(-65%) !important; width: 130% !important; left: -15% !important; height: auto !important; object-fit: contain !important; }
       .hero-overlay { display: none; }
       .news-grid { grid-template-columns: 1fr !important; }
+      .news-section { padding-left: clamp(1.5rem, 8vw, 3rem) !important; padding-right: clamp(1.5rem, 8vw, 3rem) !important; }
       .service-icon { width: 100px !important; height: 100px !important; }
       .service-name { font-size: 1.7rem !important; }
       .service-desc { font-size: 1rem !important; }
@@ -132,7 +133,7 @@
       #co-robimy-spray-img { display: none !important; }
       #hero-arrow-img { top: 0.5rem !important; right: 1rem !important; }
       .footer-title { font-size: 30px !important; }
-      .footer-contacts a, .footer-contacts address { font-size: 22px !important; text-align: center; }
+      .footer-contacts a, .footer-contacts address { font-size: 15px !important; text-align: center; }
       .footer-contacts { flex-direction: column; gap: 0.5rem; align-items: center; }
       .footer-contacts .contact-phone-email { text-align: center !important; margin-bottom: -0.8rem; }
       .footer-contacts .contact-address { text-align: center !important; margin-top: -0.8rem; }
@@ -1106,7 +1107,7 @@ function positionRobimy() {
   const secTop = robimySection.getBoundingClientRect().top + window.scrollY;
   const textH  = coRobimy.offsetHeight || window.innerWidth * 0.2;
   const isMob = window.innerWidth <= 640;
-  const topPx  = secTop - textH * (isMob ? 1.2 : 0.5);
+  const topPx  = secTop - textH * (isMob ? 1.9 : 0.5);
   coRobimy.style.top = topPx + 'px';
   if (sprayImg) sprayImg.style.top = (topPx - textH * 0.18) + 'px';
   updateGradient();
@@ -1209,13 +1210,17 @@ if (robimySection) robimyAnimIO.observe(robimySection);
 /* ── Mobile tap-to-reveal for team cards ── */
 document.querySelectorAll('.flip-card').forEach(card => {
   card.addEventListener('click', (e) => {
-    if (!e.target.closest('a')) {
-      if (card.classList.contains('tapped')) {
-        card.classList.remove('tapped');
-      } else {
-        document.querySelectorAll('.flip-card.tapped').forEach(c => c.classList.remove('tapped'));
-        card.classList.add('tapped');
-      }
+    if (e.target.closest('a')) return;
+    const clickedOverlay = e.target.closest('.card-overlay');
+    if (clickedOverlay && card.classList.contains('tapped')) {
+      card.classList.remove('tapped');
+      return;
+    }
+    if (card.classList.contains('tapped')) {
+      card.classList.remove('tapped');
+    } else {
+      document.querySelectorAll('.flip-card.tapped').forEach(c => c.classList.remove('tapped'));
+      card.classList.add('tapped');
     }
   });
 });
