@@ -104,7 +104,7 @@
       .btn-pill { min-width: 280px !important; font-size: 1.1rem !important; padding: 1rem 1.4rem 1rem 2rem !important; }
       .hero { justify-content: center !important; padding-bottom: 0; }
       .hero-content { margin-top: 15vh; }
-      .hero-title img { display: none; } .hero-title { word-spacing: 0.12em; font-size: clamp(3.5rem, 18vw, 6rem); line-height: 0.88; }
+      .hero-title img { display: none; } .hero-title { word-spacing: 0.12em; font-size: clamp(3.5rem, 18vw, 6rem); line-height: 0.78; }
       .hero-sub { margin-top: 8rem; white-space: normal; padding: 0 8vw; text-align: center; }
       .hero-video { inset: auto !important; top: 50% !important; left: 0 !important; right: auto !important; bottom: auto !important; transform: translateY(-65%) !important; width: 130% !important; left: -15% !important; height: auto !important; object-fit: contain !important; }
       .hero-overlay { display: none; }
@@ -182,6 +182,7 @@
       from { opacity: 0; transform: translateY(50px); }
       to   { opacity: 1; transform: translateY(0); }
     }
+    .mobile-br { display: none; }
     .hero-title {
       font-family: 'Special Gothic Expanded One', sans-serif;
       font-size: clamp(2.5rem, 6.5vw, 5.625rem);
@@ -603,7 +604,7 @@
   <img class="corner-waves" src="assets/top_wave.svg" alt="" aria-hidden="true"/>
   <img src="assets/yellow_element_7.png" alt="" aria-hidden="true" id="hero-arrow-img" style="position:absolute;top:clamp(3rem,6vh,6rem);right:clamp(6rem,12vw,14rem);width:clamp(80px,11vw,150px);pointer-events:none;z-index:2;transform:rotate(10deg);"/>
   <div class="hero-content">
-    <h1 class="hero-title">KIM<br>JESTEŚMY</h1>
+    <h1 class="hero-title">KIM<br class="mobile-br">JESTEŚMY</h1>
     <p class="hero-sub reveal" style="transition-delay:0.2s">Poznaj ludzi za kampaniami</p>
   </div>
 </section>
