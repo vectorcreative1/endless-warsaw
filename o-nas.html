@@ -96,8 +96,9 @@
     .menu-overlay.is-open .menu-brand { opacity:1; transform:none; transition-delay:0.12s; }
     @media (max-width: 640px) {
       .menu-shell { align-items: flex-start; height: auto; overflow-y: auto; }
-      .menu-inner { padding-top: 5rem; }
-      .menu-panel { padding: 2.5rem 2rem 3rem; flex-direction: column; gap: 2rem; }
+      .menu-inner { padding-top: 3rem; }
+      .menu-panel { padding: 2.5rem 2rem 1.5rem; flex-direction: column; gap: 2rem; }
+      .menu-contact p { font-size: 15px !important; }
       .menu-contact { padding-top: 0; }
       .menu-links a, .menu-brand { font-size: clamp(2.4rem, 10vw, 3.2rem); }
       .btn-pill { min-width: 280px !important; font-size: 1.1rem !important; padding: 1rem 1.4rem 1rem 2rem !important; }
@@ -652,7 +653,7 @@
 
 <!-- KLUCZOWE OSOBY band -->
 <div class="kluczowe-band">
-  <div class="parallax-text-wrap" style="margin-top: clamp(-4rem, -7vw, -9rem)">
+  <div class="parallax-text-wrap" style="margin-top: clamp(3rem, 5vw, 6rem)">
     <span class="parallax-text red-text" id="txt-kluczowe">KLUCZOWE OSOBY</span>
   </div>
 </div>
@@ -1103,7 +1104,7 @@ function positionRobimy() {
   if (!coRobimy || !robimySection) return;
   const secTop = robimySection.getBoundingClientRect().top + window.scrollY;
   const textH  = coRobimy.offsetHeight || window.innerWidth * 0.2;
-  const topPx  = secTop - textH * 0.55;
+  const topPx  = secTop - textH * 0.85;
   coRobimy.style.top = topPx + 'px';
   if (sprayImg) sprayImg.style.top = (topPx - textH * 0.18) + 'px';
   updateGradient();
