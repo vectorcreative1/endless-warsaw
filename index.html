@@ -185,7 +185,7 @@
       .menu-inner { padding-top: 3rem; }
       .menu-panel { padding: 2.5rem 2rem 1.5rem; flex-direction: column; gap: 2rem; }
       .menu-contact p { font-size: 15px !important; }
-      .hero-title { font-size: clamp(4.5rem, 28vw, 7rem); line-height: 0.85; }
+      .hero-title { font-size: clamp(4.5rem, 28vw, 7rem); line-height: 0.75; word-spacing: 0.12em; }
       .hero { justify-content: flex-end !important; padding-bottom: 2rem; }
       .hero-title img { width: 74vw !important; margin-bottom: 0.5rem; }
       .hero { justify-content: center !important; padding-bottom: 0; }
@@ -1414,7 +1414,8 @@ menuClose.addEventListener('click', closeMenu);
 menuOverlay.addEventListener('click', e => {
   if (e.target === menuOverlay || e.target.closest('.menu-photo')) closeMenu();
 });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeMenu(); closeNewsModal(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeMenu();
+document.addEventListener('click', e => { if (menuOverlay.classList.contains('is-open') && !e.target.closest('.menu-shell') && !e.target.closest('#menu-toggle')) closeMenu(); }); closeNewsModal(); } });
 
 /* News modal */
 const newsModalOverlay = document.getElementById('newsModal');

@@ -730,6 +730,7 @@ menuToggle.addEventListener('click', () => {
 });
 menuOverlay.addEventListener('click', e => { if (e.target === menuOverlay || e.target === menuOverlay.querySelector('.menu-shell')) closeMenu(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+document.addEventListener('click', e => { if (menuOverlay.classList.contains('is-open') && !e.target.closest('.menu-shell') && !e.target.closest('#menu-toggle')) closeMenu(); });
 
 /* Reveal */
 const revealIO = new IntersectionObserver((entries) => {

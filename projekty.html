@@ -115,7 +115,7 @@
       .menu-contact p { font-size: 15px !important; }
       .menu-contact { padding-top: 0; }
       .menu-links a, .menu-brand { font-size: clamp(2.4rem, 10vw, 3.2rem); }
-      .hero-title img { width: 80vw !important; margin-bottom: 0.5rem; }
+      .hero-title img { display: none; } .hero-title { word-spacing: 0.12em; }
       .hero { justify-content: center !important; padding-bottom: 0; }
       .hero-content { margin-top: 18vh; }
       .hero-sub { margin-top: 2rem; white-space: normal; padding: 0 8vw; text-align: center; }
@@ -633,6 +633,7 @@ menuOverlay.addEventListener('click', e => {
   if (e.target === menuOverlay || e.target.closest('.menu-photo')) closeMenu();
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+document.addEventListener('click', e => { if (menuOverlay.classList.contains('is-open') && !e.target.closest('.menu-shell') && !e.target.closest('#menu-toggle')) closeMenu(); });
 document.querySelectorAll(".project-card").forEach(card => { card.style.cursor = "pointer"; card.addEventListener("click", () => { window.location.href = "buduj-cyfrowa-forme.html"; }); });
 </script>
 </body>
