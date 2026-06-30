@@ -108,7 +108,7 @@
       .hero-sub { margin-top: 8rem; white-space: normal; padding: 0 8vw; text-align: center; }
       .hero-video { inset: auto !important; top: 50% !important; left: 0 !important; right: auto !important; bottom: auto !important; transform: translateY(-65%) !important; width: 130% !important; left: -15% !important; height: auto !important; object-fit: contain !important; }
       .hero-overlay { display: none; }
-      .news-grid { grid-template-columns: clamp(200px, 93vw, 400px) !important; }
+      .news-grid { grid-template-columns: 1fr !important; }
       .service-icon { width: 100px !important; height: 100px !important; }
       .service-name { font-size: 1.7rem !important; }
       .service-desc { font-size: 1rem !important; }
@@ -118,18 +118,19 @@
       .flip-front-info { padding: 3.5rem 2rem 2rem !important; }
       .flip-name { font-size: 1.4rem !important; }
       .flip-title { font-size: 0.7rem !important; }
+      .flip-card:hover .card-overlay { background: rgba(0,0,0,0); }
+      .flip-card:hover .card-overlay-inner { opacity: 0; transform: translateY(12px); }
+      .flip-card:hover .flip-front-info { opacity: 1; }
       .flip-card.tapped .card-overlay { background: rgba(0,0,0,0.82) !important; }
       .flip-card.tapped .card-overlay-inner { opacity: 1 !important; transform: translateY(0) !important; }
       .flip-card.tapped .flip-front-info { opacity: 0 !important; }
-      .flip-card:hover .card-overlay { background: rgba(0,0,0,0) !important; }
-      .flip-card:hover .card-overlay-inner { opacity: 0 !important; transform: translateY(12px) !important; }
-      .flip-card:hover .flip-front-info { opacity: 1 !important; }
       .card-overlay { padding: clamp(1.5rem, 6vw, 2.5rem) 2.5rem !important; }
       .card-overlay-name { font-size: 1.4rem !important; }
       .card-overlay-title { font-size: 0.65rem !important; }
       .card-overlay-bio { font-size: 0.9rem !important; }
       .contact-sep { display: none !important; }
       #co-robimy-spray-img { display: none !important; }
+      #hero-arrow-img { top: 0.5rem !important; right: 1rem !important; }
       .footer-title { font-size: 30px !important; }
       .footer-contacts a, .footer-contacts address { font-size: 22px !important; text-align: center; }
       .footer-contacts { flex-direction: column; gap: 0.5rem; align-items: center; }
@@ -600,9 +601,9 @@
   </video>
   <div class="hero-overlay"></div>
   <img class="corner-waves" src="assets/top_wave.svg" alt="" aria-hidden="true"/>
-  <img src="assets/yellow_element_7.png" alt="" aria-hidden="true" style="position:absolute;top:clamp(3rem,6vh,6rem);right:clamp(6rem,12vw,14rem);width:clamp(80px,11vw,150px);pointer-events:none;z-index:2;transform:rotate(10deg);"/>
+  <img src="assets/yellow_element_7.png" alt="" aria-hidden="true" id="hero-arrow-img" style="position:absolute;top:clamp(3rem,6vh,6rem);right:clamp(6rem,12vw,14rem);width:clamp(80px,11vw,150px);pointer-events:none;z-index:2;transform:rotate(10deg);"/>
   <div class="hero-content">
-    <h1 class="hero-title">KIM JESTEŚMY</h1>
+    <h1 class="hero-title">KIM<br>JESTEŚMY</h1>
     <p class="hero-sub reveal" style="transition-delay:0.2s">Poznaj ludzi za kampaniami</p>
   </div>
 </section>
@@ -1104,7 +1105,7 @@ function positionRobimy() {
   const secTop = robimySection.getBoundingClientRect().top + window.scrollY;
   const textH  = coRobimy.offsetHeight || window.innerWidth * 0.2;
   const isMob = window.innerWidth <= 640;
-  const topPx  = secTop - textH * (isMob ? 0.85 : 0.5);
+  const topPx  = secTop - textH * (isMob ? 1.2 : 0.5);
   coRobimy.style.top = topPx + 'px';
   if (sprayImg) sprayImg.style.top = (topPx - textH * 0.18) + 'px';
   updateGradient();
