@@ -11,7 +11,7 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root { --black: #000; --white: #fff; --red: #e3151a; --yellow: #f3e600; }
-    html { scroll-behavior: smooth; overflow-y: scroll; }
+    html { scroll-behavior: smooth; overflow-y: scroll; overflow-x: hidden; }
     body { margin: 0; padding: 0; background: var(--black); color: var(--white); font-family: 'Poppins', sans-serif; overflow-x: hidden; }
 
     /* ─── NAV ─── */
@@ -1114,14 +1114,14 @@ function positionRobimy() {
 }
 
 function parallax() {
-  if (false) return; /* parallax enabled on all screen sizes */
+  const mobile = window.innerWidth <= 640;
   const vH = window.innerHeight;
-  if (txRobimy && coRobimy) {
+  if (txRobimy && coRobimy && !mobile) {
     const r  = coRobimy.getBoundingClientRect();
     const p  = (vH - r.top) / (vH + r.height);
     txRobimy.style.marginLeft = `${-5 + p * 30}%`;
   }
-  if (txKluczowe) {
+  if (txKluczowe && !mobile) {
     const r = txKluczowe.parentElement.getBoundingClientRect();
     const p = (vH * 1.4 - r.top) / (vH + r.height);
     txKluczowe.style.transform = `translateX(${40 - p * 72}%)`;
