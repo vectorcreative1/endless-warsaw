@@ -1140,70 +1140,6 @@ const robimyAnimIO = new IntersectionObserver(entries => {
 }, { threshold: 0 });
 if (robimySection) robimyAnimIO.observe(robimySection);
 
-/* ── UI sounds ── */
-(function() {
-  const AudioCtx = window.AudioContext || window.webkitAudioContext;
-  if (!AudioCtx) return;
-  let ctx;
-
-  function getCtx() {
-    if (!ctx) ctx = new AudioCtx();
-    if (ctx.state === 'suspended') ctx.resume();
-    return ctx;
-  }
-
-  function soundDing(c) {
-    const o = c.createOscillator(), g = c.createGain();
-    o.type = 'sine'; o.frequency.value = 1318;
-    g.gain.setValueAtTime(0.4, c.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.6);
-    o.connect(g); g.connect(c.destination);
-    o.start(); o.stop(c.currentTime + 0.6);
-  }
-
-  function soundTrill(c) {
-    [0,0.05,0.1,0.15,0.2].forEach((t,i) => {
-      const o = c.createOscillator(), g = c.createGain();
-      o.type = 'sine'; o.frequency.value = i % 2 === 0 ? 740 : 987;
-      g.gain.setValueAtTime(0.2, c.currentTime + t);
-      g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + t + 0.07);
-      o.connect(g); g.connect(c.destination);
-      o.start(c.currentTime + t); o.stop(c.currentTime + t + 0.08);
-    });
-  }
-
-  function soundDoubleSqueak(c) {
-    [0, 0.15].forEach(t => {
-      const o = c.createOscillator(), g = c.createGain();
-      o.type = 'sine'; o.frequency.setValueAtTime(900, c.currentTime + t);
-      o.frequency.exponentialRampToValueAtTime(1400, c.currentTime + t + 0.1);
-      g.gain.setValueAtTime(0.3, c.currentTime + t);
-      g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + t + 0.15);
-      o.connect(g); g.connect(c.destination);
-      o.start(c.currentTime + t); o.stop(c.currentTime + t + 0.18);
-    });
-  }
-
-  function withCooldown(fn, ms) {
-    let last = 0;
-    return () => { const now = Date.now(); if (now - last < ms) return; last = now; try { fn(getCtx()); } catch(e) {} };
-  }
-
-  document.getElementById('menu-toggle').addEventListener('click', () => {
-    if (!document.getElementById('menu-overlay').classList.contains('is-open'))
-      try { soundTrill(getCtx()); } catch(e) {}
-  });
-
-  document.querySelectorAll('.nav-logo').forEach(el => {
-    el.addEventListener('mouseenter', withCooldown(soundDing, 800));
-    el.addEventListener('touchstart', withCooldown(soundDing, 800), { passive: true });
-  });
-
-  document.querySelectorAll('.btn-pill').forEach(el => {
-    el.addEventListener('mouseenter', withCooldown(soundDoubleSqueak, 600));
-    el.addEventListener('touchstart', withCooldown(soundDoubleSqueak, 600), { passive: true });
-  });
-})();
 
 
 /* ── Mobile tap-to-reveal for team cards ── */
@@ -1276,6 +1212,36 @@ document.querySelectorAll(".project-card").forEach(card => { card.style.cursor =
     if (e.key === 'ArrowLeft' && currentIndex > 0) openModal(currentIndex - 1);
     if (e.key === 'ArrowRight' && currentIndex < newsCards.length - 1) openModal(currentIndex + 1);
   });
+})();
+
+/* ── Magnetic logo ── */
+(function() {
+  const logo = document.querySelector(".nav-logo");
+  if (!logo || window.matchMedia("(hover: none)").matches) return;
+  const RADIUS = 110, STRENGTH = 0.32;
+  logo.style.willChange = "transform";
+  logo.style.transition = "transform 0.35s cubic-bezier(0.23,1,0.32,1)";
+  document.addEventListener("mousemove", e => {
+    const r = logo.getBoundingClientRect();
+    const dx = e.clientX - (r.left + r.width / 2);
+    const dy = e.clientY - (r.top + r.height / 2);
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < RADIUS) {
+      const pull = (1 - dist / RADIUS) * STRENGTH;
+      logo.style.transform = "translate(" + (dx*pull).toFixed(2) + "px," + (dy*pull).toFixed(2) + "px)";
+    } else {
+      logo.style.transform = "";
+    }
+  });
+  logo.addEventListener("mousedown", () => {
+    logo.style.transition = "transform 0.1s ease";
+    logo.style.transform = "scale(0.88)";
+  });
+  logo.addEventListener("mouseup", () => {
+    logo.style.transition = "transform 0.35s cubic-bezier(0.23,1,0.32,1)";
+    logo.style.transform = "";
+  });
+  document.addEventListener("mouseleave", () => { logo.style.transform = ""; });
 })();
 </script>
 </body>
