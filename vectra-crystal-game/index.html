@@ -39,6 +39,8 @@
   .hearts{ display:flex; align-items:center; }
   .hearts-top{ gap:40px; margin-right:44px; margin-top:10px; }
   .pixel-heart{ width:6px; height:6px; flex:none; }
+  .pixel-heart.blink-new{ animation:heartBlinkNew .15s steps(1) 6; }
+  @keyframes heartBlinkNew{ 0%,100%{ opacity:1; } 50%{ opacity:.15; } }
   .hidden{ display:none !important; }
   .overlay p.pick-hint{ color:var(--cyan); font-size:60px; line-height:1; letter-spacing:2px; margin:0; }
   .hero-select{ display:flex; align-items:center; gap:36px; margin:34px 0 40px; }
@@ -462,11 +464,18 @@
     const listEl = document.getElementById('leaderboard-list');
     listEl.innerHTML = '<li>ŁADOWANIE...</li>';
     try {
-      const snap = await scoresDb.collection('scores').orderBy('score','desc').limit(5).get();
+      const snap = await scoresDb.collection('scores').orderBy('score','desc').limit(30).get();
       if (snap.empty){ listEl.innerHTML = '<li>BRAK WYNIKÓW</li>'; return; }
-      listEl.innerHTML = '';
+      const seenNames = new Set();
+      const best = [];
       snap.forEach(doc=>{
         const d = doc.data();
+        if (seenNames.has(d.name)) return;
+        seenNames.add(d.name);
+        best.push(d);
+      });
+      listEl.innerHTML = '';
+      best.slice(0,5).forEach(d=>{
         const li = document.createElement('li');
         li.textContent = `${d.name} — ${d.score}`;
         listEl.appendChild(li);
@@ -892,6 +901,7 @@
     snailFall: ()=>sweep(700,180,0.35,'sine',0.07),
     snailLand: ()=>beep(90,0.09,'square',0.13),
     floorItem: ()=>{ [660,880,1100].forEach((f,i)=>setTimeout(()=>beep(f,0.12,'sine',0.12), i*70)); },
+    lifeUp: ()=>{ [440,554,659,880].forEach((f,i)=>setTimeout(()=>beep(f,0.14,'square',0.14), i*70)); },
     pipeDown: ()=>sweep(520,140,0.4,'square',0.16),
     pipeUp: ()=>sweep(140,520,0.35,'square',0.16),
     oldComputerHum: ()=>{
@@ -1595,6 +1605,14 @@
     }
   }
 
+  function spawnHeartDrop(){
+    setTimeout(()=>{
+      if (state !== 'playing') return;
+      const worldX = camera.x + 20 + Math.random()*(CFG.W-40);
+      coinPops.push({ x: worldX, y: -20, homing: true, t: 0, bonus: true, isHeart: true });
+    }, 700);
+  }
+
   function spawnCoinRainAt(centerX, count, spread){
     for (let i=0; i<count; i++){
       setTimeout(()=>{
@@ -1670,7 +1688,7 @@
       document.getElementById('screen-quiz').classList.add('hidden');
       activeQuiz = null;
       if (state === 'quiz') state = 'playing';
-      if (wasCorrect) spawnCoinRain(10);
+      if (wasCorrect){ spawnCoinRain(10); spawnHeartDrop(); }
       else spawnSnailRain(5, wrongEnemyType);
     }, 1400);
   }
@@ -1956,7 +1974,18 @@
       cp.t++;
       const caught = cp.t > 8 && player.x < cp.x+10 && player.x+player.w > cp.x-10 && player.y < cp.y+10 && player.y+player.h > cp.y-10;
       if (caught){
-        if (cp.bonus){ score += 10; updateHud(); sfx.coin(); }
+        if (cp.isHeart){
+          maxLives++; lives++; updateHud();
+          sfx.lifeUp();
+          player.vy = -7; player.onGround = false;
+          const heartsEl = document.getElementById('hud-hearts');
+          const lastHeart = heartsEl.lastElementChild;
+          if (lastHeart){
+            lastHeart.classList.add('blink-new');
+            setTimeout(()=>{ lastHeart.classList.remove('blink-new'); }, 900);
+          }
+        }
+        else if (cp.bonus){ score += 10; updateHud(); sfx.coin(); }
         coinPops.splice(i, 1);
         continue;
       }
@@ -2379,18 +2408,30 @@
     }
   }
 
+  function drawWorldHeart(cx, cy, unit){
+    ctx.save();
+    ctx.fillStyle = '#ff4d5e';
+    for (const [r,c] of HEART_PIXELS){
+      ctx.fillRect(cx - 3.5*unit + c*unit, cy - 3*unit + r*unit, unit+0.5, unit+0.5);
+    }
+    ctx.restore();
+  }
+
   function drawCoinPops(){
     const frame = coinFrame();
-    if (!imgReady(frame)) return;
     for (const cp of coinPops){
       const lifespan = cp.bonus ? 160 : 30;
       const alpha = cp.bonus ? Math.min(1, (lifespan-cp.t)/20) : 1 - cp.t/lifespan;
-      const s = 16;
       const sx = px(cp.x - camera.x);
       const sy = px(cp.y);
       ctx.save();
       ctx.globalAlpha = Math.max(0, alpha);
-      ctx.drawImage(frame, sx - s/2, sy - s/2, s, s);
+      if (cp.isHeart){
+        drawWorldHeart(sx, sy, 5);
+      } else if (imgReady(frame)){
+        const s = 16;
+        ctx.drawImage(frame, sx - s/2, sy - s/2, s, s);
+      }
       ctx.restore();
     }
   }
