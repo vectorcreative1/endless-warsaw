@@ -901,7 +901,7 @@
     snailFall: ()=>sweep(700,180,0.35,'sine',0.07),
     snailLand: ()=>beep(90,0.09,'square',0.13),
     floorItem: ()=>{ [660,880,1100].forEach((f,i)=>setTimeout(()=>beep(f,0.12,'sine',0.12), i*70)); },
-    lifeUp: ()=>{ [440,554,659,880].forEach((f,i)=>setTimeout(()=>beep(f,0.14,'square',0.14), i*70)); },
+    lifeUp: ()=>{ [784,988,1175,1568].forEach((f,i)=>setTimeout(()=>beep(f,0.55,'sine',0.10), i*90)); },
     pipeDown: ()=>sweep(520,140,0.4,'square',0.16),
     pipeUp: ()=>sweep(140,520,0.35,'square',0.16),
     oldComputerHum: ()=>{
@@ -2409,10 +2409,16 @@
   }
 
   function drawWorldHeart(cx, cy, unit){
+    const ox = cx - 3.5*unit, oy = cy - 3*unit;
+    const shadowOff = unit/3;
     ctx.save();
+    ctx.fillStyle = '#000';
+    for (const [r,c] of HEART_PIXELS){
+      ctx.fillRect(ox + c*unit + shadowOff, oy + r*unit + shadowOff, unit, unit);
+    }
     ctx.fillStyle = '#ff4d5e';
     for (const [r,c] of HEART_PIXELS){
-      ctx.fillRect(cx - 3.5*unit + c*unit, cy - 3*unit + r*unit, unit+0.5, unit+0.5);
+      ctx.fillRect(ox + c*unit, oy + r*unit, unit, unit);
     }
     ctx.restore();
   }
