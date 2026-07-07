@@ -431,31 +431,27 @@
   </div>
   <div class="credit">VECTRA × ENDLESS — 8BIT DEMO</div>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 (function(){
   "use strict";
 
-  const firebaseApp = firebase.initializeApp({
-    apiKey: "AIzaSyAHdp_e1wZVswLDX82HHVoSodmwG0ifRsM",
-    authDomain: "vectragame.firebaseapp.com",
-    projectId: "vectragame",
-    storageBucket: "vectragame.firebasestorage.app",
-    messagingSenderId: "338788252546",
-    appId: "1:338788252546:web:ab3f98f83630cf60782d9b",
-  });
-  const scoresDb = firebase.firestore();
+  const FIRESTORE_PROJECT = 'vectragame';
+  const FIRESTORE_DOCS_URL = `https://firestore.googleapis.com/v1/projects/${FIRESTORE_PROJECT}/databases/(default)/documents`;
 
   let playerName = '';
 
   async function submitScore(name, score){
     const cleanName = (name || '').trim().slice(0,12).toUpperCase() || 'ANONIM';
     try {
-      await scoresDb.collection('scores').add({
-        name: cleanName,
-        score: Math.floor(score),
-        ts: firebase.firestore.FieldValue.serverTimestamp(),
+      await fetch(`${FIRESTORE_DOCS_URL}/scores`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fields: {
+            name: { stringValue: cleanName },
+            score: { integerValue: String(Math.floor(score)) },
+          },
+        }),
       });
     } catch (e){ console.error('submitScore failed', e); }
   }
@@ -464,12 +460,28 @@
     const listEl = document.getElementById('leaderboard-list');
     listEl.innerHTML = '<li>ŁADOWANIE...</li>';
     try {
-      const snap = await scoresDb.collection('scores').orderBy('score','desc').limit(30).get();
-      if (snap.empty){ listEl.innerHTML = '<li>BRAK WYNIKÓW</li>'; return; }
+      const res = await fetch(`${FIRESTORE_DOCS_URL}:runQuery`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          structuredQuery: {
+            from: [{ collectionId: 'scores' }],
+            orderBy: [{ field: { fieldPath: 'score' }, direction: 'DESCENDING' }],
+            limit: 30,
+          },
+        }),
+      });
+      const rows = await res.json();
+      const docs = (Array.isArray(rows) ? rows : [])
+        .filter(r => r.document && r.document.fields)
+        .map(r => ({
+          name: r.document.fields.name.stringValue,
+          score: parseInt(r.document.fields.score.integerValue, 10),
+        }));
+      if (!docs.length){ listEl.innerHTML = '<li>BRAK WYNIKÓW</li>'; return; }
       const seenNames = new Set();
       const best = [];
-      snap.forEach(doc=>{
-        const d = doc.data();
+      docs.forEach(d=>{
         if (seenNames.has(d.name)) return;
         seenNames.add(d.name);
         best.push(d);
