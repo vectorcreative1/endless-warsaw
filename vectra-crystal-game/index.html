@@ -1712,6 +1712,8 @@
   function update(dt){
     if (state !== 'playing') return;
 
+    const timeScale = dt / (1000/60);
+
     if (respawnFreeze > 0) respawnFreeze--;
     const inputLocked = respawnFreeze > 0;
 
@@ -1749,14 +1751,15 @@
 
     const speedMul = (turboT > 0 ? 1.6 : 1) * heroStats.speedMul * (mushroomT > 0 ? 0.22 : 1);
     if (player.crouching){
-      const slideFriction = CFG.FRICTION * 0.08;
+      const slideFriction = CFG.FRICTION * 0.08 * timeScale;
       if (player.vx > 0) player.vx = Math.max(0, player.vx - slideFriction);
       else if (player.vx < 0) player.vx = Math.min(0, player.vx + slideFriction);
-    } else if (keys.left && !inputLocked){ player.vx -= CFG.ACCEL*speedMul; player.facing = -1; }
-    else if (keys.right && !inputLocked){ player.vx += CFG.ACCEL*speedMul; player.facing = 1; }
+    } else if (keys.left && !inputLocked){ player.vx -= CFG.ACCEL*speedMul*timeScale; player.facing = -1; }
+    else if (keys.right && !inputLocked){ player.vx += CFG.ACCEL*speedMul*timeScale; player.facing = 1; }
     else {
-      if (player.vx > 0) player.vx = Math.max(0, player.vx - CFG.FRICTION);
-      else if (player.vx < 0) player.vx = Math.min(0, player.vx + CFG.FRICTION);
+      const fric = CFG.FRICTION * timeScale;
+      if (player.vx > 0) player.vx = Math.max(0, player.vx - fric);
+      else if (player.vx < 0) player.vx = Math.min(0, player.vx + fric);
     }
     const maxS = CFG.MAX_SPEED*speedMul;
     player.vx = Math.max(-maxS, Math.min(maxS, player.vx));
@@ -1769,18 +1772,18 @@
     }
 
     const fallMul = player.vy > 0 ? 0.6 : 1;
-    player.vy += CFG.GRAVITY * gravityMul * fallMul;
+    player.vy += CFG.GRAVITY * gravityMul * fallMul * timeScale;
     if (player.vy > 11) player.vy = 11;
 
     for (const p of level.platforms){
       if (!p.moving) continue;
       const prevX = p.x, prevY = p.y;
       if (p.axis === 'y'){
-        p.y += p.dir * p.speed;
+        p.y += p.dir * p.speed * timeScale;
         if (p.y > p.y0 + p.range) p.dir = -1;
         if (p.y < p.y0 - p.range) p.dir = 1;
       } else {
-        p.x += p.dir * p.speed;
+        p.x += p.dir * p.speed * timeScale;
         if (p.x > p.x0 + p.range) p.dir = -1;
         if (p.x < p.x0 - p.range) p.dir = 1;
       }
@@ -1788,7 +1791,7 @@
       p.dy = p.y - prevY;
     }
 
-    player.x += player.vx;
+    player.x += player.vx * timeScale;
     if (player.x < 0) player.x = 0;
     if (player.x > CFG.LEVEL_W) player.x = CFG.LEVEL_W;
 
@@ -1803,7 +1806,7 @@
         const pushingLeft = player.x + player.w/2 > hitX + ob.hitW/2 && keys.left && player.onGround;
         if (ob.pushable && (pushingRight || pushingLeft)){
           const dir = pushingRight ? 1 : -1;
-          ob.x = Math.max(0, Math.min(CFG.LEVEL_W - ob.w, ob.x + dir*PUSH_SPEED));
+          ob.x = Math.max(0, Math.min(CFG.LEVEL_W - ob.w, ob.x + dir*PUSH_SPEED*timeScale));
           const newHitX = ob.x + (ob.w-ob.hitW)/2;
           player.x = pushingRight ? newHitX - player.w : newHitX + ob.hitW;
           player.vx = 0;
@@ -1817,7 +1820,7 @@
 
     const wasAirborne = !player.onGround;
     prevBottom = player.y + player.h;
-    player.y += player.vy;
+    player.y += player.vy * timeScale;
     const newBottom = player.y + player.h;
     player.onGround = false;
 
@@ -1882,8 +1885,8 @@
       }
       if (!en.alive) continue;
       if (en.falling){
-        en.vy += 0.5;
-        en.y += en.vy;
+        en.vy += 0.5 * timeScale;
+        en.y += en.vy * timeScale;
         if (en.pitFall){
           if (en.y > CFG.H + 60){ en.alive = false; en.falling = false; }
         } else if (en.y >= CFG.GROUND_Y-16){
@@ -1898,7 +1901,7 @@
         }
         continue;
       }
-      en.x += en.dir * en.speed;
+      en.x += en.dir * en.speed * timeScale;
       if (en.x > en.x0 + en.range) en.dir = -1;
       if (en.x < en.x0 - en.range) en.dir = 1;
       if (en.y >= CFG.GROUND_Y-20 && isOverGap(en.x + en.w/2)){
@@ -1948,7 +1951,7 @@
         const dx = playerCx - icx, dy = playerCy - icy;
         const dist = Math.hypot(dx, dy);
         if (dist < COIN_MAGNET_RADIUS && dist > 1){
-          const pull = Math.min(COIN_MAGNET_SPEED, dist);
+          const pull = Math.min(COIN_MAGNET_SPEED, dist) * timeScale;
           it.x += (dx/dist) * pull;
           it.y += (dy/dist) * pull;
         }
@@ -1974,14 +1977,14 @@
         const tx = player.x + player.w/2, ty = player.y + player.h/2;
         const dx = tx - cp.x, dy = ty - cp.y;
         const dist = Math.hypot(dx, dy);
-        const speed = 5.5;
+        const speed = 5.5 * timeScale;
         if (dist > speed){ cp.x += (dx/dist)*speed; cp.y += (dy/dist)*speed; }
         else { cp.x = tx; cp.y = ty; }
       } else {
-        cp.x += cp.vx || 0;
-        cp.y += cp.vy;
-        cp.vy += 0.22;
-        if (cp.vx) cp.vx *= 0.96;
+        cp.x += (cp.vx || 0) * timeScale;
+        cp.y += cp.vy * timeScale;
+        cp.vy += 0.22 * timeScale;
+        if (cp.vx) cp.vx *= Math.pow(0.96, timeScale);
       }
       cp.t++;
       const caught = cp.t > 8 && player.x < cp.x+10 && player.x+player.w > cp.x-10 && player.y < cp.y+10 && player.y+player.h > cp.y-10;
