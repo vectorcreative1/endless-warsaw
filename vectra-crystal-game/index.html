@@ -1240,6 +1240,7 @@
         if (!startBtn.classList.contains('hidden')) startBtn.click();
       }
     }
+    if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
     if (!document.getElementById('screen-start').classList.contains('hidden')){
       if (['ArrowLeft','KeyA'].includes(e.code)) selectHero('dzisiek');
       if (['ArrowRight','KeyD'].includes(e.code)) selectHero('jutrek');
