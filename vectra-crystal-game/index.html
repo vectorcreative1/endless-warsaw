@@ -1756,9 +1756,9 @@
       sfx.jump();
     }
 
-    const fallMul = player.vy > 0 ? 0.6 : 1;
+    const fallMul = player.vy > 0 ? 0.88 : 1;
     player.vy += CFG.GRAVITY * gravityMul * fallMul;
-    if (player.vy > 11) player.vy = 11;
+    if (player.vy > 16) player.vy = 16;
 
     for (const p of level.platforms){
       if (!p.moving) continue;
