@@ -640,6 +640,7 @@
   }
   const idleBlinkImg = loadImg('assets/idle_blink.png');
   const sitImg = loadImg('assets/sit.png');
+  const dzisiekLayImg = loadImg('assets/pose_lay.png');
   const hurtImg = loadImg('assets/hurt.png');
   const deadImg = loadImg('assets/dead.png');
   const jumpImg = loadImg('assets/jump.png');
@@ -921,6 +922,9 @@
     floorItem: ()=>{ [660,880,1100].forEach((f,i)=>setTimeout(()=>beep(f,0.12,'sine',0.12), i*70)); },
     lifeUp: ()=>{ [784,988,1175,1568].forEach((f,i)=>setTimeout(()=>beep(f,0.55,'sine',0.10), i*90)); },
     slide: ()=>playNoise(0.85, 0.15, 2200),
+    whistle: ()=>{
+      [659,784,880,784,659,587,659].forEach((f,i)=>setTimeout(()=>beep(f,0.22,'triangle',0.09), i*180));
+    },
     objectFall: ()=>{ beep(90,0.18,'square',0.16); playNoise(0.15,0.14,600); },
     pipeDown: ()=>sweep(520,140,0.4,'square',0.16),
     pipeUp: ()=>sweep(140,520,0.35,'square',0.16),
@@ -1256,7 +1260,14 @@
     if (['ArrowLeft','KeyA'].includes(e.code)) keys.left = true;
     if (['ArrowRight','KeyD'].includes(e.code)) keys.right = true;
     if (['ArrowUp','KeyW','Space'].includes(e.code)){ keys.jump = true; e.preventDefault(); }
-    if (['ArrowDown','KeyS'].includes(e.code)){ keys.down = true; e.preventDefault(); }
+    if (['ArrowDown','KeyS'].includes(e.code)){
+      keys.down = true; e.preventDefault();
+      if (!e.repeat){
+        const now = performance.now();
+        if (now - lastDownTapAt < DOUBLE_TAP_MS) triggerLieDown();
+        lastDownTapAt = now;
+      }
+    }
   });
   window.addEventListener('keyup', (e)=>{
     if (['ArrowLeft','KeyA'].includes(e.code)) keys.left = false;
@@ -1285,6 +1296,8 @@
   // ---------- game state ----------
   let player, camera, score, lives, maxLives, heroStats, state, invincible, turboT, mushroomT, animT, lastSafeX, lastSafeY, landingTimer, lastStepFrame, hurtTimer, deathStartTime, respawnFreeze;
   let pipeState = null, pipeT = 0, pipeBaseY = 0, pipeCenterX = 0, pipeReady = true;
+  let lyingDown = false, lastDownTapAt = -9999, whistleTimer = null;
+  const DOUBLE_TAP_MS = 350;
   const PIPE_ENTERABLE_KINDS = ['kiosk', 'computers', 'phone'];
   const PIPE_SINK_MS = 450, PIPE_HIDE_MS = 1600, PIPE_RISE_MS = 450, PIPE_SINK_DIST = 90;
   let computerSparks = [];
@@ -1345,6 +1358,7 @@
     player = { x:40, y:CFG.GROUND_Y-CFG.STAND_H, w:22, h:CFG.STAND_H, vx:0, vy:0, onGround:false, facing:1, crouching:false };
     camera = { x:0 };
     pipeState = null; pipeT = 0; pipeReady = true;
+    lyingDown = false; clearTimeout(whistleTimer);
     lastSafeX = player.x; lastSafeY = player.y;
     for (const it of level.items) it.taken = false;
     for (const en of level.enemies){ en.alive = true; en.x = en.x0; en.dir = 1; en.dying = false; en.deathTimer = 0; }
@@ -1658,6 +1672,20 @@
     }
   }
 
+  function scheduleWhistle(){
+    if (!lyingDown) return;
+    sfx.whistle();
+    whistleTimer = setTimeout(scheduleWhistle, 1600);
+  }
+
+  function triggerLieDown(){
+    if (state !== 'playing' || selectedHero !== 'dzisiek' || !player.onGround || lyingDown || pipeState) return;
+    lyingDown = true;
+    player.vx = 0;
+    clearTimeout(whistleTimer);
+    scheduleWhistle();
+  }
+
   function obstacleUnderPlayer(){
     for (const ob of level.obstacles){
       if (ob.falling) continue;
@@ -1749,7 +1777,12 @@
 
     if (!keys.down) pipeReady = true;
 
-    const wantsCrouch = keys.down && player.onGround && !inputLocked;
+    if (lyingDown && (keys.left || keys.right || keys.jump)){
+      lyingDown = false;
+      clearTimeout(whistleTimer);
+    }
+
+    const wantsCrouch = keys.down && player.onGround && !inputLocked && !lyingDown;
     if (wantsCrouch && !player.crouching){
       const standObstacle = pipeReady ? obstacleUnderPlayer() : null;
       if (standObstacle && !standObstacle.pipeUsed && PIPE_ENTERABLE_KINDS.includes(standObstacle.kind)){
@@ -1779,8 +1812,8 @@
       const slideFriction = CFG.FRICTION * 0.08 * timeScale;
       if (player.vx > 0) player.vx = Math.max(0, player.vx - slideFriction);
       else if (player.vx < 0) player.vx = Math.min(0, player.vx + slideFriction);
-    } else if (keys.left && !inputLocked){ player.vx -= CFG.ACCEL*speedMul*timeScale; player.facing = -1; }
-    else if (keys.right && !inputLocked){ player.vx += CFG.ACCEL*speedMul*timeScale; player.facing = 1; }
+    } else if (keys.left && !inputLocked && !lyingDown){ player.vx -= CFG.ACCEL*speedMul*timeScale; player.facing = -1; }
+    else if (keys.right && !inputLocked && !lyingDown){ player.vx += CFG.ACCEL*speedMul*timeScale; player.facing = 1; }
     else {
       const fric = CFG.FRICTION * timeScale;
       if (player.vx > 0) player.vx = Math.max(0, player.vx - fric);
@@ -1790,7 +1823,7 @@
     player.vx = Math.max(-maxS, Math.min(maxS, player.vx));
 
     const gravityMul = mushroomT > 0 ? 0.14 : 1;
-    if (keys.jump && player.onGround && !player.crouching && !inputLocked){
+    if (keys.jump && player.onGround && !player.crouching && !inputLocked && !lyingDown){
       player.vy = CFG.JUMP_V * heroStats.jumpMul * Math.sqrt(gravityMul);
       player.onGround = false;
       sfx.jump();
@@ -2580,6 +2613,20 @@
     const turbo = turboT > 0;
     const glow = 0.5+0.5*Math.sin(animT*0.008);
     const centerX = sx+player.w/2;
+
+    if (lyingDown && imgReady(dzisiekLayImg)){
+      const layW = 130;
+      const layH = layW * (dzisiekLayImg.naturalHeight/dzisiekLayImg.naturalWidth);
+      const layDrawX = centerX - layW/2;
+      const layDrawY = sy + player.h - layH;
+      ctx.save();
+      ctx.translate(centerX, 0);
+      ctx.scale(player.facing, 1);
+      ctx.translate(-centerX, 0);
+      ctx.drawImage(dzisiekLayImg, layDrawX, layDrawY, layW, layH);
+      ctx.restore();
+      return;
+    }
 
     if (turbo){
       ctx.save();
