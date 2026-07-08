@@ -1070,17 +1070,17 @@
         for (let i=0;i<n;i++){
           items.push({x:x+20+i*26, y:py-26, w:16, h:16, type: rollItemType(rand), taken:false});
         }
-        if (pw > 90 && rand() < 0.25){
+        if (pw > 90 && rand() < 0.4){
           const ex = x + pw/2;
           const canBeSpiky = x > CFG.LEVEL_W/2;
           const platEnemyType = (canBeSpiky && rand()<0.3) ? 'spiky' : 'ordinary';
           enemies.push({x0:ex, x:ex, y:py-16, w:20, h:16, range:Math.max(12,pw/2-14), dir:1, speed: platEnemyType==='ordinary' ? 0.3+rand()*0.2 : 0.8+rand()*0.4, alive:true, type: platEnemyType, dying:false, deathTimer:0});
         }
         x += pw + 110 + rand()*90;
-      } else if (roll < 0.66){
+      } else if (roll < 0.70){
         enemies.push({x0:x, x, y:CFG.GROUND_Y-16, w:20, h:16, range:52+rand()*52, dir:1, speed:0.35+rand()*0.25, alive:true, type:'ordinary', dying:false, deathTimer:0});
-        x += 190 + rand()*110;
-      } else if (roll < 0.78){
+        x += 170 + rand()*100;
+      } else if (roll < 0.80){
         const kindPool = ACTIVE_WORLD === 'city' ? OBSTACLE_KINDS : OBSTACLE_KINDS_LEVEL2;
         const choices = kindPool.filter(k => k !== lastObstacleKind);
         const kind = choices[Math.floor(rand() * choices.length)];
