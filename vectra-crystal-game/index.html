@@ -914,6 +914,7 @@
     snailLand: ()=>beep(90,0.09,'square',0.13),
     floorItem: ()=>{ [660,880,1100].forEach((f,i)=>setTimeout(()=>beep(f,0.12,'sine',0.12), i*70)); },
     lifeUp: ()=>{ [784,988,1175,1568].forEach((f,i)=>setTimeout(()=>beep(f,0.55,'sine',0.10), i*90)); },
+    slide: ()=>playNoise(0.35, 0.18, 2400),
     pipeDown: ()=>sweep(520,140,0.4,'square',0.16),
     pipeUp: ()=>sweep(140,520,0.35,'square',0.16),
     oldComputerHum: ()=>{
@@ -1744,6 +1745,7 @@
       player.y += player.h - CFG.CROUCH_H;
       player.h = CFG.CROUCH_H;
       player.crouching = true;
+      if (Math.abs(player.vx) > 1.0) sfx.slide();
     } else if (!wantsCrouch && player.crouching){
       player.y -= CFG.STAND_H - player.h;
       player.h = CFG.STAND_H;
