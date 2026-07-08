@@ -916,7 +916,7 @@
     snailLand: ()=>beep(90,0.09,'square',0.13),
     floorItem: ()=>{ [660,880,1100].forEach((f,i)=>setTimeout(()=>beep(f,0.12,'sine',0.12), i*70)); },
     lifeUp: ()=>{ [784,988,1175,1568].forEach((f,i)=>setTimeout(()=>beep(f,0.55,'sine',0.10), i*90)); },
-    slide: ()=>playNoise(0.35, 0.18, 2400),
+    slide: ()=>playNoise(0.85, 0.15, 2200),
     objectFall: ()=>{ beep(90,0.18,'square',0.16); playNoise(0.15,0.14,600); },
     pipeDown: ()=>sweep(520,140,0.4,'square',0.16),
     pipeUp: ()=>sweep(140,520,0.35,'square',0.16),
