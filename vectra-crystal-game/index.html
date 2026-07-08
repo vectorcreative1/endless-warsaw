@@ -2618,7 +2618,7 @@
       const layW = 100;
       const layH = layW * (dzisiekLayImg.naturalHeight/dzisiekLayImg.naturalWidth);
       const layDrawX = centerX - layW/2;
-      const layDrawY = sy + player.h - layH + 10;
+      const layDrawY = sy + player.h - layH;
       ctx.save();
       ctx.translate(centerX, 0);
       ctx.scale(player.facing, 1);
