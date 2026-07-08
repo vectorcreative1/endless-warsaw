@@ -2615,10 +2615,10 @@
     const centerX = sx+player.w/2;
 
     if (lyingDown && imgReady(dzisiekLayImg)){
-      const layW = 130;
+      const layW = 100;
       const layH = layW * (dzisiekLayImg.naturalHeight/dzisiekLayImg.naturalWidth);
       const layDrawX = centerX - layW/2;
-      const layDrawY = sy + player.h - layH;
+      const layDrawY = sy + player.h - layH + 10;
       ctx.save();
       ctx.translate(centerX, 0);
       ctx.scale(player.facing, 1);
