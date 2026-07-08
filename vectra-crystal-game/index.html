@@ -1885,7 +1885,18 @@
         const pushingLeft = player.x + player.w/2 > hitX + ob.hitW/2 && keys.left && player.onGround;
         if (ob.pushable && (pushingRight || pushingLeft)){
           const dir = pushingRight ? 1 : -1;
-          ob.x = Math.max(0, Math.min(CFG.LEVEL_W - ob.w, ob.x + dir*PUSH_SPEED*timeScale));
+          let newX = Math.max(0, Math.min(CFG.LEVEL_W - ob.w, ob.x + dir*PUSH_SPEED*timeScale));
+          for (const other of level.obstacles){
+            if (other === ob || other.falling) continue;
+            const otherOverlapsY = ob.y < other.y + other.h && ob.y + ob.h > other.y;
+            if (!otherOverlapsY) continue;
+            if (dir > 0 && other.x >= ob.x && newX + ob.w > other.x){
+              newX = other.x - ob.w;
+            } else if (dir < 0 && other.x <= ob.x && newX < other.x + other.w){
+              newX = other.x + other.w;
+            }
+          }
+          ob.x = newX;
           const newHitX = ob.x + (ob.w-ob.hitW)/2;
           player.x = pushingRight ? newHitX - player.w : newHitX + ob.hitW;
           player.vx = 0;
