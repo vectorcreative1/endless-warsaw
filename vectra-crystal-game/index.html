@@ -1215,7 +1215,7 @@
     const quizSpots = levelQuizzes.map((qz, i) => {
       const t = levelQuizzes.length > 1 ? i / (levelQuizzes.length - 1) : 0;
       const frac = 0.22 + t * (0.7 - 0.22);
-      const x = findSafeX(keepAwayFromPlatforms(CFG.LEVEL_W * frac, 200));
+      const x = findSafeX(keepAwayFromPlatforms(CFG.LEVEL_W * frac, 500));
       return { x, quizIndex: i };
     });
 
