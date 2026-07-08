@@ -1229,6 +1229,20 @@
     const floorItemX = findSafeX(keepAwayFromPlatforms(CFG.LEVEL_W * (0.3 + rand()*0.4), 120));
     items.push({x:floorItemX, y:CFG.GROUND_Y-16, w:16, h:16, type:floorItemKind, taken:false});
 
+    if (ACTIVE_WORLD === 'city'){
+      const tallKinds = ['kiosk', 'phoneBooth'];
+      const fracs = [0.35, 0.6];
+      tallKinds.forEach((tallKind, i) => {
+        if (obstacles.some(ob => ob.kind === tallKind)) return;
+        const spec = OBSTACLE_SPECS[tallKind];
+        const tx = findSafeX(keepAwayFromPlatforms(CFG.LEVEL_W * fracs[i], 150));
+        const helperSpec = OBSTACLE_SPECS.trashBin;
+        const helperX = tx - 60 - helperSpec.w;
+        obstacles.push({x:helperX, y:CFG.GROUND_Y-helperSpec.h+(helperSpec.sink||0), w:helperSpec.w, h:helperSpec.h, hitW:helperSpec.hitW, hitH:helperSpec.hitH, kind:'trashBin', pushable:true});
+        obstacles.push({x:tx, y:CFG.GROUND_Y-spec.h+(spec.sink||0), w:spec.w, h:spec.h, hitW:spec.hitW, hitH:spec.hitH, kind:tallKind, pushable:false});
+      });
+    }
+
     const levelQuizzes = activeQuizzes();
     const quizSpots = levelQuizzes.map((qz, i) => {
       const t = levelQuizzes.length > 1 ? i / (levelQuizzes.length - 1) : 0;
