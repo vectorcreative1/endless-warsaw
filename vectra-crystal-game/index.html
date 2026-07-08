@@ -1277,7 +1277,7 @@
 
   // ---------- game state ----------
   let player, camera, score, lives, maxLives, heroStats, state, invincible, turboT, mushroomT, animT, lastSafeX, lastSafeY, landingTimer, lastStepFrame, hurtTimer, deathStartTime, respawnFreeze;
-  let pipeState = null, pipeT = 0, pipeBaseY = 0, pipeCenterX = 0, pipeReady = true, pipeUsed = false;
+  let pipeState = null, pipeT = 0, pipeBaseY = 0, pipeCenterX = 0, pipeReady = true;
   const PIPE_ENTERABLE_KINDS = ['kiosk', 'computers', 'phone'];
   const PIPE_SINK_MS = 450, PIPE_HIDE_MS = 1600, PIPE_RISE_MS = 450, PIPE_SINK_DIST = 90;
   let computerSparks = [];
@@ -1337,7 +1337,7 @@
     buildMidgroundExclusions();
     player = { x:40, y:CFG.GROUND_Y-CFG.STAND_H, w:22, h:CFG.STAND_H, vx:0, vy:0, onGround:false, facing:1, crouching:false };
     camera = { x:0 };
-    pipeState = null; pipeT = 0; pipeReady = true; pipeUsed = false;
+    pipeState = null; pipeT = 0; pipeReady = true;
     lastSafeX = player.x; lastSafeY = player.y;
     for (const it of level.items) it.taken = false;
     for (const en of level.enemies){ en.alive = true; en.x = en.x0; en.dir = 1; en.dying = false; en.deathTimer = 0; }
@@ -1729,10 +1729,10 @@
 
     const wantsCrouch = keys.down && player.onGround && !inputLocked;
     if (wantsCrouch && !player.crouching){
-      const standObstacle = (pipeReady && !pipeUsed) ? obstacleUnderPlayer() : null;
-      if (standObstacle && PIPE_ENTERABLE_KINDS.includes(standObstacle.kind)){
+      const standObstacle = pipeReady ? obstacleUnderPlayer() : null;
+      if (standObstacle && !standObstacle.pipeUsed && PIPE_ENTERABLE_KINDS.includes(standObstacle.kind)){
         pipeReady = false;
-        pipeUsed = true;
+        standObstacle.pipeUsed = true;
         pipeState = 'down';
         pipeT = 0;
         pipeBaseY = player.y;
