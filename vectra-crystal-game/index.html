@@ -606,9 +606,9 @@
   const obPhoneHorizImg = loadImg('assets/obsticle_smartphone_horisontal_level_2.png');
   const obTrashBin2Img = loadImg('assets/obsticle_trash_bin_level_2.png');
   const OBSTACLE_SPECS = {
-    trashBin: { img: obTrashBinImg, w: 25, h: 34, hitW: 25, hitH: 34, sink: 5 },
+    trashBin: { img: obTrashBinImg, w: 25, h: 34, hitW: 25, hitH: 34, sink: 5, pushable: true },
     electricBox: { img: obElectricBoxImg, w: 33, h: 46, hitW: 33, hitH: 46, sink: 2 },
-    box: { img: obBoxImg, w: 62, h: 38, hitW: 62, hitH: 38, sink: 5 },
+    box: { img: obBoxImg, w: 62, h: 38, hitW: 62, hitH: 38, sink: 5, pushable: true },
     car: { img: obCarImg, w: 66, h: 64, hitW: 66, hitH: 58, sink: 3 },
     car2: { img: obCar2Img, w: 81, h: 59, hitW: 81, hitH: 59, sink: 10 },
     kiosk: { img: obKioskImg, w: 138, h: 100, hitW: 138, hitH: 100, sink: 8 },
@@ -917,6 +917,7 @@
     floorItem: ()=>{ [660,880,1100].forEach((f,i)=>setTimeout(()=>beep(f,0.12,'sine',0.12), i*70)); },
     lifeUp: ()=>{ [784,988,1175,1568].forEach((f,i)=>setTimeout(()=>beep(f,0.55,'sine',0.10), i*90)); },
     slide: ()=>playNoise(0.35, 0.18, 2400),
+    objectFall: ()=>{ beep(90,0.18,'square',0.16); playNoise(0.15,0.14,600); },
     pipeDown: ()=>sweep(520,140,0.4,'square',0.16),
     pipeUp: ()=>sweep(140,520,0.35,'square',0.16),
     oldComputerHum: ()=>{
@@ -1641,6 +1642,7 @@
 
   function obstacleUnderPlayer(){
     for (const ob of level.obstacles){
+      if (ob.falling) continue;
       const hitX = ob.x + (ob.w-ob.hitW)/2;
       const hitTop = ob.y + (ob.h-ob.hitH);
       const overlapX = player.x + player.w > hitX && player.x < hitX + ob.hitW;
@@ -1802,6 +1804,7 @@
 
     const PUSH_SPEED = 0.6;
     for (const ob of level.obstacles){
+      if (ob.falling) continue;
       const hitX = ob.x + (ob.w-ob.hitW)/2;
       const hitTop = ob.y + (ob.h-ob.hitH);
       const overlapX = player.x + player.w > hitX && player.x < hitX + ob.hitW;
@@ -1815,6 +1818,11 @@
           const newHitX = ob.x + (ob.w-ob.hitW)/2;
           player.x = pushingRight ? newHitX - player.w : newHitX + ob.hitW;
           player.vx = 0;
+          if (isOverGap(ob.x + ob.w/2)){
+            ob.falling = true;
+            ob.vy = 0;
+            setTimeout(()=>{ if (state === 'playing') sfx.objectFall(); }, 1000);
+          }
         } else {
           if (player.x + player.w/2 < hitX + ob.hitW/2) player.x = hitX - player.w;
           else player.x = hitX + ob.hitW;
@@ -1842,6 +1850,7 @@
       }
       if (!player.onGround){
         for (const ob of level.obstacles){
+          if (ob.falling) continue;
           const hitX = ob.x + (ob.w-ob.hitW)/2;
           const hitTop = ob.y + (ob.h-ob.hitH);
           const overlapX = player.x + player.w > hitX && player.x < hitX + ob.hitW;
@@ -1945,6 +1954,15 @@
 
     if (level.enemies.length > 30){
       level.enemies = level.enemies.filter(en => en.alive || en.dying);
+    }
+
+    for (const ob of level.obstacles){
+      if (!ob.falling) continue;
+      ob.vy = (ob.vy||0) + 0.5*timeScale;
+      ob.y += ob.vy*timeScale;
+    }
+    if (level.obstacles.some(ob => ob.falling && ob.y > CFG.H + 80)){
+      level.obstacles = level.obstacles.filter(ob => !ob.falling || ob.y <= CFG.H + 80);
     }
 
     const COIN_MAGNET_RADIUS = 65, COIN_MAGNET_SPEED = 5.5;
