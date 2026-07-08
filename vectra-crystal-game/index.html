@@ -867,7 +867,7 @@
   function getNoiseBuffer(){
     if (!audioCtx) return null;
     if (!noiseBuffer){
-      const len = Math.floor(audioCtx.sampleRate * 0.2);
+      const len = Math.floor(audioCtx.sampleRate * 1.5);
       noiseBuffer = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
       const data = noiseBuffer.getChannelData(0);
       for (let i=0;i<len;i++) data[i] = Math.random()*2-1;
@@ -880,6 +880,7 @@
     if (!buf) return;
     const src = audioCtx.createBufferSource();
     src.buffer = buf;
+    src.loop = true;
     const filter = audioCtx.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.value = filterFreq==null?1200:filterFreq;
