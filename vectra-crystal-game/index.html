@@ -1227,7 +1227,7 @@
     const quizSpots = levelQuizzes.map((qz, i) => {
       const t = levelQuizzes.length > 1 ? i / (levelQuizzes.length - 1) : 0;
       const frac = 0.22 + t * (0.7 - 0.22);
-      const x = findSafeX(keepAwayFromPlatforms(CFG.LEVEL_W * frac, 500));
+      const x = keepAwayFromPlatforms(findSafeX(keepAwayFromPlatforms(CFG.LEVEL_W * frac, 750)), 750);
       return { x, quizIndex: i };
     });
 
@@ -2615,7 +2615,7 @@
     const centerX = sx+player.w/2;
 
     if (lyingDown && imgReady(dzisiekLayImg)){
-      const layW = 100;
+      const layW = 80;
       const layH = layW * (dzisiekLayImg.naturalHeight/dzisiekLayImg.naturalWidth);
       const layDrawX = centerX - layW/2;
       const layDrawY = sy + player.h - layH;
