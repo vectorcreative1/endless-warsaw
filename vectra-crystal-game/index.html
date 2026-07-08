@@ -589,7 +589,10 @@
   }
   const heroImg = loadImg('assets/character.png');
   const idleImg = loadImg('assets/idle.png');
-  const finishComputerImg = loadImg('assets/finish_level_1.png');
+  const finishComputerImgs = {
+    1: loadImg('assets/finish_level_1.png'),
+    2: loadImg('assets/finish_level_2.png'),
+  };
   const obTrashBinImg = loadImg('assets/obsticle_trash_bin.png');
   const obElectricBoxImg = loadImg('assets/obsticle_electric_box.png');
   const obBoxImg = loadImg('assets/obsticle_box.png');
@@ -2501,7 +2504,8 @@
     const baseY = CFG.GROUND_Y;
     const levitate = Math.sin(animT*0.0025) * 8;
 
-    const cx = sx + 10;
+    const finishComputerImg = finishComputerImgs[currentLevelNum] || finishComputerImgs[1];
+    const cx = sx + (currentLevelNum === 2 ? 2 : 10);
     let dispW = 0, dispH = 0, cy = 0;
     if (imgReady(finishComputerImg)){
       dispH = 132;
