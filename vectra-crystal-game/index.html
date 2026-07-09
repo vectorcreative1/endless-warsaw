@@ -1263,6 +1263,19 @@
         if (obstacles.some(ob => ob.kind === tallKind)) return;
         const spec = OBSTACLE_SPECS[tallKind];
         const tx = findSafeX(keepAwayFromPlatforms(CFG.LEVEL_W * fracs[i], 150));
+        const clearMargin = spec.w/2 + 90;
+        for (let j=platforms.length-1; j>=0; j--){
+          const p = platforms[j];
+          if (p.x+p.w >= tx-clearMargin && p.x <= tx+spec.w+clearMargin) platforms.splice(j,1);
+        }
+        for (let j=enemies.length-1; j>=0; j--){
+          const en = enemies[j];
+          if (en.x >= tx-clearMargin && en.x <= tx+spec.w+clearMargin) enemies.splice(j,1);
+        }
+        for (let j=items.length-1; j>=0; j--){
+          const it = items[j];
+          if (it.x >= tx-clearMargin && it.x <= tx+spec.w+clearMargin) items.splice(j,1);
+        }
         const helperSpec = OBSTACLE_SPECS.trashBin;
         const helperX = keepObstacleOffGap(tx - 60 - helperSpec.w, helperSpec.w);
         obstacles.push({x:helperX, y:CFG.GROUND_Y-helperSpec.h+(helperSpec.sink||0), w:helperSpec.w, h:helperSpec.h, hitW:helperSpec.hitW, hitH:helperSpec.hitH, kind:'trashBin', pushable:true});
