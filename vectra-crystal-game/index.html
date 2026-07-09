@@ -1247,11 +1247,31 @@
       });
     }
 
+    const QUIZ_SCENE_SAFE_HALF_W = 90;
+    function findSafeXForQuiz(candidate){
+      for (const [gs,ge] of sortedGaps){
+        if (candidate + QUIZ_SCENE_SAFE_HALF_W >= gs && candidate - QUIZ_SCENE_SAFE_HALF_W <= ge){
+          return ge + QUIZ_SCENE_SAFE_HALF_W + 30;
+        }
+      }
+      return candidate;
+    }
     const levelQuizzes = activeQuizzes();
+    const placedQuizX = [];
     const quizSpots = levelQuizzes.map((qz, i) => {
       const t = levelQuizzes.length > 1 ? i / (levelQuizzes.length - 1) : 0;
       const frac = 0.22 + t * (0.7 - 0.22);
-      const x = keepAwayFromPlatforms(findSafeX(keepAwayFromPlatforms(CFG.LEVEL_W * frac, 750)), 750);
+      let x = CFG.LEVEL_W * frac;
+      for (let pass=0; pass<5; pass++){
+        const prevX = x;
+        x = keepAwayFromPlatforms(x, 750);
+        x = findSafeXForQuiz(x);
+        for (const px of placedQuizX){
+          if (Math.abs(x - px) < 700) x = px + (x >= px ? 700 : -700);
+        }
+        if (x === prevX) break;
+      }
+      placedQuizX.push(x);
       return { x, quizIndex: i };
     });
 
