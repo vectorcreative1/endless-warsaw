@@ -1268,13 +1268,14 @@
           const p = platforms[j];
           if (p.x+p.w >= tx-clearMargin && p.x <= tx+spec.w+clearMargin) platforms.splice(j,1);
         }
+        const entityMargin = clearMargin + 80;
         for (let j=enemies.length-1; j>=0; j--){
           const en = enemies[j];
-          if (en.x >= tx-clearMargin && en.x <= tx+spec.w+clearMargin) enemies.splice(j,1);
+          if (en.x >= tx-entityMargin && en.x <= tx+spec.w+entityMargin) enemies.splice(j,1);
         }
         for (let j=items.length-1; j>=0; j--){
           const it = items[j];
-          if (it.x >= tx-clearMargin && it.x <= tx+spec.w+clearMargin) items.splice(j,1);
+          if (it.x >= tx-entityMargin && it.x <= tx+spec.w+entityMargin) items.splice(j,1);
         }
         const helperSpec = OBSTACLE_SPECS.trashBin;
         const helperX = keepObstacleOffGap(tx - 60 - helperSpec.w, helperSpec.w);
