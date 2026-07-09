@@ -1228,6 +1228,16 @@
       items.push({x:bx, y:CFG.GROUND_Y-48, w:16, h:16, type:'mushroom', taken:false});
     }
 
+    const highIslandFracs = [0.15, 0.32, 0.58, 0.85];
+    for (const frac of highIslandFracs){
+      const hx = findSafeX(keepAwayFromPlatforms(CFG.LEVEL_W * (frac + (rand()*0.04-0.02)), 200));
+      const hy = CFG.GROUND_Y - 150;
+      platforms.push({x:hx, y:hy, w:60});
+      for (let j=0;j<3;j++){
+        items.push({x:hx+8+j*18, y:hy-24, w:16, h:16, type:'signal', taken:false});
+      }
+    }
+
     const floorItemKinds = ACTIVE_WORLD === 'city' ? FLOOR_ITEM_KINDS_LEVEL1 : FLOOR_ITEM_KINDS_LEVEL2;
     const floorItemKind = floorItemKinds[Math.floor(rand() * floorItemKinds.length)];
     const floorItemX = findSafeX(keepAwayFromPlatforms(CFG.LEVEL_W * (0.3 + rand()*0.4), 120));
