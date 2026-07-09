@@ -787,6 +787,10 @@
     },
   ];
   function activeQuizzes(){ return currentLevelNum === 2 ? QUIZZES_LEVEL2 : QUIZZES_LEVEL1; }
+  [...QUIZZES_LEVEL1, ...QUIZZES_LEVEL2].forEach(q=>{
+    const bgSrc = q.openScene || q.scene;
+    if (bgSrc) loadImg(bgSrc);
+  });
   const QUIZ_SCENE_FRAMES = [
     ['assets/quiz_1_1.png', 'assets/quiz_1_2.png', 'assets/quiz_1_3.png'],
     ['assets/quiz_2_1.png', 'assets/quiz_2_2.png', 'assets/quiz_2_3.png'],
