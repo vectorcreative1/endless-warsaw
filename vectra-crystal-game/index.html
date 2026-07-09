@@ -1054,6 +1054,12 @@
   function buildLevel(){
     const rand = mulberry32((Math.random()*0xffffffff)>>>0);
     const gaps = [];
+    function keepObstacleOffGap(ox, ow){
+      for (const [gs, ge] of gaps){
+        if (ox + ow > gs && ox < ge) return ge + 5;
+      }
+      return ox;
+    }
     const platforms = [];
     const enemies = [];
     const items = [];
@@ -1093,7 +1099,7 @@
         if (kind === 'kiosk' || kind === 'phoneBooth'){
           const helperSpec = OBSTACLE_SPECS.trashBin;
           const gap = 45 + rand()*35;
-          const helperX = x - gap - helperSpec.w;
+          const helperX = keepObstacleOffGap(x - gap - helperSpec.w, helperSpec.w);
           obstacles.push({x:helperX, y:CFG.GROUND_Y-helperSpec.h+(helperSpec.sink||0), w:helperSpec.w, h:helperSpec.h, hitW:helperSpec.hitW, hitH:helperSpec.hitH, kind:'trashBin', pushable:true});
         }
         obstacles.push({x, y:CFG.GROUND_Y-spec.h+(spec.sink||0), w:spec.w, h:spec.h, hitW:spec.hitW, hitH:spec.hitH, kind, pushable:spec.pushable||false});
@@ -1177,6 +1183,13 @@
       platforms.push({ x:skyGapX+300, y:skyPlatY+10, w:60 });
     }
 
+    {
+      const helperSpec = OBSTACLE_SPECS.trashBin;
+      const skyHelperGap = 45 + rand()*30;
+      const skyHelperX = keepObstacleOffGap(skyGapX - skyHelperGap - helperSpec.w, helperSpec.w);
+      obstacles.push({x:skyHelperX, y:CFG.GROUND_Y-helperSpec.h+(helperSpec.sink||0), w:helperSpec.w, h:helperSpec.h, hitW:helperSpec.hitW, hitH:helperSpec.hitH, kind:'trashBin', pushable:true});
+    }
+
     const groundSegments = [];
     let cursor = 0;
     const sortedGaps = gaps.slice().sort((a,b)=>a[0]-b[0]);
@@ -1251,7 +1264,7 @@
         const spec = OBSTACLE_SPECS[tallKind];
         const tx = findSafeX(keepAwayFromPlatforms(CFG.LEVEL_W * fracs[i], 150));
         const helperSpec = OBSTACLE_SPECS.trashBin;
-        const helperX = tx - 60 - helperSpec.w;
+        const helperX = keepObstacleOffGap(tx - 60 - helperSpec.w, helperSpec.w);
         obstacles.push({x:helperX, y:CFG.GROUND_Y-helperSpec.h+(helperSpec.sink||0), w:helperSpec.w, h:helperSpec.h, hitW:helperSpec.hitW, hitH:helperSpec.hitH, kind:'trashBin', pushable:true});
         obstacles.push({x:tx, y:CFG.GROUND_Y-spec.h+(spec.sink||0), w:spec.w, h:spec.h, hitW:spec.hitW, hitH:spec.hitH, kind:tallKind, pushable:false});
       });
