@@ -1359,8 +1359,8 @@
       platforms.push(cannonPlatform);
       bossData = {
         x0:bossX, x:bossX, y0:CFG.GROUND_Y-190, y:CFG.GROUND_Y-120, dormantY:CFG.GROUND_Y-120, w:80, h:80,
-        range:55, speed:0.7, dir:1, hp:8, maxHp:8, alive:true, dying:false, deathTimer:0,
-        hitFlash:0, attackTimer:1400, burstTimer:8000, burstWindup:0, stompCooldown:0, wakeT:0, arenaX: bossX - 220,
+        range:35, speed:0.7, dir:1, hp:8, maxHp:8, alive:true, dying:false, deathTimer:0,
+        hitFlash:0, attackTimer:1400, burstTimer:8000, burstWindup:0, stompCooldown:0, wakeT:0, firstShotFired:false, arenaX: bossX - 220,
         fixedCameraX: Math.max(0, Math.min(cannonX - 40, CFG.LEVEL_W - CFG.W)),
       };
     }
@@ -2338,6 +2338,7 @@
             const ang = Math.atan2(ty-bcy, tx-bcx);
             const spd = 2.4;
             bossSparks.push({x:bcx, y:bcy, vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd, t:0, life:400, trail:[]});
+            boss.firstShotFired = true;
             sfx.bossSpark();
           }
 
@@ -2353,7 +2354,8 @@
 
       const cannon = level.cannon;
       cannonNear = false;
-      if (cannon){
+      const bossAwake = bossArenaEntered && boss.wakeT >= 900 && boss.firstShotFired;
+      if (cannon && bossAwake){
         const cannonCx = cannon.x + cannon.w/2;
         const nearCannon = Math.abs((player.x+player.w/2) - cannonCx) < 60 &&
                             Math.abs((player.y+player.h) - cannon.y) < 34;
