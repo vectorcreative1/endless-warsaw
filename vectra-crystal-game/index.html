@@ -37,6 +37,21 @@
   .hud-coins{ display:flex; align-items:center; gap:6px; }
   .coin-icon{ width:22px; height:22px; image-rendering:pixelated; vertical-align:middle; }
   .level-name{ color:var(--white); font-size:12px; text-shadow:2px 2px 0 #000, 0 0 10px rgba(123,227,255,.7); letter-spacing:1px; }
+  .bonus-overlay{
+    position:absolute; left:50%; top:42%; transform:translate(-50%,-50%);
+    text-align:center; z-index:20; pointer-events:none;
+    opacity:0; transition:opacity .3s ease;
+  }
+  .bonus-overlay.show{ opacity:1; }
+  .bonus-overlay.hidden{ display:none; }
+  .bonus-label{
+    font-family:'Press Start 2P',monospace; font-size:16px; color:var(--cyan);
+    text-shadow:3px 3px 0 #000; margin-bottom:14px; letter-spacing:2px;
+  }
+  .bonus-count{
+    font-family:'Press Start 2P',monospace; font-size:44px; color:#ffe066;
+    text-shadow:4px 4px 0 #000;
+  }
   .hearts{ display:flex; align-items:center; }
   .hearts-top{ gap:40px; margin-right:44px; margin-top:10px; }
   .pixel-heart{ width:6px; height:6px; flex:none; }
@@ -307,8 +322,12 @@
 
       <div class="hud-top">
         <div class="hud-coins"><img src="assets/vectra_coin.png" class="coin-icon" alt="coin"/><span class="val" id="hud-score">000000</span></div>
-        <div class="level-name" id="hud-level-name">LATA 90-te</div>
+        <div class="level-name" id="hud-level-name">2:00</div>
         <div class="hearts hearts-top" id="hud-hearts"></div>
+      </div>
+      <div class="bonus-overlay hidden" id="bonus-overlay">
+        <div class="bonus-label">BONUS POINTS</div>
+        <div class="bonus-count" id="bonus-count">0:00</div>
       </div>
       <button class="mute-btn" id="btn-mute" title="Muzyka wł./wył.">♪</button>
 
@@ -373,9 +392,9 @@
       <div class="level-intro" id="level-intro"></div>
 
       <div class="overlay hidden" id="screen-win">
-        <h1 id="win-title">LATA 2000<br/><span class="v">ZA NAMI!</span></h1>
+        <h1 id="win-title">35 LAT VECTRA<br/><span class="v">ZA NAMI!</span></h1>
         <p class="score-line">WYNIK: <span id="win-score">0</span></p>
-        <p style="font-size:8px;color:#9fd8f0;" id="win-next">POZIOM 3 — WKRÓTCE</p>
+        <p style="font-size:8px;color:#9fd8f0;" id="win-next">KOLEJNE POZIOMY BĘDĄ WKRÓTCE GOTOWE</p>
         <button class="btn" id="btn-win-restart">ZAGRAJ PONOWNIE</button>
       </div>
 
@@ -684,6 +703,12 @@
       tree: 'assets/tree_city.png', bush: 'assets/bush_city.png',
       groundInset: 115,
     },
+    future: {
+      bg: 'assets/bg_scene_level-3_2.png', platform: 'assets/platform_island_city.png',
+      groundTile: 'assets/ground_tile_city.png', groundEdge: 'assets/ground_edge_city.png',
+      tree: 'assets/tree_city.png', bush: 'assets/bush_city.png',
+      groundInset: 115,
+    },
   };
   const WORLD_IMG_CACHE = {};
   function getWorldImgs(key){
@@ -728,7 +753,12 @@
   const bossImgL2 = loadImg('assets/final_boss_level_2.png');
   const cannonImgL2 = loadImg('assets/pushka_level_2.png');
   const cannonBulletImgL2 = loadImg('assets/pushka_bullet_b_level_2.png');
-  function currentBossImg(){ return currentLevelNum === 2 ? bossImgL2 : bossImgL1; }
+  const bossImgL3 = loadImg('assets/final_boss_b_level_2.png');
+  function currentBossImg(){
+    if (currentLevelNum === 2) return bossImgL2;
+    if (currentLevelNum === 3) return bossImgL3;
+    return bossImgL1;
+  }
   function currentCannonImg(){ return currentLevelNum === 2 ? cannonImgL2 : cannonImgL1; }
   function currentCannonBulletImg(){ return currentLevelNum === 2 ? cannonBulletImgL2 : cannonBulletImgL1; }
   const cannonSmokeImg = loadImg('assets/pushka_bulet_smoke_level_1.png');
@@ -818,7 +848,12 @@
       correct: 'A',
     },
   ];
-  function activeQuizzes(){ return currentLevelNum === 2 ? QUIZZES_LEVEL2 : QUIZZES_LEVEL1; }
+  const QUIZZES_LEVEL3 = [];
+  function activeQuizzes(){
+    if (currentLevelNum === 2) return QUIZZES_LEVEL2;
+    if (currentLevelNum === 3) return QUIZZES_LEVEL3;
+    return QUIZZES_LEVEL1;
+  }
   [...QUIZZES_LEVEL1, ...QUIZZES_LEVEL2].forEach(q=>{
     const bgSrc = q.openScene || q.scene;
     if (bgSrc) loadImg(bgSrc);
@@ -958,9 +993,6 @@
     floorItem: ()=>{ [660,880,1100].forEach((f,i)=>setTimeout(()=>beep(f,0.12,'sine',0.12), i*70)); },
     lifeUp: ()=>{ [784,988,1175,1568].forEach((f,i)=>setTimeout(()=>beep(f,0.55,'sine',0.10), i*90)); },
     slide: ()=>playNoise(0.85, 0.15, 2200),
-    whistle: ()=>{
-      [659,784,880,784,659,587,659].forEach((f,i)=>setTimeout(()=>beep(f,0.22,'triangle',0.09), i*180));
-    },
     objectFall: ()=>{ beep(90,0.18,'square',0.16); playNoise(0.15,0.14,600); },
     secretEnter: ()=>sweep(300,80,0.5,'sine',0.12),
     secretBounce: ()=>sweep(200,900,0.3,'square',0.16),
@@ -1122,6 +1154,7 @@
     const items = [];
     const obstacles = [];
     let lastObstacleKind = null;
+    const isFuture = ACTIVE_WORLD === 'future';
     let x = 180;
     while (x < CFG.LEVEL_W - 440){
       const roll = rand();
@@ -1137,7 +1170,7 @@
         for (let i=0;i<n;i++){
           items.push({x:x+20+i*26, y:py-26, w:16, h:16, type: rollItemType(rand), taken:false});
         }
-        if (pw > 90 && rand() < 0.4){
+        if (pw > 90 && rand() < (isFuture ? 0.65 : 0.4)){
           const ex = x + pw/2;
           const canBeSpiky = x > CFG.LEVEL_W/2;
           const platEnemyType = (canBeSpiky && rand()<0.3) ? 'spiky' : 'ordinary';
@@ -1146,9 +1179,9 @@
         x += pw + 110 + rand()*90;
       } else if (roll < 0.70){
         enemies.push({x0:x, x, y:CFG.GROUND_Y-16, w:20, h:16, range:52+rand()*52, dir:1, speed:0.35+rand()*0.25, alive:true, type:'ordinary', dying:false, deathTimer:0});
-        x += 170 + rand()*100;
+        x += (isFuture ? 100 : 170) + rand()*(isFuture ? 65 : 100);
       } else if (roll < 0.80){
-        const kindPool = ACTIVE_WORLD === 'city' ? OBSTACLE_KINDS : OBSTACLE_KINDS_LEVEL2;
+        const kindPool = ACTIVE_WORLD !== 'nature' ? OBSTACLE_KINDS : OBSTACLE_KINDS_LEVEL2;
         const choices = kindPool.filter(k => k !== lastObstacleKind);
         const kind = choices[Math.floor(rand() * choices.length)];
         lastObstacleKind = kind;
@@ -1230,7 +1263,7 @@
     }
     gaps.push([skyGapX, skyGapEnd]);
     const skyPlatY = CFG.GROUND_Y - 90;
-    if (ACTIVE_WORLD === 'city'){
+    if (ACTIVE_WORLD !== 'nature'){
       platforms.push({ x:skyGapX+20, x0:skyGapX+20, y:skyPlatY, w:70, moving:true, axis:'x', range:35, speed:0.9, dir:1, dx:0, dy:0 });
       platforms.push({ x:skyGapX+150, y:skyPlatY-10, y0:skyPlatY-10, w:70, moving:true, axis:'y', range:40, speed:0.8, dir:1, dx:0, dy:0 });
       platforms.push({ x:skyGapX+270, x0:skyGapX+270, y:skyPlatY, w:70, moving:true, axis:'x', range:35, speed:1.0, dir:-1, dx:0, dy:0 });
@@ -1310,12 +1343,12 @@
       }
     }
 
-    const floorItemKinds = ACTIVE_WORLD === 'city' ? FLOOR_ITEM_KINDS_LEVEL1 : FLOOR_ITEM_KINDS_LEVEL2;
+    const floorItemKinds = ACTIVE_WORLD !== 'nature' ? FLOOR_ITEM_KINDS_LEVEL1 : FLOOR_ITEM_KINDS_LEVEL2;
     const floorItemKind = floorItemKinds[Math.floor(rand() * floorItemKinds.length)];
     const floorItemX = findSafeX(keepAwayFromPlatforms(CFG.LEVEL_W * (0.3 + rand()*0.4), 120));
     items.push({x:floorItemX, y:CFG.GROUND_Y-16, w:16, h:16, type:floorItemKind, taken:false});
 
-    if (ACTIVE_WORLD === 'city'){
+    if (ACTIVE_WORLD !== 'nature'){
       const tallKinds = ['kiosk', 'phoneBooth'];
       const fracs = [0.35, 0.6];
       tallKinds.forEach((tallKind, i) => {
@@ -1362,6 +1395,7 @@
         range:35, speed:0.7, dir:1, hp:8, maxHp:8, alive:true, dying:false, deathTimer:0,
         hitFlash:0, attackTimer:1400, burstTimer:8000, burstWindup:0, stompCooldown:0, wakeT:0, firstShotFired:false, arenaX: bossX - 220,
         fixedCameraX: Math.max(0, Math.min(cannonX - 40, CFG.LEVEL_W - CFG.W)),
+        driftX:0, driftDirX:1, driftTimer:3000+Math.random()*2000,
       };
     }
 
@@ -1409,8 +1443,56 @@
       return { x, quizIndex: i };
     });
 
+    {
+      const excludeXs = [ferryGapX, skyGapX];
+      const secretGapCandidate = sortedGaps[ACTIVE_WORLD === 'nature' ? 2 : 1];
+      if (secretGapCandidate) excludeXs.push(secretGapCandidate[0]);
+      const regularGaps = sortedGaps.filter(([gs]) => excludeXs.every(ex => Math.abs(gs-ex) > 5));
+      const pickCount = Math.min(2, regularGaps.length);
+      const idxs = [];
+      if (pickCount === 2){
+        const i1 = Math.floor(regularGaps.length*0.3);
+        let i2 = Math.floor(regularGaps.length*0.7);
+        if (i2 === i1) i2 = Math.min(regularGaps.length-1, i1+1);
+        idxs.push(i1, i2);
+      } else if (pickCount === 1){
+        idxs.push(Math.floor(regularGaps.length*0.5));
+      }
+      const pushSpec = OBSTACLE_SPECS.trashBin;
+      for (const idx of idxs){
+        const gapEntry = regularGaps[idx];
+        if (!gapEntry) continue;
+        const [gs] = gapEntry;
+        const margin = pushSpec.w + 50;
+        for (let j=obstacles.length-1; j>=0; j--){
+          const ob = obstacles[j];
+          if (ob.x+ob.w >= gs-margin && ob.x <= gs+margin) obstacles.splice(j,1);
+        }
+        for (let j=platforms.length-1; j>=0; j--){
+          const p = platforms[j];
+          if (p.x+p.w >= gs-margin && p.x <= gs+margin) platforms.splice(j,1);
+        }
+        const pushX = gs - pushSpec.w - 20;
+        obstacles.push({x:pushX, y:CFG.GROUND_Y-pushSpec.h+(pushSpec.sink||0), w:pushSpec.w, h:pushSpec.h, hitW:pushSpec.hitW, hitH:pushSpec.hitH, kind:'trashBin', pushable:true});
+      }
+    }
+
     if (ACTIVE_WORLD === 'nature'){
       for (const en of enemies) en.speed *= 1.5;
+    }
+    if (isFuture){
+      for (const en of enemies) en.speed *= 1.7;
+      const flyCount = 26;
+      for (let i=0; i<flyCount; i++){
+        const fx = findSafeX(500 + (CFG.LEVEL_W-1400) * (i/flyCount) + (rand()*220-110));
+        const fy = CFG.GROUND_Y - 110 - rand()*130;
+        enemies.push({
+          x0:fx, x:fx, y:fy, y0:fy, w:20, h:16,
+          range:40+rand()*40, dir: rand()<0.5?1:-1, speed:(0.5+rand()*0.5)*1.7,
+          bobRange:10+rand()*14, bobSpeed:0.02+rand()*0.02, bobPhase: rand()*Math.PI*2,
+          alive:true, type:'flying', dying:false, deathTimer:0, flying:true,
+        });
+      }
     }
 
     const secretGapIndex = ACTIVE_WORLD === 'nature' ? 2 : 1;
@@ -1445,11 +1527,6 @@
     if (['ArrowUp','KeyW','Space'].includes(e.code)){ keys.jump = true; e.preventDefault(); }
     if (['ArrowDown','KeyS'].includes(e.code)){
       keys.down = true; e.preventDefault();
-      if (!e.repeat){
-        const now = performance.now();
-        if (now - lastDownTapAt < DOUBLE_TAP_MS) triggerLieDown();
-        lastDownTapAt = now;
-      }
     }
   });
   window.addEventListener('keyup', (e)=>{
@@ -1479,8 +1556,6 @@
   // ---------- game state ----------
   let player, camera, score, lives, maxLives, heroStats, state, invincible, turboT, mushroomT, animT, lastSafeX, lastSafeY, landingTimer, lastStepFrame, hurtTimer, deathStartTime, respawnFreeze;
   let pipeState = null, pipeT = 0, pipeBaseY = 0, pipeCenterX = 0, pipeReady = true;
-  let lyingDown = false, lastDownTapAt = -9999, whistleTimer = null;
-  const DOUBLE_TAP_MS = 350;
   let secretRoomState = null, secretRoomT = 0, secretRoomSide = 'left', playerRoomJumped = false;
   let trampolineWillExit = true;
   const SECRET_ROOM_COINS_L1 = Array.from({length: 40}, () => ({
@@ -1551,12 +1626,30 @@
   const LEVEL_INFO = {
     1: { hudName: 'LATA 90-te', introText: 'POZIOM 1 — LATA 90', world: 'city' },
     2: { hudName: 'LATA 2000', introText: 'POZIOM 2 — LATA 2000', world: 'nature' },
+    3: { hudName: 'LATA 2010', introText: 'POZIOM 3 — 2010–2020', world: 'future' },
   };
   let currentLevelNum = 1;
+  const LEVEL_TIME_MS = 120000;
+  let levelTimeLeft = LEVEL_TIME_MS;
+  let lastDisplayedTimerSec = -1;
+  let bonusSequenceActive = false;
+
+  function formatTimer(ms){
+    const totalSec = Math.max(0, Math.ceil(ms/1000));
+    const m = Math.floor(totalSec/60), s = totalSec%60;
+    return m + ':' + String(s).padStart(2,'0');
+  }
+  function updateTimerDisplay(force){
+    const totalSec = Math.max(0, Math.ceil(levelTimeLeft/1000));
+    if (!force && totalSec === lastDisplayedTimerSec) return;
+    lastDisplayedTimerSec = totalSec;
+    document.getElementById('hud-level-name').textContent = formatTimer(levelTimeLeft);
+  }
 
   function updateLevelUi(num){
-    const info = LEVEL_INFO[num];
-    document.getElementById('hud-level-name').textContent = info.hudName;
+    levelTimeLeft = LEVEL_TIME_MS;
+    lastDisplayedTimerSec = -1;
+    updateTimerDisplay(true);
   }
 
   function startLevel(num){
@@ -1568,7 +1661,6 @@
     camera = { x:0 };
     pipeState = null; pipeT = 0; pipeReady = true;
     secretRoomState = null; secretRoomT = 0;
-    lyingDown = false; clearTimeout(whistleTimer);
     lastSafeX = player.x; lastSafeY = player.y + player.h;
     for (const it of level.items) it.taken = false;
     for (const en of level.enemies){ en.alive = true; en.x = en.x0; en.dir = 1; en.dying = false; en.deathTimer = 0; }
@@ -1585,6 +1677,10 @@
     bossCameraPanFrom = 0; bossCameraPanT = 0;
     coinPops = [];
     nextRandomFallTimer = 600 + Math.random()*600;
+    bonusSequenceActive = false;
+    const bonusOverlayEl = document.getElementById('bonus-overlay');
+    bonusOverlayEl.classList.remove('show');
+    bonusOverlayEl.classList.add('hidden');
     updateLevelUi(num);
   }
 
@@ -1841,6 +1937,7 @@
     sfx.win95Chime();
     setTimeout(()=>sfx.win(), 500);
     showScreen('screen-win');
+    submitScore(playerName, score).then(loadLeaderboard);
   }
 
   let activeQuiz = null;
@@ -1947,20 +2044,6 @@
         coinPops.push({ x: worldX, y: -20, homing: true, t: 0, bonus: true });
       }, i*140);
     }
-  }
-
-  function scheduleWhistle(){
-    if (!lyingDown) return;
-    sfx.whistle();
-    whistleTimer = setTimeout(scheduleWhistle, 1600);
-  }
-
-  function triggerLieDown(){
-    if (state !== 'playing' || selectedHero !== 'dzisiek' || !player.onGround || lyingDown || pipeState) return;
-    lyingDown = true;
-    player.vx = 0;
-    clearTimeout(whistleTimer);
-    scheduleWhistle();
   }
 
   function obstacleUnderPlayer(){
@@ -2082,7 +2165,7 @@
     const timeScale = dt / (1000/60);
 
     if (secretRoomState === 'fall' || secretRoomState === 'room'){
-      const wantsCrouch = keys.down && player.onGround && !lyingDown;
+      const wantsCrouch = keys.down && player.onGround;
       if (wantsCrouch && !player.crouching){
         player.y += player.h - CFG.CROUCH_H;
         player.h = CFG.CROUCH_H;
@@ -2293,8 +2376,41 @@
         if (state !== 'playing') return;
         sfx.bossVictory();
         spawnBossVictoryCoins(boss.x+boss.w/2, boss.y+boss.h/2, 20);
+        setTimeout(playBonusSequence, 1000);
       }, 700);
     }
+  }
+
+  function playBonusSequence(){
+    if (state !== 'playing') return;
+    bonusSequenceActive = true;
+    const totalSec = Math.max(0, Math.ceil(levelTimeLeft/1000));
+    const overlay = document.getElementById('bonus-overlay');
+    const countEl = document.getElementById('bonus-count');
+    overlay.classList.remove('hidden');
+    countEl.textContent = formatTimer(totalSec*1000);
+    requestAnimationFrame(()=>overlay.classList.add('show'));
+    const finish = ()=>{
+      setTimeout(()=>{
+        overlay.classList.remove('show');
+        setTimeout(()=>{ overlay.classList.add('hidden'); bonusSequenceActive = false; }, 300);
+      }, 900);
+    };
+    if (totalSec <= 0){
+      finish();
+      return;
+    }
+    let remaining = totalSec;
+    const tick = ()=>{
+      if (remaining <= 0){ finish(); return; }
+      remaining--;
+      score += 10;
+      updateHud();
+      sfx.coin();
+      countEl.textContent = formatTimer(remaining*1000);
+      setTimeout(tick, 45);
+    };
+    setTimeout(tick, 45);
   }
 
   function updateBossFight(dt, timeScale, prevBottom){
@@ -2329,6 +2445,17 @@
           boss.y += boss.dir*boss.speed*timeScale;
           if (boss.y > boss.y0+boss.range) boss.dir = -1;
           if (boss.y < boss.y0-boss.range) boss.dir = 1;
+
+          if (currentLevelNum === 3){
+            boss.driftTimer -= dt;
+            if (boss.driftTimer <= 0){
+              boss.driftTimer = 3000 + Math.random()*2500;
+              boss.driftTargetX = (Math.random()*2-1) * 55;
+            }
+            const driftDiff = (boss.driftTargetX||0) - boss.driftX;
+            boss.driftX += Math.sign(driftDiff) * Math.min(Math.abs(driftDiff), 0.6*timeScale);
+            boss.x = boss.x0 + boss.driftX;
+          }
 
           boss.attackTimer -= dt;
           if (boss.attackTimer <= 0 && player.x > boss.x - 460){
@@ -2467,12 +2594,7 @@
 
     if (!keys.down) pipeReady = true;
 
-    if (lyingDown && (keys.left || keys.right || keys.jump)){
-      lyingDown = false;
-      clearTimeout(whistleTimer);
-    }
-
-    const wantsCrouch = keys.down && player.onGround && !inputLocked && !lyingDown;
+    const wantsCrouch = keys.down && player.onGround && !inputLocked;
     if (wantsCrouch && !player.crouching){
       const standObstacle = pipeReady ? obstacleUnderPlayer() : null;
       if (standObstacle && !standObstacle.pipeUsed && PIPE_ENTERABLE_KINDS.includes(standObstacle.kind)){
@@ -2502,8 +2624,8 @@
       const slideFriction = CFG.FRICTION * 0.08 * timeScale;
       if (player.vx > 0) player.vx = Math.max(0, player.vx - slideFriction);
       else if (player.vx < 0) player.vx = Math.min(0, player.vx + slideFriction);
-    } else if (keys.left && !inputLocked && !lyingDown){ player.vx -= CFG.ACCEL*speedMul*timeScale; player.facing = -1; }
-    else if (keys.right && !inputLocked && !lyingDown){ player.vx += CFG.ACCEL*speedMul*timeScale; player.facing = 1; }
+    } else if (keys.left && !inputLocked){ player.vx -= CFG.ACCEL*speedMul*timeScale; player.facing = -1; }
+    else if (keys.right && !inputLocked){ player.vx += CFG.ACCEL*speedMul*timeScale; player.facing = 1; }
     else {
       const fric = CFG.FRICTION * timeScale;
       if (player.vx > 0) player.vx = Math.max(0, player.vx - fric);
@@ -2513,7 +2635,7 @@
     player.vx = Math.max(-maxS, Math.min(maxS, player.vx));
 
     const gravityMul = mushroomT > 0 ? 0.14 : 1;
-    if (keys.jump && player.onGround && !player.crouching && !inputLocked && !lyingDown){
+    if (keys.jump && player.onGround && !player.crouching && !inputLocked){
       player.vy = CFG.JUMP_V * heroStats.jumpMul * Math.sqrt(gravityMul);
       player.onGround = false;
       sfx.jump();
@@ -2691,8 +2813,13 @@
     if (mushroomT > 0) mushroomT--;
     if (landingTimer > 0) landingTimer--;
     if (hurtTimer > 0) hurtTimer--;
+    if (levelTimeLeft > 0 && !bonusSequenceActive){
+      levelTimeLeft = Math.max(0, levelTimeLeft - dt);
+      updateTimerDisplay();
+    }
 
     if (!secretRoomState){
+    let stompComboCount = 0;
     for (const en of level.enemies){
       if (en.dying){
         en.deathTimer--;
@@ -2700,7 +2827,12 @@
         continue;
       }
       if (!en.alive) continue;
-      if (en.falling){
+      if (en.flying){
+        en.y = en.y0 + Math.sin(animT*en.bobSpeed + en.bobPhase) * en.bobRange;
+        en.x += en.dir * en.speed * timeScale;
+        if (en.x > en.x0 + en.range) en.dir = -1;
+        if (en.x < en.x0 - en.range) en.dir = 1;
+      } else if (en.falling){
         en.vy += 0.5 * timeScale;
         en.y += en.vy * timeScale;
         if (en.pitFall){
@@ -2716,14 +2848,15 @@
           }
         }
         continue;
-      }
-      en.x += en.dir * en.speed * timeScale;
-      if (en.x > en.x0 + en.range) en.dir = -1;
-      if (en.x < en.x0 - en.range) en.dir = 1;
-      if (en.y >= CFG.GROUND_Y-20 && isOverGap(en.x + en.w/2)){
-        en.falling = true;
-        en.pitFall = true;
-        en.vy = 0;
+      } else {
+        en.x += en.dir * en.speed * timeScale;
+        if (en.x > en.x0 + en.range) en.dir = -1;
+        if (en.x < en.x0 - en.range) en.dir = 1;
+        if (en.y >= CFG.GROUND_Y-20 && isOverGap(en.x + en.w/2)){
+          en.falling = true;
+          en.pitFall = true;
+          en.vy = 0;
+        }
       }
 
       const overlap = player.x < en.x+en.w && player.x+player.w > en.x && player.y < en.y+en.h && player.y+player.h > en.y;
@@ -2732,7 +2865,7 @@
         const slideKill = en.type === 'spiky' && player.crouching && Math.abs(player.vx) > 1.2;
         if (wasFalling || slideKill){
           en.alive = false; en.dying = true; en.deathTimer = en.type === 'spiky' ? 34 : 24;
-          if (wasFalling) player.vy = CFG.JUMP_V * 0.5;
+          if (wasFalling) stompComboCount++;
           score += 50;
           updateHud();
           sfx.stomp();
@@ -2753,6 +2886,8 @@
         }
       }
     }
+
+    if (stompComboCount > 0) player.vy = CFG.JUMP_V * 0.5 * stompComboCount;
 
     if (level.enemies.length > 30){
       level.enemies = level.enemies.filter(en => en.alive || en.dying);
@@ -3206,11 +3341,53 @@
     }
   }
 
+  function drawSadSmiley(cx, cy, r, wobble){
+    ctx.save();
+    ctx.translate(cx, cy + Math.sin(wobble)*1.5);
+    ctx.fillStyle = '#000000';
+    ctx.beginPath(); ctx.arc(0, 0, r+2, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#ffe066';
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#241608';
+    const eyeOffX = r*0.35, eyeOffY = r*0.15;
+    ctx.beginPath(); ctx.arc(-eyeOffX, -eyeOffY, r*0.13, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(eyeOffX, -eyeOffY, r*0.13, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#241608';
+    ctx.lineWidth = Math.max(1.5, r*0.14);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-r*0.38, r*0.55);
+    ctx.quadraticCurveTo(0, r*0.28, r*0.38, r*0.55);
+    ctx.stroke();
+    ctx.fillStyle = '#7bd3ff';
+    ctx.beginPath();
+    ctx.moveTo(eyeOffX+r*0.12, -eyeOffY+r*0.12);
+    ctx.lineTo(eyeOffX+r*0.26, -eyeOffY+r*0.42);
+    ctx.lineTo(eyeOffX-r*0.02, -eyeOffY+r*0.42);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
   function drawEnemies(){
     const viewL = camera.x, viewR = camera.x + CFG.W;
     for (const en of level.enemies){
       if (!en.alive && !en.dying) continue;
       if (en.x < viewL-40 || en.x > viewR+40) continue;
+
+      if (en.type === 'flying'){
+        const cx = px(en.x-camera.x) + en.w/2, cy = en.y + en.h/2;
+        if (en.dying){
+          if (Math.floor(en.deathTimer/3)%2===0) continue;
+          ctx.save();
+          ctx.globalAlpha = 0.45;
+          drawSadSmiley(cx, cy, 13, en.x*0.05 + animT*0.004);
+          ctx.restore();
+          continue;
+        }
+        drawSadSmiley(cx, cy, 13, en.x*0.05 + animT*0.004);
+        continue;
+      }
 
       const framesSet = en.type === 'spiky' ? snailSpikyFrames : snailOrdinaryFrames;
       const frame = framesSet[Math.floor(animT/220)%2];
@@ -3642,20 +3819,6 @@
     const glow = 0.5+0.5*Math.sin(animT*0.008);
     const centerX = sx+player.w/2;
 
-    if (lyingDown && imgReady(dzisiekLayImg)){
-      const layW = 90;
-      const layH = layW * (dzisiekLayImg.naturalHeight/dzisiekLayImg.naturalWidth);
-      const layDrawX = centerX - layW/2;
-      const layDrawY = sy + player.h - layH - 1;
-      ctx.save();
-      ctx.translate(centerX, 0);
-      ctx.scale(player.facing, 1);
-      ctx.translate(-centerX, 0);
-      ctx.drawImage(dzisiekLayImg, layDrawX, layDrawY, layW, layH);
-      ctx.restore();
-      return;
-    }
-
     if (turbo){
       ctx.save();
       ctx.globalAlpha = 0.35;
@@ -3692,6 +3855,22 @@
         ctx.stroke();
       }
       ctx.restore();
+    }
+
+    const dashPose = selectedHero === 'dzisiek' && player.onGround && player.crouching && !pipeState
+      && Math.abs(player.vx) > 1.0 && imgReady(dzisiekLayImg);
+    if (dashPose){
+      const layW = 90;
+      const layH = layW * (dzisiekLayImg.naturalHeight/dzisiekLayImg.naturalWidth);
+      const layDrawX = centerX - layW/2;
+      const layDrawY = sy + player.h - layH - 1;
+      ctx.save();
+      ctx.translate(centerX, 0);
+      ctx.scale(player.facing, 1);
+      ctx.translate(-centerX, 0);
+      ctx.drawImage(dzisiekLayImg, layDrawX, layDrawY, layW, layH);
+      ctx.restore();
+      return;
     }
 
     const moving = !pipeState && (player.onGround || !!secretRoomState) && (Math.abs(player.vx) > 0.3 || ((keys.left || keys.right) && respawnFreeze <= 0));
