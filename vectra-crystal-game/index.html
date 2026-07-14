@@ -48,8 +48,19 @@
     font-family:'Press Start 2P',monospace; font-size:16px; color:var(--cyan);
     text-shadow:3px 3px 0 #000; margin-bottom:14px; letter-spacing:2px;
   }
-  .bonus-count{
-    font-family:'Press Start 2P',monospace; font-size:44px; color:#ffe066;
+  .bonus-row{ display:flex; align-items:center; justify-content:center; gap:22px; }
+  .bonus-seconds{
+    font-family:'Press Start 2P',monospace; font-size:38px; color:#ff8a8a;
+    text-shadow:4px 4px 0 #000;
+  }
+  .bonus-arrow{
+    font-family:'Press Start 2P',monospace; font-size:26px; color:#fff;
+    text-shadow:3px 3px 0 #000;
+  }
+  .bonus-coins-wrap{ display:flex; align-items:center; gap:8px; }
+  .bonus-coin-icon{ width:34px; height:34px; image-rendering:pixelated; }
+  .bonus-coins{
+    font-family:'Press Start 2P',monospace; font-size:38px; color:#ffe066;
     text-shadow:4px 4px 0 #000;
   }
   .hearts{ display:flex; align-items:center; }
@@ -327,7 +338,14 @@
       </div>
       <div class="bonus-overlay hidden" id="bonus-overlay">
         <div class="bonus-label">BONUS POINTS</div>
-        <div class="bonus-count" id="bonus-count">0:00</div>
+        <div class="bonus-row">
+          <div class="bonus-seconds" id="bonus-seconds">0:00</div>
+          <div class="bonus-arrow">&gt;</div>
+          <div class="bonus-coins-wrap">
+            <img src="assets/vectra_coin.png" class="bonus-coin-icon" alt="coin"/>
+            <span class="bonus-coins" id="bonus-coins">0</span>
+          </div>
+        </div>
       </div>
       <button class="mute-btn" id="btn-mute" title="Muzyka wł./wył.">♪</button>
 
@@ -1323,13 +1341,14 @@
     const islandX = findSafeX(CFG.LEVEL_W * 0.55);
     platforms.push({ x:islandX, x0:islandX, y:CFG.GROUND_Y-120, w:90, moving:true, range:90, speed:1.2, dir:1, dx:0 });
 
-    const bonusItemCount = 2;
-    for (let i=0; i<bonusItemCount; i++){
-      const bx = findSafeX(CFG.LEVEL_W * (0.55 + i*0.15));
+    const turboItemCount = 2;
+    for (let i=0; i<turboItemCount; i++){
+      const bx = findSafeX(CFG.LEVEL_W * (0.50 + i*0.12));
       items.push({x:bx, y:CFG.GROUND_Y-48, w:16, h:16, type:'turbo', taken:false});
     }
-    for (let i=0; i<bonusItemCount; i++){
-      const bx = findSafeX(CFG.LEVEL_W * (0.62 + i*0.15));
+    const mushroomItemCount = 3;
+    for (let i=0; i<mushroomItemCount; i++){
+      const bx = findSafeX(CFG.LEVEL_W * (0.56 + i*0.12));
       items.push({x:bx, y:CFG.GROUND_Y-48, w:16, h:16, type:'mushroom', taken:false});
     }
 
@@ -1667,6 +1686,7 @@
     for (const c of SECRET_ROOM_COINS_L1) c.taken = false;
     for (const c of SECRET_ROOM_COINS_L2) c.taken = false;
     SECRET_ROOM_HEART.taken = false;
+    SECRET_ROOM_TURBO.taken = false;
     for (const en of ROOM_ENEMIES_L1){ en.alive = true; en.dying = false; en.x = en.x0; en.dir = 1; }
     for (const en of ROOM_ENEMIES_L2){ en.alive = true; en.dying = false; en.x = en.x0; en.dir = 1; }
     bossSparks = []; bossProjectiles = []; bossFx = [];
@@ -2076,6 +2096,7 @@
   const SECRET_TRAMPOLINE_X = CFG.W/2, SECRET_TRAMPOLINE_Y = ROOM_FLOOR_Y;
   const SECRET_TRAMP_HIT_W = 68, SECRET_TRAMP_HIT_TOP = ROOM_FLOOR_Y - 14;
   const SECRET_ROOM_HEART = { x: CFG.W/2, y: ROOM_FLOOR_Y - 90, taken: false };
+  const SECRET_ROOM_TURBO = { x: 475, y: ROOM_FLOOR_Y - 200, taken: false };
   const ROOM_PLATFORMS = [
     { x: 70, y: ROOM_FLOOR_Y - 90, w: 70 },
     { x: 470, y: ROOM_FLOOR_Y - 85, w: 70 },
@@ -2258,6 +2279,19 @@
         }
       }
 
+      if (!SECRET_ROOM_TURBO.taken){
+        const tb = SECRET_ROOM_TURBO;
+        const turboHalf = 12;
+        const overlapTurbo = player.x < tb.x+turboHalf && player.x+player.w > tb.x-turboHalf &&
+                             player.y < tb.y+turboHalf && player.y+player.h > tb.y-turboHalf;
+        if (overlapTurbo){
+          tb.taken = true;
+          turboT = CFG.TURBO_T;
+          sfx.turbo();
+          updateHud();
+        }
+      }
+
       updateRoomEnemies(dt, timeScale, prevBottom);
     } else if (secretRoomState === 'bounce'){
       steerRoomPlayerX(timeScale);
@@ -2381,14 +2415,17 @@
     }
   }
 
+  const BONUS_POINTS_PER_SECOND = 100;
   function playBonusSequence(){
     if (state !== 'playing') return;
     bonusSequenceActive = true;
     const totalSec = Math.max(0, Math.ceil(levelTimeLeft/1000));
     const overlay = document.getElementById('bonus-overlay');
-    const countEl = document.getElementById('bonus-count');
+    const secEl = document.getElementById('bonus-seconds');
+    const coinEl = document.getElementById('bonus-coins');
     overlay.classList.remove('hidden');
-    countEl.textContent = formatTimer(totalSec*1000);
+    secEl.textContent = formatTimer(totalSec*1000);
+    coinEl.textContent = '0';
     requestAnimationFrame(()=>overlay.classList.add('show'));
     const finish = ()=>{
       setTimeout(()=>{
@@ -2401,13 +2438,16 @@
       return;
     }
     let remaining = totalSec;
+    let coins = 0;
     const tick = ()=>{
       if (remaining <= 0){ finish(); return; }
       remaining--;
-      score += 10;
+      coins++;
+      score += BONUS_POINTS_PER_SECOND;
       updateHud();
       sfx.coin();
-      countEl.textContent = formatTimer(remaining*1000);
+      secEl.textContent = formatTimer(remaining*1000);
+      coinEl.textContent = String(coins);
       setTimeout(tick, 45);
     };
     setTimeout(tick, 45);
@@ -4019,6 +4059,22 @@
     if (!SECRET_ROOM_HEART.taken){
       const bob = Math.sin(animT*0.005) * 4;
       drawWorldHeart(SECRET_ROOM_HEART.x, SECRET_ROOM_HEART.y+bob, 5);
+    }
+
+    if (!SECRET_ROOM_TURBO.taken){
+      const bob = Math.sin(animT*0.006 + 1.5) * 3;
+      const cx = SECRET_ROOM_TURBO.x, cy = SECRET_ROOM_TURBO.y + bob;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.fillStyle = COLORS.black;
+      drawDiamond(0, 0, 10, 11);
+      ctx.fillStyle = COLORS.crystalPurpleDark;
+      drawDiamond(0, 1, 8, 9);
+      ctx.fillStyle = COLORS.crystalPurple;
+      drawDiamond(-1, -1, 5, 5);
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.fillRect(-2, -4, 2, 2);
+      ctx.restore();
     }
 
     for (const en of activeRoomEnemies()){
