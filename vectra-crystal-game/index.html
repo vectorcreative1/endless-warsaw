@@ -1204,11 +1204,12 @@
         const kind = choices[Math.floor(rand() * choices.length)];
         lastObstacleKind = kind;
         const spec = OBSTACLE_SPECS[kind];
-        if (kind === 'kiosk' || kind === 'phoneBooth'){
-          const helperSpec = OBSTACLE_SPECS.trashBin;
+        if (spec.h > 80){
+          const helperKind = ACTIVE_WORLD !== 'nature' ? 'trashBin' : 'trashBin2';
+          const helperSpec = OBSTACLE_SPECS[helperKind];
           const gap = 45 + rand()*35;
           const helperX = Math.min(keepObstacleOffGap(x - gap - helperSpec.w, helperSpec.w), x - helperSpec.w - 10);
-          obstacles.push({x:helperX, y:CFG.GROUND_Y-helperSpec.h+(helperSpec.sink||0), w:helperSpec.w, h:helperSpec.h, hitW:helperSpec.hitW, hitH:helperSpec.hitH, kind:'trashBin', pushable:true});
+          obstacles.push({x:helperX, y:CFG.GROUND_Y-helperSpec.h+(helperSpec.sink||0), w:helperSpec.w, h:helperSpec.h, hitW:helperSpec.hitW, hitH:helperSpec.hitH, kind:helperKind, pushable:true});
         }
         obstacles.push({x, y:CFG.GROUND_Y-spec.h+(spec.sink||0), w:spec.w, h:spec.h, hitW:spec.hitW, hitH:spec.hitH, kind, pushable:spec.pushable||false});
         x += spec.w + 170 + rand()*100;
