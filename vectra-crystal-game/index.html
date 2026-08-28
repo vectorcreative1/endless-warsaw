@@ -2414,10 +2414,11 @@
     requestAnimationFrame(step);
   }
 
+  const TEMP_LEVEL_ORDER_AFTER = { 3: 1, 1: 2 };
   function win(){
     state = 'levelTransition';
-    if (currentLevelNum < 3){
-      const next = currentLevelNum + 1;
+    const next = TEMP_LEVEL_ORDER_AFTER[currentLevelNum];
+    if (next){
       sfx.win95Chime();
       setTimeout(()=>sfx.win(), 500);
       let mapDone = false, imgsDone = false;
