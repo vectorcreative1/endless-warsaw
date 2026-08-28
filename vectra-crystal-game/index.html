@@ -2222,11 +2222,15 @@
     document.getElementById('screen-over').classList.add('hidden');
     document.getElementById('screen-quiz').classList.add('hidden');
     activeQuiz = null;
-    showGameMap(-1, currentLevelNum - 1, ()=>{
+    let mapDone = false, imgsDone = false;
+    const tryAdvance = ()=>{
+      if (!mapDone || !imgsDone) return;
       hideGameMap();
       state = 'playing';
       showLevelIntro();
-    });
+    };
+    showGameMap(-1, currentLevelNum - 1, ()=>{ mapDone = true; tryAdvance(); });
+    preloadAllImages().then(()=>{ imgsDone = true; tryAdvance(); });
   }
 
   function requestFullscreenOnce(){
@@ -2393,7 +2397,7 @@
       frame = (frame+1) % heroFrames.length;
       heroEl.src = heroFrames[frame];
     }, 110);
-    const DURATION = 3800;
+    const DURATION = 5500;
     const startTs = performance.now();
     function step(ts){
       const t = Math.min(1, (ts-startTs)/DURATION);
