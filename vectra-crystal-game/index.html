@@ -1042,7 +1042,8 @@
       if (!portrait) reserveW = 236;
       else reserveH = 112;
     }
-    const maxW = Math.min(window.innerWidth - 24 - reserveW, 1400);
+    const sideMargin = (isTouch && portrait) ? 0 : 24;
+    const maxW = Math.min(window.innerWidth - sideMargin - reserveW, 1400);
     const maxH = Math.min(window.innerHeight - 24 - reserveH, 820);
     let w = maxW, h = w * (CFG.H / CFG.W);
     if (h > maxH){ h = maxH; w = h * (CFG.W / CFG.H); }
@@ -2157,7 +2158,7 @@
     score = 0; lives = maxLives; invincible = 0; turboT = 0; mushroomT = 0; animT = 0; landingTimer = 0; lastStepFrame = -1; hurtTimer = 0; respawnFreeze = 0;
     computerSparks = [];
     lastComputerSoundAt = -99999;
-    startLevel(1);
+    startLevel(3);
     updateHud();
   }
 
