@@ -589,7 +589,7 @@
     GROUND_Y: 304,
     GRAVITY: 0.9,
     JUMP_V: -16.6,
-    MAX_SPEED: 3.8,
+    MAX_SPEED: 3.42,
     ACCEL: 1.1,
     FRICTION: 0.35,
     LIVES: 3,
@@ -2100,7 +2100,7 @@
     setActiveWorld(LEVEL_INFO[num].world);
     level = buildLevel();
     buildMidgroundExclusions();
-    player = { x:40, y:CFG.GROUND_Y-CFG.STAND_H, w:22, h:CFG.STAND_H, vx:0, vy:0, onGround:false, facing:1, crouching:false };
+    player = { x:40, y:CFG.GROUND_Y-CFG.STAND_H, w:22, h:CFG.STAND_H, vx:0, vy:0, onGround:false, facing:1, crouching:false, ridingPlatform:null };
     camera = { x:0 };
     if (DEBUG_START_NEAR_BOSS && num === 3 && level.quizSpots && level.quizSpots[1]){
       player.x = level.quizSpots[1].x - 350;
@@ -2138,13 +2138,15 @@
     updateLevelUi(num);
   }
 
+  const DEBUG_START_LEVEL_PARAM = Number(new URLSearchParams(location.search).get('level'));
+  const DEBUG_START_LEVEL = [1,2,3].includes(DEBUG_START_LEVEL_PARAM) ? DEBUG_START_LEVEL_PARAM : 3;
   function resetGame(){
     heroStats = HERO_STATS[selectedHero] || HERO_STATS.dzisiek;
     maxLives = heroStats.maxLives;
     score = 0; lives = maxLives; invincible = 0; turboT = 0; mushroomT = 0; animT = 0; landingTimer = 0; lastStepFrame = -1; hurtTimer = 0; respawnFreeze = 0;
     computerSparks = [];
     lastComputerSoundAt = -99999;
-    startLevel(3);
+    startLevel(DEBUG_START_LEVEL);
     updateHud();
   }
 
@@ -2295,6 +2297,7 @@
   function respawn(fromPit){
     player.x = lastSafeX; player.y = lastSafeY - player.h;
     player.vx = 0; player.vy = 0;
+    player.ridingPlatform = null;
     invincible = CFG.INVINCIBLE_T;
     if (fromPit){
       player.y -= 60;
@@ -2630,7 +2633,7 @@
       if (en.x < en.x0-en.range) en.dir = 1;
       const overlap = player.x < en.x+en.w && player.x+player.w > en.x && player.y < en.y+en.h && player.y+player.h > en.y;
       if (overlap){
-        const wasFalling = en.type !== 'spiky' && player.vy > 0 && prevBottom <= en.y + 6;
+        const wasFalling = en.type !== 'spiky' && player.vy >= 0 && prevBottom <= en.y + 6;
         const slideKill = en.type === 'spiky' && player.crouching && Math.abs(player.vx) > 1.2;
         if (wasFalling || slideKill || turboT > 0){
           en.alive = false; en.dying = true; en.deathTimer = en.type === 'spiky' ? 34 : 24;
@@ -3249,6 +3252,7 @@
     if (keys.jump && player.onGround && !player.crouching && !inputLocked){
       player.vy = CFG.JUMP_V * heroStats.jumpMul * Math.sqrt(gravityMul);
       player.onGround = false;
+      player.ridingPlatform = null;
       sfx.jump();
     }
 
@@ -3399,14 +3403,30 @@
     const newBottom = player.y + player.h;
     player.onGround = false;
 
-    if (player.vy >= 0){
+    let stuckToPlatform = false;
+    if (player.vy >= 0 && player.ridingPlatform){
+      const p = player.ridingPlatform;
+      const overlapX = player.x + player.w > p.x && player.x < p.x + p.w;
+      const closeEnough = Math.abs(newBottom - p.y) < 24;
+      if (overlapX && closeEnough){
+        player.y = p.y - player.h;
+        player.vy = 0;
+        player.onGround = true;
+        player.x += p.dx;
+        stuckToPlatform = true;
+      } else {
+        player.ridingPlatform = null;
+      }
+    }
+
+    if (!stuckToPlatform && player.vy >= 0){
       for (const p of level.platforms){
         const overlapX = player.x + player.w > p.x && player.x < p.x + p.w;
         if (overlapX && prevBottom <= p.y + 1 && newBottom >= p.y){
           player.y = p.y - player.h;
           player.vy = 0;
           player.onGround = true;
-          if (p.moving) player.x += p.dx;
+          if (p.moving){ player.x += p.dx; player.ridingPlatform = p; }
           break;
         }
       }
@@ -3583,9 +3603,22 @@
           en.spitTimer = 2400 + Math.random()*2200;
         }
       } else {
+        const prevEnX = en.x;
         en.x += en.dir * en.speed * timeScale;
         if (en.x > en.x0 + en.range) en.dir = -1;
         if (en.x < en.x0 - en.range) en.dir = 1;
+        for (const ob of level.obstacles){
+          if (ob.pushable || ob.falling) continue;
+          const hitX = ob.x + (ob.w-ob.hitW)/2;
+          const hitTop = ob.y + (ob.h-ob.hitH);
+          const overlapX = en.x+en.w > hitX && en.x < hitX+ob.hitW;
+          const overlapY = en.y+en.h > hitTop && en.y < ob.y+ob.h;
+          if (overlapX && overlapY){
+            en.x = prevEnX;
+            en.dir = -en.dir;
+            break;
+          }
+        }
         if (en.y >= CFG.GROUND_Y-20 && isOverGap(en.x + en.w/2)){
           en.falling = true;
           en.pitFall = true;
@@ -3610,7 +3643,7 @@
 
       const overlap = player.x < en.x+en.w && player.x+player.w > en.x && player.y < en.y+en.h && player.y+player.h > en.y;
       if (overlap){
-        const wasFalling = en.type !== 'spiky' && player.vy > 0 && prevBottom <= en.y + 6;
+        const wasFalling = en.type !== 'spiky' && player.vy >= 0 && prevBottom <= en.y + 6;
         const slideKill = en.type === 'spiky' && player.crouching && Math.abs(player.vx) > 1.2;
         if (wasFalling || slideKill){
           if (en.type === 'flying'){
@@ -4797,7 +4830,7 @@
     const heroJump = isJutrek ? jutrekJumpImg : jumpImg;
     const heroLanding = isJutrek ? jutrekLandingImg : landingImg;
     const heroSit = isJutrek ? jutrekRunLayImg : sitImg;
-    const heroHurt = hurtImg;
+    const heroHurt = isJutrek ? jutrekIdleImg : hurtImg;
     const heroDead = isJutrek ? jutrekDeadImg : deadImg;
     const heroRunFrames = isJutrek ? jutrekRunFrames : runFrames;
     const heroFallback = isJutrek ? jutrekIdleImg : heroImg;
