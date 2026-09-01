@@ -1005,6 +1005,7 @@
   const quizSceneImgsLevel3 = QUIZZES_LEVEL3.map((q, i) => (QUIZ_SCENE_FRAMES_LEVEL3[i] || [q.scene]).map(src => loadImg(src)));
 
   const jutrekIdleImg = loadImg('assets/Jutrek_idle.png');
+  const jutrekPainImg = loadImg('assets/Jutrek_pain.png');
   const jutrekIdleBlinkImg = loadImg('assets/Jutrek_idle_blink.png');
   const jutrekJumpImg = loadImg('assets/jutrek_jump.png');
   const jutrekLandingImg = loadImg('assets/jutrek_landing.png');
@@ -4830,7 +4831,7 @@
     const heroJump = isJutrek ? jutrekJumpImg : jumpImg;
     const heroLanding = isJutrek ? jutrekLandingImg : landingImg;
     const heroSit = isJutrek ? jutrekRunLayImg : sitImg;
-    const heroHurt = isJutrek ? jutrekIdleImg : hurtImg;
+    const heroHurt = isJutrek ? jutrekPainImg : hurtImg;
     const heroDead = isJutrek ? jutrekDeadImg : deadImg;
     const heroRunFrames = isJutrek ? jutrekRunFrames : runFrames;
     const heroFallback = isJutrek ? jutrekIdleImg : heroImg;
