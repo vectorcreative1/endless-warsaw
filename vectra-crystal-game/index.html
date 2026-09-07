@@ -70,12 +70,29 @@
   @keyframes heartBlinkNew{ 0%,100%{ opacity:1; } 50%{ opacity:.15; } }
   .hidden{ display:none !important; }
   .overlay p.pick-hint{ color:var(--cyan); font-size:26px; line-height:1; letter-spacing:2px; margin:0; white-space:nowrap; }
+  #screen-start .pick-hint{
+    position:absolute; left:0; right:0; top:60px; margin:0; width:auto; max-width:none; text-align:center; font-size:52px;
+  }
   .hero-select{ display:flex; align-items:flex-start; gap:36px; margin:34px 0 48px; }
-  .hero-pair{ display:flex; align-items:center; gap:70px; }
+  .hero-group{
+    cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:14px;
+    border:6px solid transparent; padding:22px 30px;
+    transition:border-color .2s, background-color .2s, box-shadow .2s;
+    clip-path:polygon(
+      0 12px, 12px 12px, 12px 0,
+      calc(100% - 12px) 0, calc(100% - 12px) 12px, 100% 12px,
+      100% calc(100% - 12px), calc(100% - 12px) calc(100% - 12px), calc(100% - 12px) 100%,
+      12px 100%, 12px calc(100% - 12px), 0 calc(100% - 12px)
+    );
+  }
+  .hero-group.selected{
+    border-color:var(--cyan); background-color:rgba(123,227,255,.1); box-shadow:0 0 26px rgba(123,227,255,.45);
+  }
+  .hero-group-body{ display:flex; align-items:center; gap:36px; }
   .hero-card{ cursor:pointer; text-align:center; transition:transform .2s; }
   .hero-card:not(.selected):hover{ transform:translateY(-4px); }
   .hero-thumb{
-    width:170px; height:200px; margin:0 auto; background-image:url('assets/run_new_1.png');
+    width:210px; height:246px; margin:0 auto; background-image:url('assets/run_new_1.png');
     background-size:contain; background-repeat:no-repeat; background-position:center bottom; image-rendering:pixelated;
     opacity:.65; filter:drop-shadow(0 6px 8px rgba(0,0,0,.6)); transition:filter .2s, transform .2s, opacity .2s;
   }
@@ -94,16 +111,26 @@
   .start-row{ display:flex; align-items:center; gap:22px; }
 
   .splash-overlay{ display:block; padding:0; background:#000; overflow:hidden; }
-  .splash-stage{ position:relative; width:100%; height:100%; overflow:hidden; }
+  .splash-stage{ position:absolute; inset:0; overflow:hidden; pointer-events:none; }
   .splash-layer{
     position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
     image-rendering:pixelated; user-select:none; -webkit-user-select:none; pointer-events:none;
   }
-  .splash-anim-head{ animation:splashHeadBob 2.6s ease-in-out infinite; }
-  .splash-anim-body{ animation:splashBodySway 2.6s ease-in-out infinite; }
+  .splash-vectra-logo{
+    position:absolute; left:50%; top:3%; width:26%; height:auto; transform:translateX(-50%);
+    object-fit:contain; image-rendering:pixelated; user-select:none; -webkit-user-select:none; pointer-events:none;
+  }
+  .splash-35y{
+    position:absolute; left:calc(55% - 3px); top:calc(15% + 4px); width:70%; height:auto; transform:translateX(-50%);
+    object-fit:contain; image-rendering:pixelated; user-select:none; -webkit-user-select:none; pointer-events:none;
+  }
+  .splash-anim-legs{ transform:translateY(-25px) scale(0.9); transform-origin:50% 100%; }
+  .splash-anim-head{ transform:translateY(-25px) scale(0.9); animation:splashHeadBob 2.6s ease-in-out infinite; animation-fill-mode:backwards; transform-origin:50% 100%; }
+  .splash-anim-body{ transform:translateY(-25px) scale(0.9); animation:splashBodySway 2.6s ease-in-out infinite; animation-fill-mode:backwards; transform-origin:50% 100%; }
   .splash-head-jutrek, .splash-body-jutrek{ animation-delay:.35s; }
-  @keyframes splashHeadBob{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-5px); } }
-  @keyframes splashBodySway{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-2px); } }
+  .splash-body-jutrek{ top:2px; }
+  @keyframes splashHeadBob{ 0%,100%{ transform:translateY(-25px) scale(0.9); } 50%{ transform:translateY(-30px) scale(0.9); } }
+  @keyframes splashBodySway{ 0%,100%{ transform:translateY(-25px) scale(0.9); } 50%{ transform:translateY(-27px) scale(0.9); } }
   .splash-blink{ opacity:0; }
   .splash-blink.show{ opacity:1; }
   .magnet-btn{
@@ -115,7 +142,7 @@
   }
   .splash-btn-wrap{
     position:absolute;
-    left:32.8646%; top:71.1879%; width:34.4271%; height:20.1241%;
+    left:36.31%; top:73.20%; width:27.54%; height:16.10%;
   }
   .splash-play-btn{
     display:block; width:100%; height:100%; object-fit:contain;
@@ -134,6 +161,7 @@
     text-align:center; background:rgba(6,10,18,.9); color:var(--white); gap:16px; padding:20px;
   }
   .overlay.hidden{ display:none; }
+  #screen-start{ justify-content:flex-start; padding-top:110px; }
   .overlay h1{
     color:var(--blue); font-size:22px; margin:0; text-shadow:3px 3px 0 var(--cyan); line-height:1.6;
   }
@@ -217,10 +245,19 @@
   .blink{ animation:blink 1s steps(1) infinite; }
   @keyframes blink{ 50%{ opacity:0; } }
   .score-line{ color:var(--cyan); font-size:12px; }
+  #screen-over .score-line{ font-size:24px; }
+  .win-congrats{
+    color:var(--cyan); font-size:22px; text-align:center; margin:18px 0 8px;
+    text-shadow:2px 2px 0 #000, 0 0 18px rgba(123,227,255,.8);
+  }
+  .win-congrats-text{
+    color:var(--white); font-size:10px; text-align:center; max-width:420px;
+    margin:0 auto 20px; line-height:1.7;
+  }
   .player-name-input{
-    font-family:'Press Start 2P', monospace; font-size:11px; padding:10px 12px;
+    font-family:'Press Start 2P', monospace; font-size:24px; padding:32px 26px;
     background:rgba(6,10,18,.7); color:var(--white); border:3px solid var(--blue); text-align:center;
-    letter-spacing:2px; width:200px; text-transform:uppercase;
+    letter-spacing:2px; width:480px; text-transform:uppercase;
     clip-path:polygon(
       0 6px, 6px 6px, 6px 0,
       calc(100% - 6px) 0, calc(100% - 6px) 6px, 100% 6px,
@@ -230,6 +267,34 @@
   }
   .player-name-input:focus{ outline:none; border-color:var(--cyan); }
   .player-name-input.shake{ animation:shakeInput .4s ease; border-color:#ff4d5e; }
+  #screen-name{ position:absolute; overflow:hidden; z-index:0; isolation:isolate; }
+  #screen-name .splash-stage > img{ z-index:-2; }
+  .name-screen-dim{ position:absolute; inset:0; background:rgba(6,10,18,.78); z-index:-1; }
+  #screen-name .splash-stage > img.splash-vectra-logo{ z-index:1; }
+  .name-form-wrap{ display:flex; flex-direction:column; align-items:center; width:976px; margin-top:80px; }
+  #btn-continue{ width:352px; }
+  #btn-start{ width:352px; }
+  .name-email-row{ display:flex; flex-direction:row; gap:16px; justify-content:center; width:100%; }
+  .field-col{ display:flex; flex-direction:column; align-items:center; }
+  #screen-name .field-error{
+    font-family:'Press Start 2P', monospace; font-size:9px; line-height:1.4; color:#ff4d5e; text-shadow:2px 2px 0 #000;
+    margin:0 0 8px; height:13px; visibility:hidden; text-align:center;
+  }
+  #screen-name .field-error.show{ visibility:visible; }
+  .player-email-input{ text-transform:none; }
+  .rodo-consent{
+    display:flex; align-items:flex-start; gap:8px; width:100%; margin:14px auto 0;
+    cursor:pointer; user-select:none;
+  }
+  .rodo-consent input[type="checkbox"]{
+    flex:0 0 auto; width:34px; height:34px; margin-top:2px; accent-color:var(--cyan); cursor:pointer;
+  }
+  .rodo-consent span{
+    font-family:'Press Start 2P', monospace; font-size:9px; line-height:1.7; color:var(--white); text-align:left;
+    margin-top:5px;
+  }
+  .rodo-consent.shake{ animation:shakeInput .4s ease; }
+  .rodo-consent.shake span{ color:#ff4d5e; }
   @keyframes shakeInput{
     0%, 100%{ transform:translateX(0); }
     20%{ transform:translateX(-8px); }
@@ -281,7 +346,7 @@
   .quiz-options{
     position:relative;
     display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr;
-    gap:8px 6px; width:min(700px, 94%); margin-bottom:6%;
+    gap:8px 6px; width:min(920px, 96%); margin-bottom:6%;
   }
   .quiz-options::before, .quiz-options::after{
     content:''; position:absolute; left:calc(50% - 15px); width:30px; height:2px; background:rgba(255,215,94,.7);
@@ -362,8 +427,9 @@
 
       <div class="overlay splash-overlay" id="screen-splash">
         <div class="splash-stage">
-          <img class="splash-layer" src="assets/bg_start_new_2.png" alt=""/>
-          <img class="splash-layer" src="assets/splash_logo.png" alt="Vectra"/>
+          <img class="splash-layer" src="assets/bg_start_new2.png" alt=""/>
+          <img class="splash-vectra-logo" src="assets/мectra_przedstawia.png" alt="Vectra"/>
+          <img class="splash-35y" src="assets/35_Y.png" alt=""/>
           <img class="splash-layer splash-anim-legs" src="assets/splash_dzisiek_legs.png" alt=""/>
           <img class="splash-layer splash-anim-legs" src="assets/splash_jutrek_legs.png" alt=""/>
           <img class="splash-layer splash-anim-body splash-body-dzisiek" src="assets/splash_dzisiek_body.png" alt=""/>
@@ -378,43 +444,78 @@
         </div>
       </div>
 
+      <div class="overlay hidden" id="screen-name">
+        <div class="splash-stage">
+          <img class="splash-layer name-screen-bg" src="assets/bg_start_new2.png" alt=""/>
+          <img class="splash-35y" src="assets/35_Y.png" alt=""/>
+          <div class="name-screen-dim"></div>
+          <img class="splash-vectra-logo" src="assets/мectra_przedstawia.png" alt="Vectra"/>
+        </div>
+        <div class="name-form-wrap">
+          <div class="name-email-row">
+            <div class="field-col">
+              <p class="field-error" id="email-error"></p>
+              <input type="email" id="player-email" class="player-name-input player-email-input" maxlength="60" placeholder="TWÓJ EMAIL"/>
+            </div>
+            <div class="field-col">
+              <p class="field-error" id="name-error"></p>
+              <input type="text" id="player-name" class="player-name-input" maxlength="12" placeholder="NICKNAME"/>
+            </div>
+          </div>
+          <label class="rodo-consent" id="rodo-consent-wrap">
+            <input type="checkbox" id="rodo-checkbox"/>
+            <span>Zgadzam się na przetwarzanie mojego adresu e-mail przez Vectra w celu udziału w grze i ewentualnego kontaktu w związku z konkursem.</span>
+          </label>
+        </div>
+        <div class="start-row">
+          <div class="magnet-btn" id="btn-continue-wrap">
+            <img class="btn-img" id="btn-continue" src="assets/button_start.png" alt="DALEJ"/>
+          </div>
+        </div>
+        <div class="leaderboard" id="leaderboard-start">
+          <p class="leaderboard-title">TOP GRACZY</p>
+          <ol class="leaderboard-list-el" id="leaderboard-list-start"><li>ŁADOWANIE...</li></ol>
+        </div>
+      </div>
+
       <div class="overlay hidden" id="screen-start">
         <p class="pick-hint">WYBIERZ BOHATERA</p>
         <div class="hero-select">
-          <div class="stat-col">
-            <div class="hero-label" id="label-dzisiek">DZISIEK</div>
-            <div class="stat-bars" id="bars-dzisiek">
-              <div class="stat-row"><span class="stat-label">PRĘDKOŚĆ</span><div class="stat-track"><div class="stat-fill" id="bar-dzisiek-speed"></div></div></div>
-              <div class="stat-row"><span class="stat-label">SIŁA</span><div class="stat-track"><div class="stat-fill" id="bar-dzisiek-power"></div></div></div>
-              <div class="stat-row"><span class="stat-label">SKOK</span><div class="stat-track"><div class="stat-fill" id="bar-dzisiek-jump"></div></div></div>
+          <div class="hero-group" id="group-dzisiek" data-hero="dzisiek">
+            <div class="hero-group-body">
+              <div class="stat-col">
+                <div class="hero-label" id="label-dzisiek">DZISIEK</div>
+                <div class="stat-bars" id="bars-dzisiek">
+                  <div class="stat-row"><span class="stat-label">PRĘDKOŚĆ</span><div class="stat-track"><div class="stat-fill" id="bar-dzisiek-speed"></div></div></div>
+                  <div class="stat-row"><span class="stat-label">SIŁA</span><div class="stat-track"><div class="stat-fill" id="bar-dzisiek-power"></div></div></div>
+                  <div class="stat-row"><span class="stat-label">SKOK</span><div class="stat-track"><div class="stat-fill" id="bar-dzisiek-jump"></div></div></div>
+                </div>
+              </div>
+              <div class="hero-card" id="card-dzisiek" data-hero="dzisiek">
+                <div class="hero-thumb" id="thumb-dzisiek"></div>
+              </div>
             </div>
           </div>
-          <div class="hero-pair">
-            <div class="hero-card" id="card-dzisiek" data-hero="dzisiek">
-              <div class="hero-thumb" id="thumb-dzisiek"></div>
-            </div>
-            <div class="hero-card" id="card-jutrek" data-hero="jutrek">
-              <div class="hero-thumb" id="thumb-jutrek"></div>
-            </div>
-          </div>
-          <div class="stat-col">
-            <div class="hero-label" id="label-jutrek">JUTREK</div>
-            <div class="stat-bars" id="bars-jutrek">
-              <div class="stat-row"><span class="stat-label">PRĘDKOŚĆ</span><div class="stat-track"><div class="stat-fill" id="bar-jutrek-speed"></div></div></div>
-              <div class="stat-row"><span class="stat-label">SIŁA</span><div class="stat-track"><div class="stat-fill" id="bar-jutrek-power"></div></div></div>
-              <div class="stat-row"><span class="stat-label">SKOK</span><div class="stat-track"><div class="stat-fill" id="bar-jutrek-jump"></div></div></div>
+          <div class="hero-group" id="group-jutrek" data-hero="jutrek">
+            <div class="hero-group-body">
+              <div class="hero-card" id="card-jutrek" data-hero="jutrek">
+                <div class="hero-thumb" id="thumb-jutrek"></div>
+              </div>
+              <div class="stat-col">
+                <div class="hero-label" id="label-jutrek">JUTREK</div>
+                <div class="stat-bars" id="bars-jutrek">
+                  <div class="stat-row"><span class="stat-label">PRĘDKOŚĆ</span><div class="stat-track"><div class="stat-fill" id="bar-jutrek-speed"></div></div></div>
+                  <div class="stat-row"><span class="stat-label">SIŁA</span><div class="stat-track"><div class="stat-fill" id="bar-jutrek-power"></div></div></div>
+                  <div class="stat-row"><span class="stat-label">SKOK</span><div class="stat-track"><div class="stat-fill" id="bar-jutrek-jump"></div></div></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <input type="text" id="player-name" class="player-name-input" maxlength="12" placeholder="TWOJE IMIĘ"/>
         <div class="start-row">
           <div class="magnet-btn" id="btn-start-wrap">
             <img class="btn-img hidden" id="btn-start" src="assets/button_start.png" alt="START"/>
           </div>
-        </div>
-        <div class="leaderboard" id="leaderboard-start">
-          <p class="leaderboard-title">TOP 10</p>
-          <ol class="leaderboard-list-el" id="leaderboard-list-start"><li>ŁADOWANIE...</li></ol>
         </div>
       </div>
 
@@ -423,7 +524,9 @@
       <div class="overlay hidden" id="screen-win">
         <h1 id="win-title">35 LAT VECTRA<br/><span class="v">ZA NAMI!</span></h1>
         <p class="score-line">WYNIK: <span id="win-score">0</span></p>
-        <p style="font-size:8px;color:#9fd8f0;" id="win-next">KOLEJNE POZIOMY BĘDĄ WKRÓTCE GOTOWE</p>
+        <h2 class="win-congrats">GRATULACJE, MISTRZU!</h2>
+        <p class="win-congrats-text" id="win-next">Przeszedłeś 35 lat razem z Vectrą, a teraz sprawdź, czy wygrasz nagrody.</p>
+        <button class="btn-arcade" id="btn-win-contest">KONKURS</button>
         <button class="btn" id="btn-win-restart">ZAGRAJ PONOWNIE</button>
       </div>
 
@@ -448,7 +551,7 @@
           <div class="map-node" data-idx="3" style="left:90%">
             <div class="map-icon" style="animation-delay:.9s"><img src="assets/game_map_4.png" alt=""/></div>
             <div class="map-dot"></div>
-            <div class="map-label">2020–2026</div>
+            <div class="map-label">2020–JUTRO</div>
           </div>
           <img class="map-hero" id="map-hero" src="assets/run_new_1.png" alt=""/>
         </div>
@@ -458,7 +561,7 @@
         <h1 class="over-title">SYGNAŁ<br/>UTRACONY</h1>
         <p class="score-line">WYNIK: <span id="over-score">0</span></p>
         <div class="leaderboard" id="leaderboard">
-          <p class="leaderboard-title">TOP 10</p>
+          <p class="leaderboard-title">TOP GRACZY</p>
           <ol class="leaderboard-list-el" id="leaderboard-list"><li>ŁADOWANIE...</li></ol>
         </div>
         <div class="magnet-btn" id="btn-over-restart-wrap">
@@ -497,28 +600,92 @@
   <div class="credit">VECTRA × ENDLESS — 8BIT DEMO</div>
 
 <script>
+window.addEventListener('error', function(e){
+  var el = document.getElementById('debug-error-box');
+  if (!el){
+    el = document.createElement('div');
+    el.id = 'debug-error-box';
+    el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#a00;color:#fff;font:12px monospace;padding:8px;white-space:pre-wrap;max-height:40vh;overflow:auto;';
+    document.body.appendChild(el);
+  }
+  el.textContent += 'ERROR: ' + e.message + '\n  at ' + e.filename + ':' + e.lineno + ':' + e.colno + '\n' + (e.error && e.error.stack ? e.error.stack : '') + '\n\n';
+});
 (function(){
   "use strict";
 
   const FIRESTORE_PROJECT = 'vectragame';
   const FIRESTORE_DOCS_URL = `https://firestore.googleapis.com/v1/projects/${FIRESTORE_PROJECT}/databases/(default)/documents`;
 
-  let playerName = '';
+  function loadSavedField(key){
+    try { return localStorage.getItem(key) || ''; } catch (e){ return ''; }
+  }
+  function saveField(key, value){
+    try { localStorage.setItem(key, value); } catch (e){}
+  }
+
+  let playerName = loadSavedField('vectraPlayerName');
+  let playerEmail = loadSavedField('vectraPlayerEmail');
+
+  function getDeviceToken(){
+    let token = loadSavedField('vectraDeviceToken');
+    if (!token){
+      token = (crypto.randomUUID ? crypto.randomUUID() : (Date.now().toString(36) + Math.random().toString(36).slice(2)));
+      saveField('vectraDeviceToken', token);
+    }
+    return token;
+  }
 
   async function submitScore(name, score){
     const cleanName = (name || '').trim().slice(0,12).toUpperCase() || 'ANONIM';
+    const token = getDeviceToken();
     try {
-      await fetch(`${FIRESTORE_DOCS_URL}/scores`, {
+      const res = await fetch(`${FIRESTORE_DOCS_URL}/scores`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fields: {
             name: { stringValue: cleanName },
             score: { integerValue: String(Math.floor(score)) },
+            clientToken: { stringValue: token },
           },
         }),
       });
+      if (!res.ok){
+        console.error('submitScore rejected', res.status, await res.text());
+        return;
+      }
+      await fetch(`${FIRESTORE_DOCS_URL}/rate_limits/${encodeURIComponent(token)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fields: { lastWrite: { timestampValue: new Date().toISOString() } } }),
+      });
     } catch (e){ console.error('submitScore failed', e); }
+  }
+
+  async function checkAndClaimNickname(nick, email){
+    const nickId = encodeURIComponent(nick.trim().toLowerCase());
+    const emailLower = email.trim().toLowerCase();
+    try {
+      const res = await fetch(`${FIRESTORE_DOCS_URL}/nicknames/${nickId}`);
+      if (res.ok){
+        const doc = await res.json();
+        const ownerEmail = doc.fields && doc.fields.email ? doc.fields.email.stringValue : null;
+        return (ownerEmail && ownerEmail !== emailLower) ? 'taken' : 'ok';
+      }
+      if (res.status === 404){
+        const createRes = await fetch(`${FIRESTORE_DOCS_URL}/nicknames?documentId=${nickId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fields: { email: { stringValue: emailLower } } }),
+        });
+        if (!createRes.ok){
+          console.error('checkAndClaimNickname: create failed', createRes.status, await createRes.text());
+        }
+        return 'ok';
+      }
+      console.error('checkAndClaimNickname: unexpected status', res.status, await res.text());
+      return 'ok';
+    } catch (e){ console.error('checkAndClaimNickname failed', e); return 'ok'; }
   }
 
   async function loadLeaderboard(){
@@ -592,7 +759,7 @@
     MAX_SPEED: 3.42,
     ACCEL: 1.1,
     FRICTION: 0.35,
-    LIVES: 3,
+    LIVES: 5,
     LEVEL_W: 15000,
     INVINCIBLE_T: 90,
     TURBO_T: 300,
@@ -708,6 +875,21 @@
     loadImg('assets/flying_enemy6_level3.png'),
   ];
   const FLYING_DARTER_MIN_IDX = 3;
+  const flyingEnemySpritesL4 = [loadImg('assets/enemy_flying_level4.png')];
+  function flyingSpritePool(){ return currentLevelNum === 4 ? flyingEnemySpritesL4 : flyingEnemySpritesL3; }
+  const obAtmImg = loadImg('assets/obsticle_atm_level4.png');
+  const obBigCarImg = loadImg('assets/obsticle_big_car_level4.png');
+  const obBigCarImg2 = loadImg('assets/obsticle_big_car_level4_2.png');
+  const obCybertruckImg = loadImg('assets/obsticle_cybertruck_level4.png');
+  const obDeliveryBotImg = loadImg('assets/obsticle_delivery_bot_level4.png');
+  const obSmallCarImg = loadImg('assets/obsticle_small_car_level4.png');
+  const obSmallDeliveryBot2Img = loadImg('assets/obsticle_small_delivery_bot_2_level4.png');
+  const obSmallBotImg = loadImg('assets/obsticle.small_bot_level4.png');
+  const obServerImg = loadImg('assets/obsticle_server_level4.png');
+  const obDronImg = loadImg('assets/obsticle_dron_level4.png');
+  const obBigCar2Img = loadImg('assets/obsticle_big_car2_level4.png');
+  const obScreenImg = loadImg('assets/obsticle_screen_level4.png');
+  const obScreenOffImg = loadImg('assets/obsticle_screen_off_level4.png');
   const OBSTACLE_SPECS = {
     trashBin: { img: obTrashBinImg, w: 25, h: 34, hitW: 25, hitH: 34, sink: 5, pushable: true },
     electricBox: { img: obElectricBoxImg, w: 33, h: 46, hitW: 33, hitH: 46, sink: 2 },
@@ -735,8 +917,21 @@
     emojjyBig: { img: obEmojjyBigImg, w: 85, h: 85, hitW: 76, hitH: 82, sink: 8 },
     flyingBall: { img: null, w: 30, h: 30, hitW: 30, hitH: 30, sink: 0, pushable: true },
     dislikeBig: { img: obDislikeBigImg, w: 97, h: 100, hitW: 97, hitH: 100, sink: 8 },
+    atm: { img: obAtmImg, w: 35, h: 51, hitW: 31, hitH: 48, sink: 3, pushable: true },
+    bigCar: { img: obBigCarImg, img2: obBigCarImg2, w: 130, h: 98, hitW: 130, hitH: 96, sink: 9 },
+    cybertruck: { img: obCybertruckImg, w: 170, h: 73, hitW: 170, hitH: 70, sink: 8 },
+    deliveryBot: { img: obDeliveryBotImg, w: 36, h: 39, hitW: 32, hitH: 34, sink: 3, pushable: true },
+    smallCar: { img: obSmallCarImg, w: 100, h: 59, hitW: 100, hitH: 54, sink: 3 },
+    smallDeliveryBot2: { img: obSmallDeliveryBot2Img, w: 38, h: 36, hitW: 34, hitH: 32, sink: 3, pushable: true },
+    smallBot: { img: obSmallBotImg, w: 68, h: 62, hitW: 60, hitH: 56, sink: 5, pushable: true },
+    server: { img: obServerImg, w: 90, h: 89, hitW: 90, hitH: 89, sink: 8 },
+    dron: { img: obDronImg, w: 110, h: 36, hitW: 100, hitH: 30, sink: 2 },
+    bigCar2: { img: obBigCar2Img, w: 218, h: 98, hitW: 218, hitH: 90, sink: 5 },
+    screen: { img: obScreenImg, w: 62, h: 122, hitW: 40, hitH: 118, sink: 14 },
+    screenOff: { img: obScreenOffImg, w: 62, h: 122, hitW: 40, hitH: 118, sink: 6 },
   };
   const OBSTACLE_KINDS = ['trashBin', 'electricBox', 'box', 'car', 'car2', 'kiosk', 'phoneBooth'];
+  const OBSTACLE_KINDS_LEVEL4 = ['atm', 'cybertruck', 'deliveryBot', 'smallCar', 'smallDeliveryBot2', 'server', 'dron', 'bigCar2', 'screen'];
   const OBSTACLE_KINDS_LEVEL2 = ['cdStack', 'dvdPlayer', 'computers', 'errorScreen', 'phone', 'phoneHoriz', 'trashBin2'];
   const OBSTACLE_KINDS_LEVEL3 = ['charge', 'citylight', 'coffeeTable', 'hulajnoga', 'hulajnoga2', 'paczkomat', 'paczkomatY', 'tesla', 'emojjyBig'];
   const jutrekPointFrames = [1,2,3,4].map(n => loadImg(`assets/jutrek_pointing_left_${n}.png`));
@@ -782,6 +977,12 @@
       tree: 'assets/tree_level3.png', bush: 'assets/bush_level3.png',
       groundInset: 115,
     },
+    level4: {
+      bg: 'assets/bg_level_4.jpg', platform: 'assets/platform_island_level4.png',
+      groundTile: 'assets/ground_level4.png', groundEdge: 'assets/ground_edge_leel4.png',
+      tree: 'assets/tree_level4.png', bush: 'assets/bush_level4.png',
+      groundInset: 100, groundTileW: 230, edgeDrawOffsetX: 0, gapEdgeForgiveness: 49, gapWidthBonus: 20,
+    },
   };
   const WORLD_IMG_CACHE = {};
   function getWorldImgs(key){
@@ -810,6 +1011,8 @@
   const snailSpikyFrames = [loadImg('assets/snail_1.png'), loadImg('assets/snail_2.png')];
   const snailSpikyFramesL3 = [loadImg('assets/snail_2_level3.png'), loadImg('assets/snail_2_level3_2.png')];
   const snailOrdinaryFrames = [loadImg('assets/snake_ordinary_1.png'), loadImg('assets/snake_ordinary_2.png')];
+  const snailFramesL4 = [loadImg('assets/enemy_level4.png'), loadImg('assets/enemy_level4_2.png')];
+  const snailSpikesFramesL4 = [loadImg('assets/enemy_spikes_level4.png'), loadImg('assets/enemy_spikes_2_level4.png')];
   const snailOrdinaryFramesL3 = [loadImg('assets/snake_ordinary_1_level3.png'), loadImg('assets/snake_ordinary_level3.png')];
   const slimeImg = loadImg('assets/glut.png');
   const bossImgL1 = loadImg('assets/final_boss_level_1.png');
@@ -819,22 +1022,30 @@
   const cannonImgL2 = loadImg('assets/pushka_level_2.png');
   const cannonBulletImgL2 = loadImg('assets/pushka_bullet_b_level_2.png');
   const bossImgL3 = loadImg('assets/boss_level3.png');
+  const bossImgL4 = loadImg('assets/boss_level4.png');
+  const bossImgJutrekL4 = loadImg('assets/boss_jutrek_level4.png');
+  const bossImgJutrekL4Panels = loadImg('assets/boss_jutrek_level4_1.png');
+  const bossImgJutrekL4Body = loadImg('assets/boss_jutrek_level4_2.png');
+  const bossImgJutrekL4Head = loadImg('assets/boss_jutrek_level4_3.png');
   const meteorImgsL3 = [
     loadImg('assets/boss_level3_bullet.png'),
     loadImg('assets/boss_level3_bullet2.png'),
     loadImg('assets/boss_level3_bullet3.png'),
   ];
   const weaponImgL3 = loadImg('assets/weapon_level3.png');
+  const weaponImgL4 = loadImg('assets/weapon_level4.png');
   const weaponEyesImgL3 = loadImg('assets/weapon_eyes_level3.png');
   const weaponBulletImgL3 = loadImg('assets/pullet_level3.png');
   function currentBossImg(){
     if (currentLevelNum === 2) return bossImgL2;
     if (currentLevelNum === 3) return bossImgL3;
+    if (currentLevelNum === 4) return selectedHero === 'jutrek' ? bossImgJutrekL4 : bossImgL4;
     return bossImgL1;
   }
   function currentCannonImg(){
     if (currentLevelNum === 2) return cannonImgL2;
     if (currentLevelNum === 3) return weaponImgL3;
+    if (currentLevelNum === 4) return weaponImgL4;
     return cannonImgL1;
   }
   function currentCannonBulletImg(){
@@ -975,12 +1186,59 @@
       wrongEnemyType: 'spiky',
     },
   ];
+  const QUIZ_DATA_LEVEL4 = {
+    1: {
+      openImg: 'assets/quiz_1_level4_open.jpg',
+      question: 'Co oznacza skrót AI?',
+      options: [
+        { key:'A', text:'Artificial Intelligence' },
+        { key:'B', text:'Automated Internet' },
+        { key:'C', text:'Advanced Interface' },
+        { key:'D', text:'Artificial Internet' },
+      ],
+      correct: 'A',
+    },
+    2: {
+      openImg: 'assets/quiz_2_level4_open.png',
+      question: 'Co oznacza „smart home”?',
+      options: [
+        { key:'A', text:'Inteligentny dom' },
+        { key:'B', text:'Dom bez internetu' },
+        { key:'C', text:'Dom bez prądu' },
+        { key:'D', text:'Dom z robotem' },
+      ],
+      correct: 'A',
+    },
+    4: {
+      openImg: 'assets/quiz3_open_level4.png',
+      sceneScale: 1.12,
+      sceneYOffset: -7,
+      question: 'Co to jest deepfake?',
+      options: [
+        { key:'A', text:'Fałszywy content' },
+        { key:'B', text:'Wirus komputerowy' },
+        { key:'C', text:'Nowy rodzaj baterii' },
+        { key:'D', text:'Program antywirusowy' },
+      ],
+      correct: 'A',
+    },
+  };
+  const QUIZZES_LEVEL4 = [1,2,4].map(n => ({
+    scene: `assets/quiz_${n}_level4.png`,
+    openScene: QUIZ_DATA_LEVEL4[n].openImg || `assets/quiz_${n}_level4.png`,
+    question: QUIZ_DATA_LEVEL4[n].question,
+    options: QUIZ_DATA_LEVEL4[n].options,
+    correct: QUIZ_DATA_LEVEL4[n].correct,
+    sceneScale: QUIZ_DATA_LEVEL4[n].sceneScale,
+    sceneYOffset: QUIZ_DATA_LEVEL4[n].sceneYOffset,
+  }));
   function activeQuizzes(){
     if (currentLevelNum === 2) return QUIZZES_LEVEL2;
     if (currentLevelNum === 3) return QUIZZES_LEVEL3;
+    if (currentLevelNum === 4) return QUIZZES_LEVEL4;
     return QUIZZES_LEVEL1;
   }
-  [...QUIZZES_LEVEL1, ...QUIZZES_LEVEL2, ...QUIZZES_LEVEL3].forEach(q=>{
+  [...QUIZZES_LEVEL1, ...QUIZZES_LEVEL2, ...QUIZZES_LEVEL3, ...QUIZZES_LEVEL4].forEach(q=>{
     const bgSrc = q.openScene || q.scene;
     if (bgSrc) loadImg(bgSrc);
   });
@@ -999,10 +1257,16 @@
     ['assets/quiz_2_level3_anim1.png', 'assets/quiz_2_level3_anim2.png', 'assets/quiz_2_level3_anim3.png', 'assets/quiz_2_level3_anim4.png'],
     ['assets/quiz_3_level3_anim1.png', 'assets/quiz_3_level3_anim2.png', 'assets/quiz_3_level3_anim3.png'],
   ];
+  const QUIZ_SCENE_FRAMES_LEVEL4 = [
+    ['assets/quiz_1_level4_anim1.png', 'assets/quiz_1_level4_anim2.png', 'assets/quiz_1_level4_anim3.png', 'assets/quiz_1_level4_anim4.png'],
+    null,
+    ['assets/quiz3_level4_anim1.png', 'assets/quiz3_level4_anim2.png', 'assets/quiz3_level4_anim3.png', 'assets/quiz3_level4_anim4.png'],
+  ];
   const QUIZ_SCENE_FRAME_MS = 400;
   const quizSceneImgs = QUIZZES_LEVEL1.map((q, i) => (QUIZ_SCENE_FRAMES[i] || [q.scene]).map(src => loadImg(src)));
   const quizSceneImgsLevel2 = QUIZZES_LEVEL2.map((q, i) => (QUIZ_SCENE_FRAMES_LEVEL2[i] || [q.scene]).map(src => loadImg(src)));
   const quizSceneImgsLevel3 = QUIZZES_LEVEL3.map((q, i) => (QUIZ_SCENE_FRAMES_LEVEL3[i] || [q.scene]).map(src => loadImg(src)));
+  const quizSceneImgsLevel4 = QUIZZES_LEVEL4.map((q, i) => (QUIZ_SCENE_FRAMES_LEVEL4[i] || [q.scene]).map(src => loadImg(src)));
 
   const jutrekIdleImg = loadImg('assets/Jutrek_idle.png');
   const jutrekPainImg = loadImg('assets/Jutrek_pain.png');
@@ -1130,6 +1394,64 @@
     src.start(now);
     src.stop(now + dur);
   }
+  let carEngineNodes = null;
+  function startCarEngine(){
+    if (!audioCtx || carEngineNodes) return;
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.value = 52;
+    const gain = audioCtx.createGain();
+    gain.gain.value = 0.0001;
+    osc.connect(gain).connect(audioCtx.destination);
+    const now = audioCtx.currentTime;
+    gain.gain.setTargetAtTime(0.027, now, 0.08);
+    osc.start(now);
+    carEngineNodes = {osc, gain};
+  }
+  function updateCarEngineSound(vxRatio){
+    if (!carEngineNodes || !audioCtx) return;
+    const now = audioCtx.currentTime;
+    carEngineNodes.osc.frequency.setTargetAtTime(52 + vxRatio*85, now, 0.1);
+    carEngineNodes.gain.gain.setTargetAtTime(0.027 + vxRatio*0.03, now, 0.1);
+  }
+  function stopCarEngine(){
+    if (!carEngineNodes || !audioCtx) return;
+    const { osc, gain } = carEngineNodes;
+    const now = audioCtx.currentTime;
+    gain.gain.setTargetAtTime(0.0001, now, 0.06);
+    osc.stop(now + 0.25);
+    carEngineNodes = null;
+  }
+  let droneBuzzNodes = null;
+  function startDroneBuzz(){
+    if (!audioCtx || droneBuzzNodes) return;
+    const osc = audioCtx.createOscillator();
+    osc.type = 'square';
+    osc.frequency.value = 130;
+    const gain = audioCtx.createGain();
+    gain.gain.value = 0.0001;
+    const lfo = audioCtx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.value = 18;
+    const lfoGain = audioCtx.createGain();
+    lfoGain.gain.value = 0.03;
+    lfo.connect(lfoGain).connect(gain.gain);
+    osc.connect(gain).connect(audioCtx.destination);
+    const now = audioCtx.currentTime;
+    gain.gain.setTargetAtTime(0.045, now, 0.08);
+    osc.start(now);
+    lfo.start(now);
+    droneBuzzNodes = { osc, gain, lfo, lfoGain };
+  }
+  function stopDroneBuzz(){
+    if (!droneBuzzNodes || !audioCtx) return;
+    const { osc, gain, lfo } = droneBuzzNodes;
+    const now = audioCtx.currentTime;
+    gain.gain.setTargetAtTime(0.0001, now, 0.06);
+    osc.stop(now + 0.25);
+    lfo.stop(now + 0.25);
+    droneBuzzNodes = null;
+  }
   const sfx = {
     jump: ()=>sweep(320,720,0.14,'square',0.12),
     land: ()=>sweep(180,70,0.09,'sine',0.14),
@@ -1186,6 +1508,13 @@
     popup: ()=>sweep(150,600,0.16,'square',0.13),
     slimeSpit: ()=>sweep(500,180,0.12,'sawtooth',0.11),
     meteorBoom: ()=>sweep(220,60,0.22,'square',0.16),
+    thunder: ()=>{
+      const beep = (delay, freq, dur, vol) => setTimeout(()=>{ if (audioCtx) sweep(freq, freq, dur, 'square', vol); }, delay);
+      beep(0, 440, 0.11, 0.11);
+      beep(170, 440, 0.11, 0.11);
+      beep(340, 440, 0.11, 0.11);
+      beep(540, 220, 0.55, 0.14);
+    },
     bossBurst: ()=>{ sweep(200,900,0.35,'sawtooth',0.1); playNoise(0.3,0.12,700); },
     bossChargeUp: ()=>{ sweep(140,260,0.7,'sawtooth',0.09); playNoise(0.7,0.08,220); },
     bossVictory: ()=>{
@@ -1208,6 +1537,9 @@
   const musicMelodyL3 = ['E5','G5',null,'C5','E5',null,'G5','A5','G5',null,'E5','D5',null,'C5','D5','E5'];
   const musicBassL3    = ['C3','C4','A3','A3','F3','F4','G3','G3'];
   const MUSIC_BEAT_L3 = 0.12;
+  const musicMelodyL4 = ['A4',null,null,'C5',null,'B4',null,null,'E5',null,'D5',null,null,'C5',null,null];
+  const musicBassL4    = ['A3','A3','F3','F3','E3','E3','G3','G3'];
+  const MUSIC_BEAT_L4 = 0.165;
   const introMelody = ['A4',null,'A4',null,'C5',null,'A4',null,'E5',null,'D5',null,'C5',null,'B4',null];
   const introBass    = ['A3','A3','F3','F3','G3','G3','E3','E3'];
   const INTRO_BEAT = 0.22;
@@ -1246,19 +1578,21 @@
         : (state==='quiz' ? 'intro'
         : 'game')));
       const isL3Game = mode==='game' && currentLevelNum===3;
-      const melody = mode==='sad' ? sadMelody : (mode==='intro' ? introMelody : (mode==='boss' ? bossMelody : (isL3Game ? musicMelodyL3 : musicMelody)));
-      const bass = mode==='sad' ? sadBass : (mode==='intro' ? introBass : (mode==='boss' ? bossBass : (isL3Game ? musicBassL3 : musicBass)));
-      const beat = mode==='sad' ? SAD_BEAT : (mode==='intro' ? INTRO_BEAT : (mode==='boss' ? BOSS_BEAT : (isL3Game ? MUSIC_BEAT_L3 : MUSIC_BEAT)));
-      const leadType = mode==='sad' ? 'sine' : (mode==='intro' ? 'sawtooth' : (mode==='boss' ? 'sawtooth' : (isL3Game ? 'sawtooth' : 'square')));
-      const leadVol = mode==='sad' ? 0.05 : (mode==='intro' ? 0.055 : (mode==='boss' ? 0.065 : 0.05));
+      const isL4Game = mode==='game' && currentLevelNum===4;
+      const melody = mode==='sad' ? sadMelody : (mode==='intro' ? introMelody : (mode==='boss' ? bossMelody : (isL4Game ? musicMelodyL4 : (isL3Game ? musicMelodyL3 : musicMelody))));
+      const bass = mode==='sad' ? sadBass : (mode==='intro' ? introBass : (mode==='boss' ? bossBass : (isL4Game ? musicBassL4 : (isL3Game ? musicBassL3 : musicBass))));
+      const beat = mode==='sad' ? SAD_BEAT : (mode==='intro' ? INTRO_BEAT : (mode==='boss' ? BOSS_BEAT : (isL4Game ? MUSIC_BEAT_L4 : (isL3Game ? MUSIC_BEAT_L3 : MUSIC_BEAT))));
+      const leadType = mode==='sad' ? 'sine' : (mode==='intro' ? 'sawtooth' : (mode==='boss' ? 'sawtooth' : (isL4Game ? 'sine' : (isL3Game ? 'sawtooth' : 'square'))));
+      const leadVol = mode==='sad' ? 0.05 : (mode==='intro' ? 0.055 : (mode==='boss' ? 0.065 : (isL4Game ? 0.06 : 0.05)));
       const mNote = melody[musicStep % melody.length];
-      if (mNote) playNote(NOTES[mNote], beat*0.55, leadType, leadVol);
+      if (mNote) playNote(NOTES[mNote], beat*(isL4Game ? 0.9 : 0.55), leadType, leadVol);
       if (musicStep % 2 === 0){
         const bNote = bass[Math.floor(musicStep/2) % bass.length];
         if (bNote){
           playNote(NOTES[bNote], beat*1.5, 'triangle', mode==='sad' ? 0.05 : (mode==='boss' ? 0.08 : 0.065));
           if (mode==='intro') playNote(NOTES[bNote]*1.4983, beat*1.3, 'sawtooth', 0.035);
           if (isL3Game) playNote(NOTES[bNote]*1.4983, beat*1.1, 'sawtooth', 0.03);
+          if (isL4Game) playNote(NOTES[bNote]*1.4983, beat*1.6, 'sine', 0.028);
         }
       }
       musicStep++;
@@ -1317,7 +1651,11 @@
   }
 
   function buildLevel(){
-    const rand = mulberry32(currentLevelNum === 3 ? 987654321 : (Math.random()*0xffffffff)>>>0);
+    const rand = mulberry32(currentLevelNum === 3 ? 987654321 : currentLevelNum === 4 ? 650946966 : (Math.random()*0xffffffff)>>>0);
+    let droneX = null;
+    let longGapEnd = null;
+    let nextGapAfterCorridorX = null;
+    const LEVEL4_SHORTEN = currentLevelNum === 4 ? 1150 : 0;
     const gaps = [];
     function keepObstacleOffGap(ox, ow){
       for (const [gs, ge] of gaps){
@@ -1331,12 +1669,12 @@
     const obstacles = [];
     let lastObstacleKind = null;
     const isFuture = ACTIVE_WORLD === 'future';
-    const helperKindGeneric = isFuture ? 'coffeeTable' : (ACTIVE_WORLD !== 'nature' ? 'trashBin' : 'trashBin2');
+    const helperKindGeneric = isFuture ? 'coffeeTable' : (ACTIVE_WORLD === 'level4' ? 'deliveryBot' : (ACTIVE_WORLD !== 'nature' ? 'trashBin' : 'trashBin2'));
     let x = 180;
     while (x < CFG.LEVEL_W - 440){
       const roll = rand();
       if (roll < 0.20 && x > 440){
-        const gw = 140 + rand()*35;
+        const gw = 140 + rand()*35 + (WORLD.gapWidthBonus||0);
         gaps.push([x, x + gw]);
         x += gw + 220 + rand()*100;
       } else if (roll < 0.48){
@@ -1360,7 +1698,7 @@
         enemies.push({x0:x, x, y:CFG.GROUND_Y-16, w:20, h:16, range:52+rand()*52, dir:1, speed: groundEnemyType==='ordinary' ? 0.35+rand()*0.25 : 0.6+rand()*0.3, alive:true, type:groundEnemyType, dying:false, deathTimer:0});
         x += (isFuture ? 100 : 170) + rand()*(isFuture ? 65 : 100);
       } else if (roll < 0.80){
-        const kindPool = isFuture ? OBSTACLE_KINDS_LEVEL3 : (ACTIVE_WORLD !== 'nature' ? OBSTACLE_KINDS : OBSTACLE_KINDS_LEVEL2);
+        const kindPool = isFuture ? OBSTACLE_KINDS_LEVEL3 : (ACTIVE_WORLD === 'level4' ? OBSTACLE_KINDS_LEVEL4 : (ACTIVE_WORLD !== 'nature' ? OBSTACLE_KINDS : OBSTACLE_KINDS_LEVEL2));
         const choices = kindPool.filter(k => k !== lastObstacleKind);
         const kind = choices[Math.floor(rand() * choices.length)];
         lastObstacleKind = kind;
@@ -1386,6 +1724,8 @@
     }
 
     let level3TeslaX = null;
+    let level4Quiz1X = null;
+    const level4PitRanges = [];
     if (isFuture){
       const introZoneStart = 460, introZoneEnd = 4000;
       for (let i=gaps.length-1; i>=0; i--){
@@ -1645,6 +1985,366 @@
       });
     }
 
+    if (ACTIVE_WORLD === 'level4'){
+      enemies.push({x0:150, x:150, y:CFG.GROUND_Y-16, w:20, h:16, range:40, dir:1, speed:0.4, alive:true, type:'ordinary', dying:false, deathTimer:0});
+
+      const stairStartX = 300;
+      const stairStepX = 85;
+      const stairStepY = 45;
+      const stairHeights = [0, 1, 2, 1, 2, 1, 2, 1, 0];
+      const stairW = 80;
+      const clearL = stairStartX - 60;
+      const clearR = stairStartX + (stairHeights.length-1)*stairStepX + stairW + 60;
+      for (let i=obstacles.length-1; i>=0; i--){ const ob=obstacles[i]; if (ob.x+ob.w>=clearL && ob.x<=clearR) obstacles.splice(i,1); }
+      for (let i=platforms.length-1; i>=0; i--){ const p=platforms[i]; if (p.x+p.w>=clearL && p.x<=clearR) platforms.splice(i,1); }
+      for (let i=enemies.length-1; i>=0; i--){ const en=enemies[i]; if (en.x>=clearL-60 && en.x<=clearR+60) enemies.splice(i,1); }
+      for (let i=items.length-1; i>=0; i--){ const it=items[i]; if (it.x>=clearL-60 && it.x<=clearR+60) items.splice(i,1); }
+      for (let i=gaps.length-1; i>=0; i--){ const g=gaps[i]; if (g[1]>=clearL && g[0]<=clearR) gaps.splice(i,1); }
+      for (let i=0; i<stairHeights.length; i++){
+        const stX = stairStartX + i*stairStepX;
+        const stY = CFG.GROUND_Y - 70 - stairHeights[i]*stairStepY;
+        platforms.push({x:stX, y:stY, w:stairW});
+        items.push({x:stX+stairW/2, y:stY-26, w:16, h:16, type:'signal', taken:false});
+      }
+      const stairSnailIdxs = [3, 5];
+      for (const i of stairSnailIdxs){
+        const stX = stairStartX + i*stairStepX;
+        const stY = CFG.GROUND_Y - 70 - stairHeights[i]*stairStepY;
+        enemies.push({x0:stX+stairW/2, x:stX+stairW/2, y:stY-16, w:20, h:16, range:stairW/2-14, dir:1, speed:0.35, alive:true, type:'ordinary', dying:false, deathTimer:0, protected:true});
+      }
+      const stairsGapRef = [stairStartX - 20, stairStartX + (stairHeights.length-1)*stairStepX + stairW + 20];
+      gaps.push(stairsGapRef);
+      level4PitRanges.push([clearL, clearR]);
+
+      for (let i=0; i<stairHeights.length-1; i++){
+        const x1 = stairStartX + i*stairStepX + stairW/2;
+        const x2 = stairStartX + (i+1)*stairStepX + stairW/2;
+        const y1 = CFG.GROUND_Y - 70 - stairHeights[i]*stairStepY - 26;
+        const y2 = CFG.GROUND_Y - 70 - stairHeights[i+1]*stairStepY - 26;
+        items.push({x:(x1+x2)/2, y:Math.min(y1,y2)-18, w:16, h:16, type:'signal', taken:false});
+      }
+
+      // first row after the stair pit: atm + bigCar, as already placed
+      const firstRowGap = 55;
+      const firstRowKinds = ['atm', 'bigCar'];
+      let firstRowTotalW = 0;
+      for (const k of firstRowKinds) firstRowTotalW += OBSTACLE_SPECS[k].w + firstRowGap;
+      const firstRowStartX = clearR + 100;
+      const firstRowEndX = firstRowStartX + firstRowTotalW;
+      for (let i=obstacles.length-1; i>=0; i--){ const ob=obstacles[i]; if (ob.x+ob.w>=firstRowStartX-40 && ob.x<=firstRowEndX+40) obstacles.splice(i,1); }
+      for (let i=platforms.length-1; i>=0; i--){ const p=platforms[i]; if (p.x+p.w>=firstRowStartX-40 && p.x<=firstRowEndX+40) platforms.splice(i,1); }
+      for (let i=enemies.length-1; i>=0; i--){ const en=enemies[i]; if (en.x>=firstRowStartX-100 && en.x<=firstRowEndX+100) enemies.splice(i,1); }
+      for (let i=items.length-1; i>=0; i--){ const it=items[i]; if (it.x>=firstRowStartX-40 && it.x<=firstRowEndX+40) items.splice(i,1); }
+      let firstRowX = firstRowStartX;
+      for (const kind of firstRowKinds){
+        const spec = OBSTACLE_SPECS[kind];
+        obstacles.push({x:firstRowX, y:CFG.GROUND_Y-spec.h+(spec.sink||0), w:spec.w, h:spec.h, hitW:spec.hitW, hitH:spec.hitH, kind, pushable:!!spec.pushable, flip: kind === 'bigCar'});
+        firstRowX += spec.w + firstRowGap;
+      }
+
+      // long row of enemies right after the car: 15 on the ground, 2 flying, islands over the top
+      const waveStartX = firstRowEndX + 150;
+      const waveGroundCount = 15;
+      const waveGroundSpacing = 60;
+      const waveEndX = waveStartX + (waveGroundCount-1)*waveGroundSpacing;
+      for (let i=obstacles.length-1; i>=0; i--){ const ob=obstacles[i]; if (ob.x+ob.w>=waveStartX-60 && ob.x<=waveEndX+60) obstacles.splice(i,1); }
+      for (let i=platforms.length-1; i>=0; i--){ const p=platforms[i]; if (p.x+p.w>=waveStartX-60 && p.x<=waveEndX+60) platforms.splice(i,1); }
+      for (let i=enemies.length-1; i>=0; i--){ const en=enemies[i]; if (en.x>=waveStartX-60 && en.x<=waveEndX+60) enemies.splice(i,1); }
+      for (let i=items.length-1; i>=0; i--){ const it=items[i]; if (it.x>=waveStartX-60 && it.x<=waveEndX+60) items.splice(i,1); }
+      for (let i=0; i<waveGroundCount; i++){
+        const wx = waveStartX + i*waveGroundSpacing;
+        const spiky = i % 3 === 2;
+        enemies.push({x0:wx, x:wx, y:CFG.GROUND_Y-16, w:20, h:16, range:18+rand()*14, dir:1, speed:0.4+rand()*0.15, alive:true, type: spiky ? 'spiky' : 'ordinary', dying:false, deathTimer:0});
+      }
+      const waveIslandFracs = [0.12, 0.38, 0.64, 0.88];
+      for (const fr of waveIslandFracs){
+        const ix = waveStartX + (waveEndX-waveStartX)*fr;
+        platforms.push({x:ix, y:CFG.GROUND_Y-160, w:70});
+        items.push({x:ix+35, y:CFG.GROUND_Y-186, w:16, h:16, type:'signal', taken:false});
+      }
+      const waveFlyCount = 2;
+      for (let i=0; i<waveFlyCount; i++){
+        const fx = waveStartX + (i+0.5) * ((waveEndX-waveStartX)/waveFlyCount);
+        const fy = CFG.GROUND_Y - 110 - rand()*130;
+        enemies.push({
+          x0:fx, x:fx, y:fy, y0:fy, w:18, h:14,
+          range: 40+rand()*30, dir: rand()<0.5?1:-1, speed:0.5+rand()*0.4,
+          bobRange: 5+rand()*5, bobSpeed:0.035+rand()*0.02, bobPhase: rand()*Math.PI*2,
+          xSpeed: 0.0025+rand()*0.003, xPhase: rand()*Math.PI*2,
+          ySpeed: 0.00035+rand()*0.0004, yPhase: rand()*Math.PI*2,
+          yBand: false,
+          flightT: rand()*5000,
+          alive:true, type:'flying', dying:false, deathTimer:0, flying:true,
+          spriteIdx: 0,
+        });
+      }
+
+      // the pit you can actually fall into, right after that row of enemies
+      const tileWi = Math.max(1, Math.round(WORLD.groundTileW || GROUND_TILE_W));
+      const pit2Start = Math.ceil((waveEndX + 150) / tileWi) * tileWi;
+      const pit2End = pit2Start + tileWi;
+      for (let i=obstacles.length-1; i>=0; i--){ const ob=obstacles[i]; if (ob.x+ob.w>=pit2Start-30 && ob.x<=pit2End+30) obstacles.splice(i,1); }
+      for (let i=platforms.length-1; i>=0; i--){ const p=platforms[i]; if (p.x+p.w>=pit2Start-30 && p.x<=pit2End+30) platforms.splice(i,1); }
+      for (let i=enemies.length-1; i>=0; i--){ const en=enemies[i]; if (en.x>=pit2Start-30 && en.x<=pit2End+30) enemies.splice(i,1); }
+      for (let i=items.length-1; i>=0; i--){ const it=items[i]; if (it.x>=pit2Start-30 && it.x<=pit2End+30) items.splice(i,1); }
+      const pit2GapRef = [pit2Start, pit2End];
+      gaps.push(pit2GapRef);
+      level4PitRanges.push([pit2Start-30, pit2End+30]);
+
+      for (const g of gaps){
+        g[0] = Math.floor(g[0] / tileWi) * tileWi;
+        g[1] = Math.ceil(g[1] / tileWi) * tileWi;
+        if (g[1] <= g[0]) g[1] = g[0] + tileWi;
+      }
+
+      // quiz right after the pit
+      level4Quiz1X = pit2End + 260;
+
+      // a few coin islands in the sky above the quiz scene
+      const quizIslandFracs = [-0.5, 0, 0.5];
+      quizIslandFracs.forEach((fr, idx) => {
+        const ix = level4Quiz1X + fr*150;
+        const iy = CFG.GROUND_Y - 180 - (idx%2)*30;
+        platforms.push({x:ix-30, y:iy, w:60, protected:true});
+        for (let k=0;k<3;k++){
+          items.push({x:ix-30+8+k*20, y:iy-24, w:16, h:16, type:'signal', taken:false, protected:true});
+        }
+      });
+
+      // fixed marker right after the quiz: a lone server, unchanged from here back.
+      // everything past it is a freshly-designed, varied stretch.
+      const level4ExtraGaps = [];
+      const serverSpec = OBSTACLE_SPECS.server;
+      const serverX = level4Quiz1X + 460;
+      for (let i=obstacles.length-1; i>=0; i--){ const ob=obstacles[i]; if (ob.x+ob.w>=serverX-40 && ob.x<=serverX+serverSpec.w+40) obstacles.splice(i,1); }
+      for (let i=platforms.length-1; i>=0; i--){ const p=platforms[i]; if (p.x+p.w>=serverX-40 && p.x<=serverX+serverSpec.w+40) platforms.splice(i,1); }
+      for (let i=enemies.length-1; i>=0; i--){ const en=enemies[i]; if (en.x>=serverX-100 && en.x<=serverX+serverSpec.w+100) enemies.splice(i,1); }
+      for (let i=items.length-1; i>=0; i--){ const it=items[i]; if (it.x>=serverX-40 && it.x<=serverX+serverSpec.w+40) items.splice(i,1); }
+      obstacles.push({x:serverX, y:CFG.GROUND_Y-serverSpec.h+(serverSpec.sink||0), w:serverSpec.w, h:serverSpec.h, hitW:serverSpec.hitW, hitH:serverSpec.hitH, kind:'server', pushable:!!serverSpec.pushable});
+
+      // helper: a short row of varied obstacles with occasional enemies/coins/flyer
+      function placeVariedRow(startX, kinds, opts){
+        for (let i=obstacles.length-1; i>=0; i--){ const ob=obstacles[i]; if (ob.x>=startX-40 && ob.x<=startX+900) obstacles.splice(i,1); }
+        for (let i=platforms.length-1; i>=0; i--){ const p=platforms[i]; if (p.x>=startX-40 && p.x<=startX+900) platforms.splice(i,1); }
+        for (let i=enemies.length-1; i>=0; i--){ const en=enemies[i]; if (en.x>=startX-40 && en.x<=startX+900) enemies.splice(i,1); }
+        for (let i=items.length-1; i>=0; i--){ const it=items[i]; if (it.x>=startX-40 && it.x<=startX+900) items.splice(i,1); }
+        let x = startX;
+        for (const kind of kinds){
+          x += 140 + rand()*140;
+          if (rand() < 0.5){
+            const ex = x - 80;
+            enemies.push({x0:ex, x:ex, y:CFG.GROUND_Y-16, w:20, h:16, range:14, dir:1, speed:0.4+rand()*0.15, alive:true, type: rand()<0.3 ? 'spiky' : 'ordinary', dying:false, deathTimer:0});
+          }
+          const spec = OBSTACLE_SPECS[kind];
+          if (kind === 'screen' && !(opts && opts.skipHelper)){
+            const helperSpec = OBSTACLE_SPECS.deliveryBot;
+            const helperX = x - helperSpec.w - 12;
+            obstacles.push({x:helperX, y:CFG.GROUND_Y-helperSpec.h+(helperSpec.sink||0), w:helperSpec.w, h:helperSpec.h, hitW:helperSpec.hitW, hitH:helperSpec.hitH, kind:'deliveryBot', pushable:!!helperSpec.pushable});
+          }
+          obstacles.push({x, y:CFG.GROUND_Y-spec.h+(spec.sink||0), w:spec.w, h:spec.h, hitW:spec.hitW, hitH:spec.hitH, kind, pushable:!!spec.pushable});
+          if (kind === 'screen'){
+            // two columns of coins climbing from above the screen all the way to the top of the screen
+            const obTop = CFG.GROUND_Y - spec.h + (spec.sink||0);
+            for (let cy = obTop - 30; cy >= 14; cy -= 24){
+              items.push({x:x+spec.w/2-16, y:cy, w:16, h:16, type:'signal', taken:false});
+              items.push({x:x+spec.w/2+4, y:cy, w:16, h:16, type:'signal', taken:false});
+            }
+          } else if (rand() < 0.4){
+            items.push({x:x+spec.w/2-16, y:CFG.GROUND_Y-70-rand()*40, w:16, h:16, type:'signal', taken:false});
+            items.push({x:x+spec.w/2+4, y:CFG.GROUND_Y-70-rand()*40, w:16, h:16, type:'signal', taken:false});
+          }
+          x += spec.w;
+        }
+        if (rand() < 0.5){
+          const fx = (startX+x)/2, fy = CFG.GROUND_Y-110-rand()*130;
+          enemies.push({
+            x0:fx, x:fx, y:fy, y0:fy, w:18, h:14,
+            range: 40+rand()*30, dir: rand()<0.5?1:-1, speed:0.5+rand()*0.4,
+            bobRange: 5+rand()*5, bobSpeed:0.035+rand()*0.02, bobPhase: rand()*Math.PI*2,
+            xSpeed: 0.0025+rand()*0.003, xPhase: rand()*Math.PI*2,
+            ySpeed: 0.00035+rand()*0.0004, yPhase: rand()*Math.PI*2,
+            yBand: false, flightT: rand()*5000,
+            alive:true, type:'flying', dying:false, deathTimer:0, flying:true, spriteIdx:0,
+          });
+        }
+        return x + 140;
+      }
+
+      // helper: a single tile-wide pit, optionally with 2 coin islands over it
+      function placeSmallPit(startX, withIslands){
+        const gs = Math.ceil(startX/tileWi)*tileWi;
+        const ge = gs + tileWi;
+        for (let i=obstacles.length-1; i>=0; i--){ const ob=obstacles[i]; if (ob.x+ob.w>=gs-40 && ob.x<=ge+40) obstacles.splice(i,1); }
+        for (let i=platforms.length-1; i>=0; i--){ const p=platforms[i]; if (p.x+p.w>=gs-40 && p.x<=ge+40) platforms.splice(i,1); }
+        for (let i=enemies.length-1; i>=0; i--){ const en=enemies[i]; if (en.x>=gs-40 && en.x<=ge+40) enemies.splice(i,1); }
+        for (let i=items.length-1; i>=0; i--){ const it=items[i]; if (it.x>=gs-40 && it.x<=ge+40) items.splice(i,1); }
+        const gapRef = [gs, ge];
+        gaps.push(gapRef);
+        level4ExtraGaps.push(gapRef);
+        level4PitRanges.push([gs-40, ge+40]);
+        if (withIslands){
+          [0.3, 0.7].forEach((fr, idx) => {
+            const ix = gs + (ge-gs)*fr - 25;
+            const iy = CFG.GROUND_Y - 150 - (idx%2)*20;
+            platforms.push({x:ix, y:iy, w:50});
+            items.push({x:ix+17, y:iy-24, w:16, h:16, type:'signal', taken:false});
+          });
+        }
+        return ge;
+      }
+
+      let cursorX = serverX + serverSpec.w + 150;
+      cursorX = placeVariedRow(cursorX, ['cybertruck', 'screen']);
+
+      // a little run of small jump-gaps, back to back
+      cursorX = placeSmallPit(cursorX, false) + 160;
+      cursorX = placeSmallPit(cursorX, false) + 160;
+      cursorX = placeSmallPit(cursorX, false) + 140;
+
+      // a big cluster of coin islands in the sky, right after the OFF screen and its pits
+      {
+        const bigIslandCount = 9;
+        const bigIslandSpan = 760;
+        for (let i=0; i<bigIslandCount; i++){
+          const ix = cursorX + (i+0.5) * (bigIslandSpan/bigIslandCount);
+          const iy = CFG.GROUND_Y - 110 - (i%3)*45;
+          platforms.push({x:ix, y:iy, w:48});
+          for (let k=0;k<3;k++){
+            items.push({x:ix+6+k*14, y:iy-24, w:16, h:16, type:'signal', taken:false});
+          }
+        }
+        cursorX += bigIslandSpan + 140;
+      }
+
+      const droneLeadInStartX = cursorX;
+      cursorX = placeVariedRow(cursorX, ['deliveryBot']);
+      cursorX = placeSmallPit(cursorX, true) + 150;
+      cursorX = placeVariedRow(cursorX, ['smallCar', 'smallDeliveryBot2']);
+
+      // remove just the mushroom pickup and the deliveryBot cart right before the drone
+      for (let i=obstacles.length-1; i>=0; i--){
+        const ob = obstacles[i];
+        if (ob.kind === 'deliveryBot' && ob.x >= droneLeadInStartX && ob.x <= cursorX) obstacles.splice(i,1);
+      }
+      for (let i=items.length-1; i>=0; i--){
+        const it = items[i];
+        if (it.type === 'mushroom' && it.x >= droneLeadInStartX && it.x <= cursorX) items.splice(i,1);
+      }
+
+      // the drone, then the one long gap it's meant to ferry the player across -
+      // no islands here on purpose, this is the only long pit in this stretch
+      const droneSpec = OBSTACLE_SPECS.dron;
+      droneX = cursorX;
+      for (let i=obstacles.length-1; i>=0; i--){ const ob=obstacles[i]; if (ob.x>=droneX-40 && ob.x<=droneX+700) obstacles.splice(i,1); }
+      for (let i=platforms.length-1; i>=0; i--){ const p=platforms[i]; if (p.x>=droneX-40 && p.x<=droneX+700) platforms.splice(i,1); }
+      for (let i=enemies.length-1; i>=0; i--){ const en=enemies[i]; if (en.x>=droneX-40 && en.x<=droneX+700) enemies.splice(i,1); }
+      for (let i=items.length-1; i>=0; i--){ const it=items[i]; if (it.x>=droneX-40 && it.x<=droneX+700) items.splice(i,1); }
+      // also clear any stray flying enemy right before the drone's takeoff spot
+      for (let i=enemies.length-1; i>=0; i--){ const en=enemies[i]; if (en.type==='flying' && en.x>=droneX-500 && en.x<droneX-40) enemies.splice(i,1); }
+      obstacles.push({x:droneX, y:CFG.GROUND_Y-droneSpec.h+(droneSpec.sink||0), w:droneSpec.w, h:droneSpec.h, hitW:droneSpec.hitW, hitH:droneSpec.hitH, kind:'dron', pushable:!!droneSpec.pushable});
+      const longGapStart = Math.ceil((droneX + droneSpec.w + 90) / tileWi) * tileWi;
+      longGapEnd = longGapStart + tileWi*3;
+      const longGapRef = [longGapStart, longGapEnd];
+      gaps.push(longGapRef);
+      level4ExtraGaps.push(longGapRef);
+      level4PitRanges.push([longGapStart-40, longGapEnd+40]);
+
+      const longGapFlyCount = 1;
+      for (let i=0; i<longGapFlyCount; i++){
+        const fx = longGapStart + (i+0.5) * ((longGapEnd-longGapStart)/longGapFlyCount);
+        const fy = CFG.GROUND_Y - 100 - rand()*110;
+        enemies.push({
+          x0:fx, x:fx, y:fy, y0:fy, w:18, h:14,
+          range: 30+rand()*20, dir: rand()<0.5?1:-1, speed:0.5+rand()*0.4,
+          bobRange: 5+rand()*5, bobSpeed:0.035+rand()*0.02, bobPhase: rand()*Math.PI*2,
+          xSpeed: 0.0025+rand()*0.003, xPhase: rand()*Math.PI*2,
+          ySpeed: 0.00035+rand()*0.0004, yPhase: rand()*Math.PI*2,
+          yBand: false, flightT: rand()*5000,
+          alive:true, type:'flying', dying:false, deathTimer:0, flying:true, spriteIdx:0,
+        });
+      }
+      [0.3, 0.7].forEach(fr => {
+        const ix = longGapStart + (longGapEnd-longGapStart)*fr;
+        items.push({x:ix, y:CFG.GROUND_Y-120-rand()*60, w:16, h:16, type:'crystal', taken:false});
+      });
+
+      cursorX = placeVariedRow(longGapEnd + 10, ['screen', 'bigCar2'], {skipHelper:true});
+      const restEndX = cursorX;
+
+      // final sweep: remove ANY gap that overlaps this whole custom corridor
+      // (start of the stairs through the end of this stretch) except the pits
+      // we actually built - catches stray gaps from the generic level
+      // generator regardless of exactly where they start or end.
+      for (let i=gaps.length-1; i>=0; i--){
+        const g = gaps[i];
+        if (g === stairsGapRef || g === pit2GapRef || level4ExtraGaps.includes(g)) continue;
+        if (g[1] > clearL && g[0] < restEndX) gaps.splice(i,1);
+      }
+
+      for (const g of gaps){
+        if (g[0] > restEndX && (nextGapAfterCorridorX === null || g[0] < nextGapAfterCorridorX)) nextGapAfterCorridorX = g[0];
+      }
+
+      // the generic scatter placed some content over that next pit before it
+      // existed, leaving it floating - clear it out and drop in one island
+      if (nextGapAfterCorridorX !== null){
+        const nextGap = gaps.find(g => g[0] === nextGapAfterCorridorX);
+        if (nextGap){
+          const [ngs, nge] = nextGap;
+          for (let i=obstacles.length-1; i>=0; i--){
+            const obCx = obstacles[i].x + obstacles[i].w/2;
+            if (obCx > ngs && obCx < nge) obstacles.splice(i,1);
+          }
+          const midX = (ngs+nge)/2;
+          platforms.push({x:midX-30, y:CFG.GROUND_Y-140, w:60});
+          const leftX = midX - 220;
+          platforms.push({x:leftX-30, x0:leftX-30, y:CFG.GROUND_Y-90, y0:CFG.GROUND_Y-90, w:60, moving:true, axis:'y', range:35, speed:0.4, dir:1, dx:0, dy:0});
+
+          // everything from here to the boss arena is regenerated fresh and
+          // random, using our own placement helpers instead of leftover
+          // generic scatter - clear the whole stretch first
+          const regenStart = nge;
+          const regenEnd = CFG.LEVEL_W - 900 - LEVEL4_SHORTEN;
+          for (let i=obstacles.length-1; i>=0; i--){ if (obstacles[i].x >= regenStart && obstacles[i].x <= regenEnd) obstacles.splice(i,1); }
+          for (let i=platforms.length-1; i>=0; i--){ const p=platforms[i]; if (p.x >= regenStart+250 && p.x <= regenEnd) platforms.splice(i,1); }
+          for (let i=enemies.length-1; i>=0; i--){ if (enemies[i].x >= regenStart && enemies[i].x <= regenEnd) enemies.splice(i,1); }
+          for (let i=items.length-1; i>=0; i--){ if (items[i].x >= regenStart && items[i].x <= regenEnd) items.splice(i,1); }
+          for (let i=gaps.length-1; i>=0; i--){ if (gaps[i][0] >= regenStart+250 && gaps[i][0] <= regenEnd) gaps.splice(i,1); }
+
+          const regenKinds = ['atm', 'cybertruck', 'deliveryBot', 'smallCar', 'smallDeliveryBot2', 'server', 'bigCar2'];
+          let regenX = regenStart + 250;
+          while (regenX < regenEnd){
+            const roll = rand();
+            if (roll < 0.25){
+              regenX = placeSmallPit(regenX, rand() < 0.5) + 150;
+            } else if (roll < 0.45){
+              const count = 3 + Math.floor(rand()*5);
+              for (let i=0; i<count; i++){
+                const ix = regenX + i*(90+rand()*60);
+                const iy = CFG.GROUND_Y - 100 - rand()*160;
+                const axis = rand() < 0.5 ? 'x' : 'y';
+                const range = axis === 'x' ? 40+rand()*50 : 25+rand()*90;
+                platforms.push({x:ix, x0:ix, y:iy, y0:iy, w:50, moving:true, axis, range, speed:0.3+rand()*0.4, dir: rand()<0.5?1:-1, dx:0, dy:0});
+                items.push({x:ix+17, y:iy-24, w:16, h:16, type:'signal', taken:false});
+              }
+              regenX += count*140 + 100;
+            } else {
+              const kindCount = 1 + Math.floor(rand()*2);
+              const kinds = [];
+              for (let i=0; i<kindCount; i++) kinds.push(regenKinds[Math.floor(rand()*regenKinds.length)]);
+              regenX = placeVariedRow(regenX, kinds);
+            }
+          }
+
+          // a cybertruck planted right in front of the boss arena
+          const cybertruckSpec = OBSTACLE_SPECS.cybertruck;
+          const cybertruckX = (CFG.LEVEL_W - 760 - LEVEL4_SHORTEN) - 420;
+          for (let i=obstacles.length-1; i>=0; i--){ const ob=obstacles[i]; if (ob.x>=cybertruckX-60 && ob.x<=cybertruckX+cybertruckSpec.w+60) obstacles.splice(i,1); }
+          obstacles.push({x:cybertruckX, y:CFG.GROUND_Y-cybertruckSpec.h+(cybertruckSpec.sink||0), w:cybertruckSpec.w, h:cybertruckSpec.h, hitW:cybertruckSpec.hitW, hitH:cybertruckSpec.hitH, kind:'cybertruck', pushable:!!cybertruckSpec.pushable});
+        }
+      }
+    }
+
     const groundSegments = [];
     let cursor = 0;
     const sortedGaps = gaps.slice().sort((a,b)=>a[0]-b[0]);
@@ -1708,7 +2408,7 @@
     }
 
     if (ACTIVE_WORLD !== 'nature'){
-      const tallKinds = isFuture ? ['paczkomat', 'citylight'] : ['kiosk', 'phoneBooth'];
+      const tallKinds = isFuture ? ['paczkomat', 'citylight'] : (ACTIVE_WORLD === 'level4' ? ['server', 'screen'] : ['kiosk', 'phoneBooth']);
       const fracs = isFuture ? [0.35, 0.44] : [0.35, 0.6];
       tallKinds.forEach((tallKind, i) => {
         if (obstacles.some(ob => ob.kind === tallKind)) return;
@@ -1742,25 +2442,50 @@
 
     let bossData = null, cannonPlatform = null;
     {
-      const bossZoneStart = CFG.LEVEL_W - 760;
-      const bossX = CFG.LEVEL_W - 260;
-      const cannonX = CFG.LEVEL_W - 560;
-      for (let i=enemies.length-1; i>=0; i--){ if (enemies[i].x >= bossZoneStart) enemies.splice(i,1); }
-      for (let i=items.length-1; i>=0; i--){ if (items[i].x >= bossZoneStart) items.splice(i,1); }
-      for (let i=obstacles.length-1; i>=0; i--){ if (obstacles[i].x >= bossZoneStart) obstacles.splice(i,1); }
-      for (let i=platforms.length-1; i>=0; i--){ if (platforms[i].x >= bossZoneStart) platforms.splice(i,1); }
+      const bossZoneStart = CFG.LEVEL_W - 760 - LEVEL4_SHORTEN;
+      const bossX = CFG.LEVEL_W - (currentLevelNum === 4 ? 150 : 260) - LEVEL4_SHORTEN;
+      const cannonX = CFG.LEVEL_W - 560 - LEVEL4_SHORTEN;
+      const bossZoneBuffer = bossZoneStart - 320;
+      for (let i=enemies.length-1; i>=0; i--){ if (enemies[i].x + (enemies[i].range||0) >= bossZoneBuffer) enemies.splice(i,1); }
+      for (let i=items.length-1; i>=0; i--){ if (items[i].x >= bossZoneBuffer) items.splice(i,1); }
+      for (let i=obstacles.length-1; i>=0; i--){ if (obstacles[i].x >= bossZoneBuffer) obstacles.splice(i,1); }
+      for (let i=platforms.length-1; i>=0; i--){ if (platforms[i].x >= bossZoneBuffer) platforms.splice(i,1); }
+      for (let i=gaps.length-1; i>=0; i--){ if (gaps[i][1] >= bossZoneBuffer) gaps.splice(i,1); }
+      // gaps/groundSegments were already snapshotted before this block ran -
+      // resync both so the boss zone actually reflects the cleared gaps
+      for (let i=sortedGaps.length-1; i>=0; i--){ if (sortedGaps[i][1] >= bossZoneBuffer) sortedGaps.splice(i,1); }
+      groundSegments.length = 0;
+      { let gsCursor = 0;
+        for (const [gs2,ge2] of sortedGaps){
+          if (gs2 > gsCursor) groundSegments.push([gsCursor, gs2]);
+          gsCursor = ge2;
+        }
+        groundSegments.push([gsCursor, CFG.LEVEL_W]);
+      }
       cannonPlatform = {
         x:cannonX, x0:cannonX, y:CFG.GROUND_Y-60, y0:CFG.GROUND_Y-60, w:100,
         moving:true, axis:'y', range:22, speed:0.5, dir:1, dx:0, dy:0, isCannonPlatform:true,
       };
       platforms.push(cannonPlatform);
+      const bossMaxHp = currentLevelNum === 4 ? 14 : 8;
+      const bossSize = currentLevelNum === 4 ? 110 : 80;
       bossData = {
-        x0:bossX, x:bossX, y0:CFG.GROUND_Y-190, y:CFG.GROUND_Y-120, dormantY:CFG.GROUND_Y-120, w:80, h:80,
-        range:35, speed:0.7, dir:1, hp:8, maxHp:8, alive:true, dying:false, deathTimer:0,
+        x0:bossX, x:bossX, y0:CFG.GROUND_Y-190, y:CFG.GROUND_Y-120, dormantY:CFG.GROUND_Y-120, w:bossSize, h:bossSize,
+        range:35, speed:0.7, dir:1, hp:bossMaxHp, maxHp:bossMaxHp, alive:true, dying:false, deathTimer:0,
         hitFlash:0, attackTimer:1400, emojiTimer:1000, burstTimer:8000, burstWindup:0, stompCooldown:0, wakeT:0, firstShotFired:false, arenaX: bossX - 220,
+        snailSpawnTimer:1800, meteorRainTimer:1200, meteorRainStarted:false,
         fixedCameraX: Math.max(0, Math.min(cannonX - 40, CFG.LEVEL_W - CFG.W)),
         driftX:0, driftDirX:1, driftTimer:3000+Math.random()*2000,
       };
+
+      // a few coin islands up in the sky on the final boss screen
+      const bossSkyIslandCount = 5;
+      for (let i=0; i<bossSkyIslandCount; i++){
+        const ix = bossData.fixedCameraX + 80 + i*110;
+        const iy = CFG.GROUND_Y - 150 - (i%3)*40;
+        platforms.push({x:ix, y:iy, w:48, protected:true});
+        items.push({x:ix+16, y:iy-24, w:16, h:16, type:'signal', taken:false, protected:true});
+      }
     }
 
     const QUIZ_SCENE_SAFE_HALF_W = 90;
@@ -1777,6 +2502,7 @@
       const entityHalfW = QUIZ_CLEAR_HALF_W + 80;
       for (let j=platforms.length-1; j>=0; j--){
         const p = platforms[j];
+        if (p.protected) continue;
         const reach = (p.moving && p.axis !== 'y') ? (p.range||0) : 0;
         if (p.x+p.w+reach >= x-QUIZ_CLEAR_HALF_W && p.x-reach <= x+QUIZ_CLEAR_HALF_W) platforms.splice(j,1);
       }
@@ -1784,6 +2510,7 @@
         if (enemies[j].x >= x-entityHalfW && enemies[j].x <= x+entityHalfW) enemies.splice(j,1);
       }
       for (let j=items.length-1; j>=0; j--){
+        if (items[j].protected) continue;
         if (items[j].x >= x-entityHalfW && items[j].x <= x+entityHalfW) items.splice(j,1);
       }
       for (let j=obstacles.length-1; j>=0; j--){
@@ -1798,6 +2525,8 @@
       let x;
       if (currentLevelNum === 3 && i === 0 && level3TeslaX !== null){
         x = level3TeslaX + 216;
+      } else if (currentLevelNum === 4 && i === 0 && level4Quiz1X !== null){
+        x = level4Quiz1X;
       } else {
         const t = levelQuizzes.length > 1 ? i / (levelQuizzes.length - 1) : 0;
         const frac = 0.22 + t * (0.7 - 0.22);
@@ -1834,6 +2563,38 @@
         const paczkomatYSpec = OBSTACLE_SPECS.paczkomatY;
         const paczkomatYX = x + 130;
         obstacles.push({x:paczkomatYX, y:CFG.GROUND_Y-paczkomatYSpec.h+(paczkomatYSpec.sink||0)-4, w:paczkomatYSpec.w, h:paczkomatYSpec.h, hitW:paczkomatYSpec.hitW, hitH:paczkomatYSpec.hitH, kind:'paczkomatY', pushable:false, protected:true});
+      }
+      if (currentLevelNum === 4 && i === 2){
+        // a bigger cluster of moving coin islands in the sky above the third quiz scene
+        [-1.4, -1.0, -0.6, -0.2, 0.2, 0.6, 1.0, 1.4].forEach((fr, idx) => {
+          const ix = x + fr*180;
+          const iy = CFG.GROUND_Y - 190 - (idx%3)*35;
+          const axis = idx%2===0 ? 'y' : 'x';
+          const range = axis === 'y' ? 26+rand()*14 : 45+rand()*25;
+          const speed = 0.35+rand()*0.3;
+          platforms.push({x:ix-30, x0:ix-30, y:iy, y0:iy, w:60, moving:true, axis, range, speed, dir: rand()<0.5?1:-1, dx:0, dy:0, protected:true});
+          for (let k=0; k<3; k++){
+            items.push({x:ix-30+8+k*20, y:iy-24, w:16, h:16, type:'signal', taken:false, protected:true});
+          }
+        });
+
+        // a few more islands further left, riding up/down but dipping much lower
+        [-2.4, -2.0, -1.7].forEach((fr) => {
+          const ix = x + fr*180;
+          const iy0 = CFG.GROUND_Y - 260;
+          const range = 230 + rand()*20;
+          const speed = 0.3 + rand()*0.25;
+          platforms.push({x:ix-30, x0:ix-30, y:iy0, y0:iy0, w:60, moving:true, axis:'y', range, speed, dir: rand()<0.5?1:-1, dx:0, dy:0, protected:true});
+          for (let k=0; k<5; k++){
+            items.push({x:ix-30+rand()*54, y:iy0-14-rand()*70, w:16, h:16, type:'signal', taken:false, protected:true});
+          }
+        });
+
+        // and three spiky snails patrolling the ground beneath this stretch
+        [-2.3, -1.9, -1.5].forEach((fr) => {
+          const ex = x + fr*180;
+          enemies.push({x0:ex, x:ex, y:CFG.GROUND_Y-16, w:20, h:16, range:16, dir:1, speed:0.35+rand()*0.15, alive:true, type:'spiky', dying:false, deathTimer:0});
+        });
       }
       return { x, quizIndex: i };
     });
@@ -1874,6 +2635,9 @@
 
     if (ACTIVE_WORLD === 'nature'){
       for (const en of enemies) en.speed *= 1.5;
+    }
+    if (ACTIVE_WORLD === 'level4'){
+      for (const en of enemies) if (!en.flying) en.speed *= 2;
     }
     if (isFuture){
       for (const en of enemies) en.speed *= 1.7;
@@ -1927,23 +2691,67 @@
       }
     }
 
+    if (ACTIVE_WORLD === 'level4'){
+      const flyCount = 6;
+      const bossZoneBuffer2 = CFG.LEVEL_W - 760 - LEVEL4_SHORTEN - 320;
+      for (let i = 0; i < flyCount; i++){
+        const t = (i + 0.5) / flyCount;
+        const fx = findSafeX(200 + (CFG.LEVEL_W - 700) * t + (rand()*100-50));
+        if (fx >= bossZoneBuffer2) continue;
+        if (droneX != null && fx >= droneX-600 && fx <= droneX+700) continue;
+        if (placedQuizX.some(qx => Math.abs(fx - qx) < QUIZ_CLEAR_HALF_W)) continue;
+        const fy = CFG.GROUND_Y - 110 - rand()*130;
+        enemies.push({
+          x0:fx, x:fx, y:fy, y0:fy, w:18, h:14,
+          range: 40+rand()*40, dir: rand()<0.5?1:-1, speed:0.5+rand()*0.5,
+          bobRange: 5+rand()*6, bobSpeed:0.035+rand()*0.03, bobPhase: rand()*Math.PI*2,
+          xSpeed: 0.0025+rand()*0.0035, xPhase: rand()*Math.PI*2,
+          ySpeed: 0.00035+rand()*0.00055, yPhase: rand()*Math.PI*2,
+          yBand: false,
+          flightT: rand()*5000,
+          alive:true, type:'flying', dying:false, deathTimer:0, flying:true,
+          spriteIdx: 0,
+        });
+      }
+    }
+
+    if (level4PitRanges.length){
+      for (let i=obstacles.length-1; i>=0; i--){
+        const ob = obstacles[i];
+        const obCx = ob.x + ob.w/2;
+        if (level4PitRanges.some(([pl,pr]) => obCx >= pl && obCx <= pr)) obstacles.splice(i,1);
+      }
+    }
+
+    if (ACTIVE_WORLD === 'level4'){
+      // ground-walking enemies (ordinary/spiky snails) should never end up
+      // stuck at some stray height above the ground - drop any that do
+      for (let i=enemies.length-1; i>=0; i--){
+        const en = enemies[i];
+        if (!en.protected && (en.type === 'ordinary' || en.type === 'spiky') && Math.abs(en.y - (CFG.GROUND_Y-16)) > 4) enemies.splice(i,1);
+      }
+    }
+
     const secretGapIndex = ACTIVE_WORLD === 'nature' ? 2 : 1;
-    return { gaps: sortedGaps, groundSegments, platforms, enemies, items, obstacles, quizSpots, flagX: CFG.LEVEL_W - 120, secretGap: sortedGaps[secretGapIndex] || null, boss: bossData, cannon: cannonPlatform };
+    return { gaps: sortedGaps, groundSegments, platforms, enemies, items, obstacles, quizSpots, flagX: CFG.LEVEL_W - 120 - LEVEL4_SHORTEN, secretGap: sortedGaps[secretGapIndex] || null, boss: bossData, cannon: cannonPlatform, quiz1X: level4Quiz1X, droneX, longGapEnd, nextGapAfterCorridorX };
   }
 
-  const GAP_EDGE_FORGIVENESS = 5;
+  const GAP_EDGE_FORGIVENESS = 12;
   function isOverGap(px){
-    for (const [gs,ge] of level.gaps){ if (px >= gs+GAP_EDGE_FORGIVENESS && px <= ge-GAP_EDGE_FORGIVENESS) return true; }
+    const forgiveness = WORLD.gapEdgeForgiveness != null ? WORLD.gapEdgeForgiveness : GAP_EDGE_FORGIVENESS;
+    for (const [gs,ge] of level.gaps){ if (px >= gs+forgiveness && px <= ge-forgiveness) return true; }
     return false;
   }
 
   // ---------- input ----------
-  const keys = { left:false, right:false, jump:false, down:false };
+  const keys = { left:false, right:false, jump:false, down:false, up:false };
   window.addEventListener('keydown', (e)=>{
     ensureAudio(); if (audioCtx && audioCtx.state==='suspended') audioCtx.resume();
     if (e.code === 'Enter'){
       if (!document.getElementById('screen-splash').classList.contains('hidden')){
         document.getElementById('btn-play').click();
+      } else if (!document.getElementById('screen-name').classList.contains('hidden')){
+        document.getElementById('btn-continue').click();
       } else if (!document.getElementById('screen-start').classList.contains('hidden')){
         const startBtn = document.getElementById('btn-start');
         if (!startBtn.classList.contains('hidden')) startBtn.click();
@@ -1957,6 +2765,7 @@
     if (['ArrowLeft','KeyA'].includes(e.code)) keys.left = true;
     if (['ArrowRight','KeyD'].includes(e.code)) keys.right = true;
     if (['ArrowUp','KeyW','Space'].includes(e.code)){ keys.jump = true; e.preventDefault(); }
+    if (['ArrowUp','KeyW'].includes(e.code)) keys.up = true;
     if (['ArrowDown','KeyS'].includes(e.code)){
       keys.down = true; e.preventDefault();
     }
@@ -1965,6 +2774,7 @@
     if (['ArrowLeft','KeyA'].includes(e.code)) keys.left = false;
     if (['ArrowRight','KeyD'].includes(e.code)) keys.right = false;
     if (['ArrowUp','KeyW','Space'].includes(e.code)) keys.jump = false;
+    if (['ArrowUp','KeyW'].includes(e.code)) keys.up = false;
     if (['ArrowDown','KeyS'].includes(e.code)) keys.down = false;
   });
 
@@ -2014,9 +2824,15 @@
     };
   });
   function activeRoomCoins(){ if (currentLevelNum === 3) return SECRET_ROOM_COINS_L3; return currentLevelNum === 2 ? SECRET_ROOM_COINS_L2 : SECRET_ROOM_COINS_L1; }
-  const PIPE_ENTERABLE_KINDS = ['kiosk', 'computers', 'phone', 'paczkomat', 'paczkomatY', 'cafe'];
+  const PIPE_ENTERABLE_KINDS = ['kiosk', 'computers', 'phone', 'paczkomat', 'paczkomatY', 'cafe', 'server'];
   const PIPE_COIN_KINDS = { paczkomat: 15, paczkomatY: 15 };
   const PIPE_SINK_MS = 450, PIPE_HIDE_MS = 1600, PIPE_RISE_MS = 450, PIPE_SINK_DIST = 90;
+  const CAR_DRIVE_KINDS = ['bigCar'];
+  const CAR_ACCEL = 0.07, CAR_MAX_SPEED = 4.0, CAR_FRICTION = 0.975, CAR_NOSE_OVERHANG = 40, CAR_BRAKE = 0.16;
+  const CAR_ENTER_MS = 350;
+  let drivingCar = null;
+  let carEntering = null, carEnterT = 0, carEnterFromX = 0, carEnterFromY = 0;
+  let carExiting = null, carExitT = 0, carExitFromX = 0, carExitFromY = 0;
   let computerSparks = [];
   let lastComputerSoundAt = -99999;
   let bossSparks = [], bossProjectiles = [], bossFx = [];
@@ -2048,14 +2864,15 @@
     const isSwitch = selectedHero !== null;
     selectedHero = heroKey;
     document.querySelectorAll('.hero-card').forEach(c=>c.classList.toggle('selected', c.dataset.hero===heroKey));
+    document.querySelectorAll('.hero-group').forEach(g=>g.classList.toggle('selected', g.dataset.hero===heroKey));
     document.getElementById('label-dzisiek').classList.toggle('selected', heroKey==='dzisiek');
     document.getElementById('label-jutrek').classList.toggle('selected', heroKey==='jutrek');
     document.getElementById('btn-start').classList.remove('hidden');
     if (isSwitch){ ensureAudio(); sfx.select(); }
   }
 
-  document.querySelectorAll('.hero-card').forEach(card=>{
-    card.addEventListener('click', ()=>selectHero(card.dataset.hero));
+  document.querySelectorAll('.hero-group').forEach(group=>{
+    group.addEventListener('click', ()=>selectHero(group.dataset.hero));
   });
 
   const DZISIEK_THUMB_FRAMES = ['assets/run_new_1.png','assets/run_new_2.png','assets/run_new_3.png','assets/run_new_4.png'];
@@ -2071,6 +2888,7 @@
     1: { hudName: 'LATA 90-te', introText: 'POZIOM 1 — LATA 90', world: 'city' },
     2: { hudName: 'LATA 2000', introText: 'POZIOM 2 — LATA 2000', world: 'nature' },
     3: { hudName: 'LATA 2010', introText: 'POZIOM 3 — 2010–2020', world: 'future' },
+    4: { hudName: '2020-JUTRO', introText: 'POZIOM 4 — 2020–JUTRO', world: 'level4' },
   };
   let currentLevelNum = 1;
   const LEVEL_TIME_MS = 150000;
@@ -2101,13 +2919,26 @@
     setActiveWorld(LEVEL_INFO[num].world);
     level = buildLevel();
     buildMidgroundExclusions();
-    player = { x:40, y:CFG.GROUND_Y-CFG.STAND_H, w:22, h:CFG.STAND_H, vx:0, vy:0, onGround:false, facing:1, crouching:false, ridingPlatform:null };
+    player = { x:40, y:CFG.GROUND_Y-CFG.STAND_H, w:22, h:CFG.STAND_H, vx:0, vy:0, onGround:false, facing:1, crouching:false, ridingPlatform:null, ridingDrone:null };
     camera = { x:0 };
-    if (DEBUG_START_NEAR_BOSS && num === 3 && level.quizSpots && level.quizSpots[1]){
+    if (DEBUG_START_NEAR_BOSS && num === 4 && level.boss){
+      player.x = level.boss.arenaX - 80;
+      camera.x = Math.max(0, Math.min(player.x - CFG.W/2, CFG.LEVEL_W - CFG.W));
+    } else if (DEBUG_START_NEAR_BOSS && num === 3 && level.quizSpots && level.quizSpots[1]){
       player.x = level.quizSpots[1].x - 350;
+      camera.x = Math.max(0, Math.min(player.x - CFG.W/2, CFG.LEVEL_W - CFG.W));
+    } else if (DEBUG_START_SPOT === 'drone' && num === 4 && level.nextGapAfterCorridorX != null){
+      player.x = level.nextGapAfterCorridorX - 60;
+      camera.x = Math.max(0, Math.min(player.x - CFG.W/2, CFG.LEVEL_W - CFG.W));
+    } else if (DEBUG_START_SPOT === 'drone' && num === 4 && level.longGapEnd != null){
+      player.x = level.longGapEnd + 40;
       camera.x = Math.max(0, Math.min(player.x - CFG.W/2, CFG.LEVEL_W - CFG.W));
     }
     pipeState = null; pipeT = 0; pipeReady = true;
+    drivingCar = null;
+    carEntering = null; carEnterT = 0;
+    carExiting = null; carExitT = 0;
+    stopCarEngine();
     secretRoomState = null; secretRoomT = 0;
     lastSafeX = player.x; lastSafeY = player.y + player.h;
     for (const it of level.items) it.taken = false;
@@ -2122,6 +2953,7 @@
     for (const en of ROOM_ENEMIES_L1){ en.alive = true; en.dying = false; en.x = en.x0; en.dir = 1; }
     for (const en of ROOM_ENEMIES_L2){ en.alive = true; en.dying = false; en.x = en.x0; en.dir = 1; }
     for (const en of ROOM_ENEMIES_L3){ en.alive = true; en.dying = false; en.x = en.x0; en.dir = 1; }
+    for (const en of ROOM_ENEMIES_L4){ en.alive = true; en.dying = false; en.x = en.x0; en.dir = 1; }
     bossSparks = []; bossProjectiles = []; bossFx = [];
     slimeSpits = [];
     meteors = []; meteorBooms = []; meteorShrapnel = [];
@@ -2139,8 +2971,10 @@
     updateLevelUi(num);
   }
 
+  const TEMP_FORCE_DRONE_TEST = false;
   const DEBUG_START_LEVEL_PARAM = Number(new URLSearchParams(location.search).get('level'));
-  const DEBUG_START_LEVEL = [1,2,3].includes(DEBUG_START_LEVEL_PARAM) ? DEBUG_START_LEVEL_PARAM : 3;
+  const DEBUG_START_LEVEL = [1,2,3,4].includes(DEBUG_START_LEVEL_PARAM) ? DEBUG_START_LEVEL_PARAM : (TEMP_FORCE_DRONE_TEST ? 4 : 1);
+  const DEBUG_START_SPOT = new URLSearchParams(location.search).get('spot') || (TEMP_FORCE_DRONE_TEST ? 'drone' : null);
   function resetGame(){
     heroStats = HERO_STATS[selectedHero] || HERO_STATS.dzisiek;
     maxLives = heroStats.maxLives;
@@ -2191,7 +3025,7 @@
   }
 
   function showScreen(id){
-    ['screen-splash','screen-start','screen-win','screen-over','screen-map'].forEach(s=>{
+    ['screen-splash','screen-name','screen-start','screen-win','screen-over','screen-map'].forEach(s=>{
       document.getElementById(s).classList.toggle('hidden', s!==id);
     });
   }
@@ -2235,6 +3069,65 @@
     ensureAudio(); if (audioCtx && audioCtx.state==='suspended') audioCtx.resume();
     sfx.confirm();
     requestFullscreenOnce();
+    showScreen('screen-name');
+  });
+
+  function shakeEl(el){
+    el.classList.remove('shake');
+    void el.offsetWidth;
+    el.classList.add('shake');
+  }
+
+  function showFieldError(id, text){
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.classList.add('show');
+  }
+  function hideFieldError(id){
+    const el = document.getElementById(id);
+    el.classList.remove('show');
+  }
+
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  document.getElementById('btn-continue').addEventListener('click', async ()=>{
+    ensureAudio();
+    hideFieldError('name-error');
+    hideFieldError('email-error');
+    if (!EMAIL_RE.test(playerEmail.trim())){
+      const el = document.getElementById('player-email');
+      shakeEl(el);
+      el.focus();
+      showFieldError('email-error', 'NIEPRAWIDŁOWY EMAIL');
+      sfx.wrongBuzz();
+      return;
+    }
+    if (!playerName.trim()){
+      const el = document.getElementById('player-name');
+      shakeEl(el);
+      el.focus();
+      showFieldError('name-error', 'WPISZ NICK');
+      sfx.wrongBuzz();
+      return;
+    }
+    if (!document.getElementById('rodo-checkbox').checked){
+      shakeEl(document.getElementById('rodo-consent-wrap'));
+      sfx.wrongBuzz();
+      return;
+    }
+    const continueWrap = document.getElementById('btn-continue-wrap');
+    continueWrap.style.pointerEvents = 'none';
+    const nickStatus = await checkAndClaimNickname(playerName, playerEmail);
+    continueWrap.style.pointerEvents = '';
+    if (nickStatus === 'taken'){
+      const el = document.getElementById('player-name');
+      shakeEl(el);
+      el.focus();
+      showFieldError('name-error', 'TEN NICK JEST ZAJĘTY');
+      sfx.wrongBuzz();
+      return;
+    }
+    sfx.confirm();
     if (!selectedHero) selectHero('dzisiek');
     showScreen('screen-start');
   });
@@ -2243,6 +3136,22 @@
   playerNameInput.value = playerName;
   playerNameInput.addEventListener('input', ()=>{
     playerName = playerNameInput.value.slice(0,12);
+    saveField('vectraPlayerName', playerName);
+    hideFieldError('name-error');
+  });
+
+  const playerEmailInput = document.getElementById('player-email');
+  playerEmailInput.value = playerEmail;
+  playerEmailInput.addEventListener('input', ()=>{
+    playerEmail = playerEmailInput.value.slice(0,60);
+    saveField('vectraPlayerEmail', playerEmail);
+    hideFieldError('email-error');
+  });
+
+  const rodoCheckbox = document.getElementById('rodo-checkbox');
+  rodoCheckbox.checked = loadSavedField('vectraRodoConsent') === '1';
+  rodoCheckbox.addEventListener('change', ()=>{
+    saveField('vectraRodoConsent', rodoCheckbox.checked ? '1' : '0');
   });
 
   function scheduleSplashBlink(id){
@@ -2275,19 +3184,11 @@
     });
   }
   attachMagnetHover(document.getElementById('btn-play-wrap'), 9);
+  attachMagnetHover(document.getElementById('btn-continue-wrap'), 9);
   attachMagnetHover(document.getElementById('btn-start-wrap'), 9);
   attachMagnetHover(document.getElementById('btn-over-restart-wrap'), 9);
   document.getElementById('btn-start').addEventListener('click', ()=>{
     ensureAudio();
-    if (!playerName.trim()){
-      const el = document.getElementById('player-name');
-      el.classList.remove('shake');
-      void el.offsetWidth;
-      el.classList.add('shake');
-      el.focus();
-      sfx.wrongBuzz();
-      return;
-    }
     sfx.confirm();
     startGame();
   });
@@ -2296,8 +3197,32 @@
   document.getElementById('btn-mute').addEventListener('click', ()=>{ ensureAudio(); if (audioCtx && audioCtx.state==='suspended') audioCtx.resume(); setMusicOn(!musicOn); });
 
   function respawn(fromPit){
-    player.x = lastSafeX; player.y = lastSafeY - player.h;
-    player.vx = 0; player.vy = 0;
+    const wasRidingDrone = player.ridingDrone;
+    const droneInFlight = wasRidingDrone && (wasRidingDrone.droneState === 'flying' || wasRidingDrone.droneState === 'returning' || wasRidingDrone.droneState === 'landing');
+    if (!droneInFlight && level.obstacles){
+      // died without being the one currently riding it (whether from falling
+      // into a pit, an enemy, or anything else) - if the drone is out mid
+      // crossing without a rider, send it back so this can be retried
+      for (const ob of level.obstacles){
+        if (ob.kind === 'dron' && (ob.droneState === 'flying' || ob.droneState === 'returning')) ob.forceReturn = true;
+      }
+    }
+    if (!fromPit && droneInFlight){
+      // died on the drone mid-ride (not from falling) - put the hero right
+      // back on it instead of all the way back at the start of the level
+      const ob = wasRidingDrone;
+      const hitX = ob.x + (ob.w-ob.hitW)/2;
+      const hitTop = ob.y + (ob.h-ob.hitH);
+      player.x = hitX + ob.hitW/2 - player.w/2;
+      player.y = hitTop - player.h;
+      player.vx = 0; player.vy = 0;
+      player.onGround = true;
+      player.ridingDrone = ob;
+    } else {
+      player.x = lastSafeX; player.y = lastSafeY - player.h;
+      player.vx = 0; player.vy = 0;
+      player.ridingDrone = null;
+    }
     player.ridingPlatform = null;
     invincible = CFG.INVINCIBLE_T;
     if (fromPit){
@@ -2349,7 +3274,9 @@
       deathStartTime = Date.now();
       player.x = lastSafeX; player.y = lastSafeY - player.h;
       player.vx = 0; player.vy = 0;
-      camera.x = Math.max(0, Math.min(player.x - CFG.W/2, CFG.LEVEL_W - CFG.W));
+      if (!bossArenaEntered){
+        camera.x = Math.max(0, Math.min(player.x - CFG.W/2, CFG.LEVEL_W - CFG.W));
+      }
       sfx.death();
       setTimeout(()=>{
         state = 'over';
@@ -2563,6 +3490,102 @@
     }
   }
 
+  function updateCarEnter(dt){
+    carEnterT += dt;
+    const ob = carEntering;
+    const t = Math.min(1, carEnterT/CAR_ENTER_MS);
+    const targetX = ob.x + ob.w/2 - player.w/2;
+    const targetY = ob.y + ob.h - player.h - 4;
+    player.x = carEnterFromX + (targetX-carEnterFromX)*t;
+    player.y = carEnterFromY + (targetY-carEnterFromY)*t;
+    camera.x = Math.max(0, Math.min(player.x - CFG.W/2, CFG.LEVEL_W - CFG.W));
+    if (t >= 1){
+      drivingCar = ob;
+      drivingCar.vx = 0;
+      carEntering = null;
+      startCarEngine();
+    }
+  }
+
+  function updateCarExit(dt){
+    carExitT += dt;
+    const ob = carExiting;
+    const t = Math.min(1, carExitT/CAR_ENTER_MS);
+    const hitTop = ob.y + (ob.h - ob.hitH);
+    const targetX = ob.x + ob.w/2 - player.w/2;
+    const targetY = hitTop - player.h;
+    player.x = carExitFromX + (targetX-carExitFromX)*t;
+    player.y = carExitFromY + (targetY-carExitFromY)*t;
+    camera.x = Math.max(0, Math.min(player.x - CFG.W/2, CFG.LEVEL_W - CFG.W));
+    if (t >= 1){
+      player.y -= CFG.STAND_H - player.h;
+      player.h = CFG.STAND_H;
+      player.crouching = false;
+      player.onGround = true;
+      player.vx = 0; player.vy = 0;
+      invincible = CFG.INVINCIBLE_T;
+      carExiting = null;
+    }
+  }
+
+  function updateCarDrive(dt){
+    const timeScale = dt / (1000/60);
+    const ob = drivingCar;
+    if (keys.right) ob.vx = Math.min(CAR_MAX_SPEED, (ob.vx||0) + CAR_ACCEL*timeScale);
+    else if (keys.left) ob.vx = Math.max(0, (ob.vx||0) - CAR_BRAKE*timeScale);
+    ob.vx = Math.max(0, (ob.vx||0)) * Math.pow(CAR_FRICTION, timeScale);
+    if (ob.vx < 0.02) ob.vx = 0;
+
+    let stopLimit = null;
+    if (ob.vx > 0){
+      for (const [gs] of level.gaps){
+        const lim = gs + CAR_NOSE_OVERHANG - ob.w;
+        if (lim >= ob.x - 1){ stopLimit = lim; break; }
+      }
+    }
+    let nextX = ob.x + ob.vx*timeScale;
+    if (stopLimit !== null){
+      const brakeDist = Math.abs(stopLimit - ob.x);
+      if (brakeDist < 70) ob.vx *= Math.pow(0.9, timeScale);
+      nextX = ob.x + ob.vx*timeScale;
+      if (nextX >= stopLimit){ nextX = stopLimit; ob.vx = 0; }
+    }
+    ob.x = Math.max(0, Math.min(CFG.LEVEL_W - ob.w, nextX));
+    const movingT = Math.min(1, ob.vx/CAR_MAX_SPEED);
+    ob.shakeOffset = (Math.random()-0.5) * (0.6 + movingT*2.4);
+    updateCarEngineSound(movingT);
+
+    if (Math.abs(ob.vx) > 0.3){
+      for (const en2 of level.enemies){
+        if (!en2.alive || en2.dying || en2.knocked || en2.type === 'flying' || en2.type === 'popup') continue;
+        const crushOverlap = ob.x < en2.x+en2.w && ob.x+ob.w > en2.x && ob.y < en2.y+en2.h && ob.y+ob.h > en2.y;
+        if (crushOverlap){
+          en2.alive = false; en2.dying = true; en2.deathTimer = en2.type === 'spiky' ? 34 : 24;
+          score += 50; updateHud();
+          sfx.stomp();
+          setTimeout(()=>sfx.coin(), 150);
+          coinPops.push({ x: en2.x + en2.w/2, y: en2.y, vy:-3.2, t:0 });
+        }
+      }
+    }
+
+    player.x = ob.x + ob.w/2 - player.w/2;
+    player.y = ob.y + ob.h - player.h - 4;
+
+    if (keys.up){
+      carExiting = ob;
+      carExitT = 0;
+      carExitFromX = player.x; carExitFromY = player.y;
+      ob.vx = 0;
+      ob.shakeOffset = 0;
+      drivingCar = null;
+      stopCarEngine();
+      return;
+    }
+
+    camera.x = Math.max(0, Math.min(ob.x - CFG.W/2, CFG.LEVEL_W - CFG.W));
+  }
+
   const ROOM_LEFT = 30, ROOM_RIGHT = 610, ROOM_FLOOR_Y = CFG.H - 40;
   const SECRET_TRAMPOLINE_X = CFG.W/2, SECRET_TRAMPOLINE_Y = ROOM_FLOOR_Y;
   const SECRET_TRAMP_HIT_W = 68, SECRET_TRAMP_HIT_TOP = ROOM_FLOOR_Y - 14;
@@ -2619,7 +3642,17 @@
     { x0: 505, x: 505, y: ROOM_FLOOR_Y-150-16, w:20, h:16, range:21, dir:-1, speed:0.4, alive:true, dying:false, deathTimer:0, type:'spiky' },
     { x0: 285, x: 285, y: ROOM_FLOOR_Y-230-16, w:20, h:16, range:35, dir:1,  speed:0.4, alive:true, dying:false, deathTimer:0, type:'ordinary' },
   ];
-  function activeRoomEnemies(){ if (currentLevelNum === 3) return ROOM_ENEMIES_L3; return currentLevelNum === 2 ? ROOM_ENEMIES_L2 : ROOM_ENEMIES_L1; }
+  const ROOM_ENEMIES_L4 = [
+    { x0: 90,  x: 90,  y: ROOM_FLOOR_Y-16, w:20, h:16, range:35, dir:1,  speed:0.55, alive:true, dying:false, deathTimer:0, type:'ordinary' },
+    { x0: 230, x: 230, y: ROOM_FLOOR_Y-16, w:20, h:16, range:40, dir:-1, speed:0.6,  alive:true, dying:false, deathTimer:0, type:'ordinary' },
+    { x0: 380, x: 380, y: ROOM_FLOOR_Y-16, w:20, h:16, range:40, dir:1,  speed:0.5,  alive:true, dying:false, deathTimer:0, type:'ordinary' },
+    { x0: 520, x: 520, y: ROOM_FLOOR_Y-16, w:20, h:16, range:35, dir:-1, speed:0.55, alive:true, dying:false, deathTimer:0, type:'ordinary' },
+    { x0: 105, x: 105, y: ROOM_FLOOR_Y-90-16,  w:20, h:16, range:21, dir:1,  speed:0.35, alive:true, dying:false, deathTimer:0, type:'ordinary' },
+    { x0: 505, x: 505, y: ROOM_FLOOR_Y-85-16,  w:20, h:16, range:21, dir:-1, speed:0.35, alive:true, dying:false, deathTimer:0, type:'ordinary' },
+    { x0: 135, x: 135, y: ROOM_FLOOR_Y-180-16, w:20, h:16, range:21, dir:1,  speed:0.35, alive:true, dying:false, deathTimer:0, type:'ordinary' },
+    { x0: 475, x: 475, y: ROOM_FLOOR_Y-170-16, w:20, h:16, range:21, dir:-1, speed:0.35, alive:true, dying:false, deathTimer:0, type:'ordinary' },
+  ];
+  function activeRoomEnemies(){ if (currentLevelNum === 3) return ROOM_ENEMIES_L3; if (currentLevelNum === 4) return ROOM_ENEMIES_L4; return currentLevelNum === 2 ? ROOM_ENEMIES_L2 : ROOM_ENEMIES_L1; }
 
   function updateRoomEnemies(dt, timeScale, prevBottom){
     for (const en of activeRoomEnemies()){
@@ -2635,7 +3668,7 @@
       const overlap = player.x < en.x+en.w && player.x+player.w > en.x && player.y < en.y+en.h && player.y+player.h > en.y;
       if (overlap){
         const wasFalling = en.type !== 'spiky' && player.vy >= 0 && prevBottom <= en.y + 6;
-        const slideKill = en.type === 'spiky' && player.crouching && Math.abs(player.vx) > 1.2;
+        const slideKill = (en.type === 'spiky' || (selectedHero === 'jutrek' && en.type === 'ordinary')) && player.crouching && Math.abs(player.vx) > 1.2;
         if (wasFalling || slideKill || turboT > 0){
           en.alive = false; en.dying = true; en.deathTimer = en.type === 'spiky' ? 34 : 24;
           if (wasFalling) player.vy = ROOM_JUMP_V * 0.5;
@@ -2955,6 +3988,33 @@
 
   function updateBossFight(dt, timeScale, prevBottom){
     const boss = level.boss;
+    if (currentLevelNum === 4 && level.nextGapAfterCorridorX != null && player.x > level.nextGapAfterCorridorX){
+      if (!boss.meteorRainStarted){
+        boss.meteorRainStarted = true;
+        boss.meteorRainTimer = 750;
+        sfx.thunder();
+      }
+      boss.meteorRainTimer -= dt;
+      if (boss.meteorRainTimer <= 0){
+        boss.meteorRainTimer = 900 + Math.random()*700;
+        const angRad = 55 * Math.PI/180;
+        const spawnY = -20;
+        const horizTravel = (CFG.GROUND_Y - spawnY) / Math.tan(angRad);
+        // pick where it actually lands first (anywhere across the visible
+        // screen, including right on top of the player), then work out
+        // where it must have spawned to land there at this fixed angle
+        const landX = camera.x - 60 + Math.random()*(CFG.W + 120);
+        const mx = landX + horizTravel;
+        const sizeScale = 0.7 + Math.random()*0.8;
+        const fallSpd = 1.8 + sizeScale*1.6;
+        meteors.push({
+          x: mx, y: spawnY, vx: -Math.cos(angRad)*fallSpd, vy: Math.sin(angRad)*fallSpd,
+          t:0, spriteIdx: Math.floor(Math.random()*meteorImgsL3.length), plainOrb:true,
+          sizeScale, trail:[],
+        });
+        sfx.bossSpark();
+      }
+    }
     if (boss.dying){
       boss.deathTimer -= timeScale;
       if (boss.deathTimer <= 0) boss.dying = false;
@@ -2973,10 +4033,11 @@
             boss.burstWindup = 0;
             const bcx = boss.x+boss.w/2, bcy = boss.y+boss.h/2;
             const count = 14;
-            const spd = 1.9;
+            const spd = currentLevelNum === 4 ? 2.6 : 1.9;
+            const burstLife = currentLevelNum === 4 ? 420 : 260;
             for (let i=0; i<count; i++){
               const ang = (i/count)*Math.PI*2;
-              bossSparks.push({x:bcx, y:bcy, vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd, t:0, life:260, trail:[], small:true});
+              bossSparks.push({x:bcx, y:bcy, vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd, t:0, life:burstLife, trail:[], small:true, blue: currentLevelNum===4});
             }
             sfx.bossBurst();
             boss.burstTimer = 11000 + Math.random()*5000;
@@ -2986,14 +4047,16 @@
           if (boss.y > boss.y0+boss.range) boss.dir = -1;
           if (boss.y < boss.y0-boss.range) boss.dir = 1;
 
-          if (currentLevelNum === 3){
+          if (currentLevelNum === 3 || currentLevelNum === 4){
+            const driftRange = currentLevelNum === 4 ? 150 : 55;
+            const driftSpeed = currentLevelNum === 4 ? 1.3 : 0.6;
             boss.driftTimer -= dt;
             if (boss.driftTimer <= 0){
               boss.driftTimer = 3000 + Math.random()*2500;
-              boss.driftTargetX = (Math.random()*2-1) * 55;
+              boss.driftTargetX = (Math.random()*2-1) * driftRange;
             }
             const driftDiff = (boss.driftTargetX||0) - boss.driftX;
-            boss.driftX += Math.sign(driftDiff) * Math.min(Math.abs(driftDiff), 0.6*timeScale);
+            boss.driftX += Math.sign(driftDiff) * Math.min(Math.abs(driftDiff), driftSpeed*timeScale);
             boss.x = boss.x0 + boss.driftX;
           }
 
@@ -3008,6 +4071,17 @@
               meteors.push({
                 x: mx, y: -20, vx: Math.cos(angRad)*fallSpd*dir, vy: Math.sin(angRad)*fallSpd,
                 t:0, spriteIdx: Math.floor(Math.random()*meteorImgsL3.length),
+              });
+              sfx.bossSpark();
+            } else if (currentLevelNum === 4){
+              boss.attackTimer = 2600 + Math.random()*1600;
+              const eyeY = boss.y + boss.h*0.22;
+              const tx = player.x+player.w/2, ty = player.y+player.h/2;
+              const spd = 2.6;
+              [-1, 1].forEach(side => {
+                const eyeX = boss.x + boss.w/2 + side*boss.w*0.16;
+                const ang = Math.atan2(ty-eyeY, tx-eyeX);
+                bossSparks.push({x:eyeX, y:eyeY, vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd, t:0, life:400, trail:[], blue:true});
               });
               sfx.bossSpark();
             } else {
@@ -3043,6 +4117,15 @@
               sfx.bossChargeUp();
             }
           }
+
+          if (currentLevelNum === 4 && level.enemies.length < 40){
+            boss.snailSpawnTimer -= dt;
+            if (boss.snailSpawnTimer <= 0){
+              boss.snailSpawnTimer = 2200 + Math.random()*1400;
+              const sx = camera.x + CFG.W + 30;
+              level.enemies.push({x0:sx, x:sx, y:CFG.GROUND_Y-16, w:20, h:16, range:5000, dir:-1, speed:0.7+Math.random()*0.3, alive:true, type:'spiky', dying:false, deathTimer:0});
+            }
+          }
         }
       }
       if (boss.hitFlash > 0) boss.hitFlash -= timeScale;
@@ -3067,7 +4150,7 @@
             const tx = boss.x+boss.w/2, ty = boss.y+boss.h/2;
             const ang = Math.atan2(ty-by, tx-bx);
             const spd = 4.4;
-            bossProjectiles.push({x:bx, y:by, vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd, t:0, smoke:[]});
+            bossProjectiles.push({x:bx, y:by, vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd, t:0, smoke:[], trail:[]});
             if (currentLevelNum === 1) cannonFireFlash = 14;
             cannonSmokePuffs.push({x:bx, y:by, t:0, life:45});
             sfx.cannonFire();
@@ -3120,8 +4203,12 @@
 
     for (let i=meteors.length-1; i>=0; i--){
       const m = meteors[i];
+      if (m.trail){
+        m.trail.push({x:m.x, y:m.y});
+        if (m.trail.length > 18) m.trail.shift();
+      }
       m.x += m.vx*timeScale; m.y += m.vy*timeScale; m.t++;
-      const offscreen = m.x < camera.x-100 || m.x > camera.x+CFG.W+100;
+      const offscreen = m.x < camera.x-100 || m.x > camera.x+CFG.W+500;
       if (offscreen){ meteors.splice(i,1); continue; }
       const hr = 9;
       const midairHit = invincible<=0 && player.x < m.x+hr && player.x+player.w > m.x-hr &&
@@ -3131,12 +4218,16 @@
         loseLife();
         return true;
       }
+      if (m.y >= CFG.GROUND_Y-8 && isOverGap(m.x)){
+        meteors.splice(i,1);
+        continue;
+      }
       if (m.y >= CFG.GROUND_Y-8){
-        meteorBooms.push({x:m.x, y:CFG.GROUND_Y, t:0, life:160});
+        meteorBooms.push({x:m.x, y:CFG.GROUND_Y, t:0, life:160, blue: m.blue});
         for (let k=0; k<18; k++){
           const ang = (k/18)*Math.PI*2;
           const spd = 1.2 + Math.random()*1.8;
-          meteorShrapnel.push({x:m.x, y:CFG.GROUND_Y, vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd-1.3, t:0, life:220, warm: Math.random()<0.5});
+          meteorShrapnel.push({x:m.x, y:CFG.GROUND_Y, vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd-1.3, t:0, life:220, warm: Math.random()<0.5, blue: m.blue});
         }
         sfx.meteorBoom();
         meteors.splice(i,1);
@@ -3168,6 +4259,10 @@
       b.smoke.push({x:b.x, y:b.y, t:0});
       if (b.smoke.length > 8) b.smoke.shift();
       for (const s of b.smoke) s.t++;
+      if (b.trail){
+        b.trail.push({x:b.x, y:b.y});
+        if (b.trail.length > 14) b.trail.shift();
+      }
       b.x += b.vx*timeScale; b.y += b.vy*timeScale; b.t++;
       let hitBoss = false;
       if (boss.alive){
@@ -3197,6 +4292,7 @@
 
     if (respawnFreeze > 0) respawnFreeze--;
     const inputLocked = respawnFreeze > 0;
+    const inCarProtected = !!(carEntering || drivingCar || carExiting || pipeState);
 
     let prevBottom = player.y + player.h;
 
@@ -3204,6 +4300,12 @@
       updateSecretRoom(dt);
     } else if (pipeState){
       updatePipeSequence(dt);
+    } else if (carEntering){
+      updateCarEnter(dt);
+    } else if (carExiting){
+      updateCarExit(dt);
+    } else if (drivingCar){
+      updateCarDrive(dt);
     } else {
 
     if (!keys.down) pipeReady = true;
@@ -3220,6 +4322,17 @@
         pipeCoinCount = PIPE_COIN_KINDS[standObstacle.kind] || 10;
         const hitX = standObstacle.x + (standObstacle.w-standObstacle.hitW)/2;
         pipeCenterX = hitX + standObstacle.hitW/2;
+        player.vx = 0; player.vy = 0;
+        sfx.pipeDown();
+        return;
+      }
+      if (standObstacle && CAR_DRIVE_KINDS.includes(standObstacle.kind)){
+        player.y += player.h - CFG.CROUCH_H;
+        player.h = CFG.CROUCH_H;
+        player.crouching = true;
+        carEntering = standObstacle;
+        carEnterT = 0;
+        carEnterFromX = player.x; carEnterFromY = player.y;
         player.vx = 0; player.vy = 0;
         sfx.pipeDown();
         return;
@@ -3254,6 +4367,12 @@
       player.vy = CFG.JUMP_V * heroStats.jumpMul * Math.sqrt(gravityMul);
       player.onGround = false;
       player.ridingPlatform = null;
+      if (player.ridingDrone){
+        // jumping off is a deliberate dismount: let go right away so we don't
+        // keep drifting at the drone's speed. It keeps flying on its own -
+        // only dying in the pit it's crossing sends it back (see respawn()).
+        player.ridingDrone = null;
+      }
       sfx.jump();
     }
 
@@ -3347,9 +4466,78 @@
       }
     }
 
+    const DRONE_SHAKE_MS = 500, DRONE_VSPEED = 0.85, DRONE_ACCEL = 0.035, DRONE_CRUISE_SPEED = 1.6;
+    const DRONE_RISE_DIST = 110, DRONE_RISE_MS = 900, DRONE_BOB_RANGE = 10, DRONE_BOB_SPEED = 0.0035;
+    for (const ob of level.obstacles){
+      if (ob.kind !== 'dron') continue;
+      if (ob.forceReturn && ob.droneState !== 'returning' && ob.x > ob.startX){
+        // the hero died mid-crossing (however far along the trip it got,
+        // even after landing) - turn back so they can retry
+        ob.forceReturn = false;
+        ob.droneState = 'returning';
+        ob.aborted = true;
+        ob.done = false;
+      }
+      if (!ob.droneState) continue;
+      if (ob.droneState === 'shaking'){
+        ob.launchT += dt;
+        ob.shakeOffset = (Math.random()-0.5) * 3.5;
+        if (ob.launchT >= DRONE_SHAKE_MS){
+          ob.droneState = 'flying';
+          ob.flyT = 0;
+          ob.vx = 0;
+        }
+      } else if (ob.droneState === 'flying'){
+        {
+          ob.flyT += dt;
+          ob.vx = Math.min(DRONE_CRUISE_SPEED, (ob.vx||0) + DRONE_ACCEL*timeScale);
+          const prevX = ob.x, prevY = ob.y;
+          ob.x = Math.min(CFG.LEVEL_W - ob.w, ob.x + ob.vx*timeScale);
+          const riseT = Math.min(1, ob.flyT/DRONE_RISE_MS);
+          const eased = 1 - Math.pow(1-riseT, 3);
+          const baseY = ob.riseFromY - DRONE_RISE_DIST*eased;
+          ob.y = baseY + Math.sin(ob.flyT*DRONE_BOB_SPEED)*DRONE_BOB_RANGE*riseT;
+          ob.shakeOffset = (Math.random()-0.5) * 1.5;
+          const dx = ob.x - prevX, dy = ob.y - prevY;
+          if (player.ridingDrone === ob){ player.x += dx; player.y += dy; }
+          if (ob.x >= ob.droneLandX) ob.droneState = 'landing';
+        }
+      } else if (ob.droneState === 'returning'){
+        ob.vx = Math.max(-DRONE_CRUISE_SPEED, (ob.vx||0) - DRONE_ACCEL*1.4*timeScale);
+        const prevX = ob.x;
+        ob.x = Math.max(ob.startX, ob.x + ob.vx*timeScale);
+        ob.shakeOffset = (Math.random()-0.5) * 1.5;
+        const dx = ob.x - prevX;
+        if (player.ridingDrone === ob) player.x += dx;
+        if (ob.x <= ob.startX){
+          ob.x = ob.startX;
+          ob.vx = 0;
+          ob.droneState = 'landing';
+        }
+      } else if (ob.droneState === 'landing'){
+        const prevX = ob.x, prevY = ob.y;
+        ob.vx = Math.max(0, ob.vx - DRONE_ACCEL*2*timeScale);
+        ob.x = Math.min(CFG.LEVEL_W - ob.w, ob.x + ob.vx*timeScale);
+        ob.y = Math.min(ob.riseFromY, ob.y + DRONE_VSPEED*timeScale);
+        ob.shakeOffset = (Math.random()-0.5) * 1;
+        const dx = ob.x - prevX, dy = ob.y - prevY;
+        if (player.ridingDrone === ob){ player.x += dx; player.y += dy; }
+        if (ob.y >= ob.riseFromY){
+          ob.y = ob.riseFromY;
+          ob.droneState = null;
+          ob.done = !ob.aborted;
+          ob.aborted = false;
+          ob.vx = 0;
+          ob.shakeOffset = 0;
+          stopDroneBuzz();
+          if (player.ridingDrone === ob){ player.ridingDrone = null; player.vx = 0; }
+        }
+      }
+    }
+
     const PUSH_SPEED = 0.6;
     for (const ob of level.obstacles){
-      if (ob.falling || ob.kind === 'flyingBall') continue;
+      if (ob.falling || ob.kind === 'flyingBall' || ob.kind === 'dron') continue;
       const spec = OBSTACLE_SPECS[ob.kind];
       const hitX = ob.x + (ob.w-ob.hitW)/2;
       const hitTop = ob.y + (ob.h-ob.hitH);
@@ -3421,6 +4609,58 @@
     }
 
     if (!stuckToPlatform && player.vy >= 0){
+      if (player.ridingDrone){
+        const ob = player.ridingDrone;
+        const hitX = ob.x + (ob.w-ob.hitW)/2;
+        const hitTop = ob.y + (ob.h-ob.hitH);
+        const overlapX = player.x + player.w > hitX && player.x < hitX + ob.hitW;
+        const closeEnough = Math.abs(newBottom - hitTop) < 30;
+        if (overlapX && closeEnough && (ob.droneState || ob.done)){
+          player.y = hitTop - player.h;
+          player.vy = 0;
+          player.onGround = true;
+          stuckToPlatform = true;
+        } else if (!overlapX){
+          // no longer over the drone at all (walked off, or it flew out from
+          // under us) - stop being dragged by it; this does NOT make the
+          // drone turn back, only the hero's death does that (see respawn())
+          player.ridingDrone = null;
+          player.vx = 0;
+        }
+        // still hovering above it but too far vertically (e.g. mid-jump) -
+        // detaches the rider - only the hero's death (see respawn()) does
+      } else {
+        for (const ob of level.obstacles){
+          if (ob.kind !== 'dron' || ob.falling) continue;
+          const hitX = ob.x + (ob.w-ob.hitW)/2;
+          const hitTop = ob.y + (ob.h-ob.hitH);
+          const overlapX = player.x + player.w > hitX && player.x < hitX + ob.hitW;
+          if (overlapX && prevBottom <= hitTop + 1 && newBottom >= hitTop){
+            player.y = hitTop - player.h;
+            player.vy = 0;
+            player.onGround = true;
+            stuckToPlatform = true;
+            player.ridingDrone = ob;
+            if (!ob.droneState && !ob.done){
+              ob.droneState = 'shaking';
+              ob.forceReturn = false;
+              ob.launchT = 0;
+              ob.riseFromY = ob.y;
+              ob.startX = ob.x;
+              let landX = ob.x + 260;
+              for (const [gs, ge] of level.gaps){
+                if (gs >= ob.x - 20){ landX = ge + 60; break; }
+              }
+              ob.droneLandX = landX;
+              startDroneBuzz();
+            }
+            break;
+          }
+        }
+      }
+    }
+
+    if (!stuckToPlatform && player.vy >= 0){
       for (const p of level.platforms){
         const overlapX = player.x + player.w > p.x && player.x < p.x + p.w;
         if (overlapX && prevBottom <= p.y + 1 && newBottom >= p.y){
@@ -3433,7 +4673,7 @@
       }
       if (!player.onGround){
         for (const ob of level.obstacles){
-          if (ob.falling) continue;
+          if (ob.falling || ob.kind === 'dron') continue;
           const hitX = ob.x + (ob.w-ob.hitW)/2;
           const hitTop = ob.y + (ob.h-ob.hitH);
           const overlapX = player.x + player.w > hitX && player.x < hitX + ob.hitW;
@@ -3456,7 +4696,7 @@
         if (gx >= gs && gx <= ge && newBottom > CFG.GROUND_Y + 10){
           secretRoomState = 'fall';
           secretRoomT = 0;
-          secretRoomSide = (gx - gs < ge - gx) ? 'left' : 'right';
+          secretRoomSide = player.facing < 0 ? 'left' : 'right';
           player.x = CFG.W/2 - player.w/2;
           player.y = -40;
           player.vx = 0; player.vy = 0;
@@ -3538,21 +4778,32 @@
       if (en.type === 'popup'){
         en.timer -= dt;
         if (en.state === 'hidden'){
-          if (en.timer <= 0){ en.state = 'rising'; en.timer = 220; sfx.popup(); }
-        } else if (en.state === 'rising'){
-          const t = 1 - Math.max(0, en.timer)/220;
-          en.y = en.hiddenY + (en.peakY - en.hiddenY) * t;
-          if (en.timer <= 0){ en.state = 'up'; en.timer = 350; en.y = en.peakY; }
-        } else if (en.state === 'up'){
-          if (en.timer <= 0){ en.state = 'falling'; en.timer = 300; }
-        } else if (en.state === 'falling'){
-          const t = Math.max(0, en.timer)/300;
-          en.y = en.peakY + (en.hiddenY - en.peakY) * (1-t);
-          if (en.timer <= 0){ en.state = 'hidden'; en.timer = 2500+Math.random()*2500; en.y = en.hiddenY; }
+          if (en.timer <= 0){ en.state = 'active'; en.activeT = 0; sfx.popup(); }
+        } else if (en.state === 'active'){
+          en.activeT += dt;
+          const ACTIVE_DUR = 700;
+          const t = Math.min(1, en.activeT / ACTIVE_DUR);
+          // one continuous eased arc up and back down - velocity naturally
+          // reaches zero right at the peak instead of pausing there
+          const eased = Math.sin(t * Math.PI);
+          en.y = en.hiddenY + (en.peakY - en.hiddenY) * eased;
+          if (t >= 1){ en.state = 'hidden'; en.timer = 2500+Math.random()*2500; en.y = en.hiddenY; }
         }
-        if (en.state !== 'hidden' && invincible <= 0){
+        if (en.state !== 'hidden' && !inCarProtected){
           const overlap = player.x < en.x+en.w && player.x+player.w > en.x && player.y < en.y+en.h && player.y+player.h > en.y;
-          if (overlap){ loseLife(); return; }
+          if (overlap){
+            // rising up into a player standing above (or already-risen
+            // enemy resting under their feet) is a harmless bump, not a hit
+            const bumpedFromBelow = player.y + player.h <= en.y + en.h*0.4;
+            if (bumpedFromBelow){
+              en.state = 'hidden'; en.timer = 2500+Math.random()*2500; en.y = en.hiddenY;
+              score += 30; updateHud();
+              sfx.stomp();
+              coinPops.push({ x: en.x + en.w/2, y: en.y, vy:-3.2, t:0 });
+            } else if (invincible <= 0){
+              loseLife(); return;
+            }
+          }
         }
         continue;
       }
@@ -3577,6 +4828,19 @@
           if (en.x > en.x0 + en.range) en.dir = -1;
           if (en.x < en.x0 - en.range) en.dir = 1;
         }
+        if (currentLevelNum === 4 && !inCarProtected){
+          if (en.fireTimer === undefined) en.fireTimer = 800 + Math.random()*1500;
+          else en.fireTimer -= dt;
+          if (en.fireTimer <= 0 && Math.abs(player.x - en.x) < 320){
+            en.fireTimer = 2200 + Math.random()*1400;
+            const bcx = en.x + en.w/2, bcy = en.y + en.h/2;
+            const tx = player.x + player.w/2, ty = player.y + player.h/2;
+            const ang = Math.atan2(ty-bcy, tx-bcx);
+            const spd = 1.4;
+            bossSparks.push({x:bcx, y:bcy, vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd, t:0, life:400, trail:[], blue:true});
+            sfx.bossSpark();
+          }
+        }
       } else if (en.falling){
         en.vy += 0.5 * timeScale;
         en.y += en.vy * timeScale;
@@ -3599,7 +4863,11 @@
           en.spitWindup = 0;
           const scx = en.x + en.w/2, scy = en.y + en.h*0.4;
           const spd = 2.0;
-          slimeSpits.push({x:scx, y:scy, vx:spd*en.dir, vy:0, t:0, life:500, trail:[]});
+          if (currentLevelNum === 4){
+            bossSparks.push({x:scx, y:scy, vx:spd*en.dir, vy:0, t:0, life:500, trail:[], blue:true, small:true});
+          } else {
+            slimeSpits.push({x:scx, y:scy, vx:spd*en.dir, vy:0, t:0, life:500, trail:[]});
+          }
           sfx.slimeSpit();
           en.spitTimer = 2400 + Math.random()*2200;
         }
@@ -3625,7 +4893,7 @@
           en.pitFall = true;
           en.vy = 0;
         }
-        if (en.type === 'ordinary' && currentLevelNum === 3){
+        if ((en.type === 'ordinary' && currentLevelNum === 3) || (en.type === 'ordinary' && currentLevelNum === 4)){
           if (en.spitTimer === undefined) en.spitTimer = 1200 + Math.random()*2000;
           else en.spitTimer -= dt;
           if (en.spitTimer <= 0){
@@ -3642,10 +4910,13 @@
         }
       }
 
-      const overlap = player.x < en.x+en.w && player.x+player.w > en.x && player.y < en.y+en.h && player.y+player.h > en.y;
+      const useCarBox = drivingCar && en.type === 'flying';
+      const hbX = useCarBox ? drivingCar.x : player.x, hbY = useCarBox ? drivingCar.y : player.y;
+      const hbW = useCarBox ? drivingCar.w : player.w, hbH = useCarBox ? drivingCar.h : player.h;
+      const overlap = hbX < en.x+en.w && hbX+hbW > en.x && hbY < en.y+en.h && hbY+hbH > en.y;
       if (overlap){
         const wasFalling = en.type !== 'spiky' && player.vy >= 0 && prevBottom <= en.y + 6;
-        const slideKill = en.type === 'spiky' && player.crouching && Math.abs(player.vx) > 1.2;
+        const slideKill = (en.type === 'spiky' || (selectedHero === 'jutrek' && en.type === 'ordinary')) && player.crouching && Math.abs(player.vx) > 1.2;
         if (wasFalling || slideKill){
           if (en.type === 'flying'){
             en.knocked = true; en.falling = true; en.vy = -3;
@@ -3664,7 +4935,7 @@
             coinPops.push({ x: en.x + en.w/2, y: en.y, vy: -3.2, t: 0 });
           }
         } else if (invincible <= 0){
-          if (turboT > 0){
+          if (turboT > 0 || inCarProtected){
             if (en.type === 'flying'){
               en.knocked = true; en.falling = true; en.vy = -3;
             } else {
@@ -3695,6 +4966,25 @@
       level.enemies = level.enemies.filter(en => en.alive || en.dying);
     }
 
+    if (!(bossArenaEntered && level.boss && level.boss.alive)){
+      for (let i=bossSparks.length-1; i>=0; i--){
+        const s = bossSparks[i];
+        s.trail.push({x:s.x, y:s.y});
+        if (s.trail.length > 9) s.trail.shift();
+        s.x += s.vx*timeScale; s.y += s.vy*timeScale; s.t++;
+        const offscreen = s.x < camera.x-100 || s.x > camera.x+CFG.W+100 || s.y < -100 || s.y > CFG.H+100;
+        if (s.t > s.life || offscreen){ bossSparks.splice(i,1); continue; }
+        const hr = (s.small ? 6 : 10) * (currentLevelNum === 2 ? 1.7 : 1);
+        const hit = !inCarProtected && invincible<=0 && player.x < s.x+hr && player.x+player.w > s.x-hr &&
+                    player.y < s.y+hr && player.y+player.h > s.y-hr;
+        if (hit){
+          bossSparks.splice(i,1);
+          loseLife();
+          return;
+        }
+      }
+    }
+
     for (let i=slimeSpits.length-1; i>=0; i--){
       const s = slimeSpits[i];
       s.trail.push({x:s.x, y:s.y});
@@ -3703,7 +4993,7 @@
       const offscreen = s.x < camera.x-100 || s.x > camera.x+CFG.W+100 || s.y < -100 || s.y > CFG.H+100;
       if (s.t > s.life || offscreen){ slimeSpits.splice(i,1); continue; }
       const hr = 5;
-      const hit = invincible<=0 && player.x < s.x+hr && player.x+player.w > s.x-hr &&
+      const hit = !inCarProtected && invincible<=0 && player.x < s.x+hr && player.x+player.w > s.x-hr &&
                   player.y < s.y+hr && player.y+player.h > s.y-hr;
       if (hit){
         slimeSpits.splice(i,1);
@@ -3725,7 +5015,7 @@
     const playerCx = player.x + player.w/2, playerCy = player.y + player.h/2;
     for (const it of level.items){
       if (it.taken) continue;
-      if (it.type !== 'turbo' && it.type !== 'mushroom'){
+      if (it.type !== 'turbo' && it.type !== 'mushroom' && it.type !== 'crystal'){
         const icx = it.x + it.w/2, icy = it.y + it.h/2;
         const dx = playerCx - icx, dy = playerCy - icy;
         const dist = Math.hypot(dx, dy);
@@ -3744,6 +5034,7 @@
           if (player.vy < 0) player.vy *= Math.sqrt(0.14);
           sfx.mushroom();
         }
+        else if (it.type === 'crystal'){ invincible = 360; sfx.lifeUp(); }
         else { score += 10; sfx.coin(); }
         updateHud();
       }
@@ -3820,7 +5111,7 @@
     }
     animT += dt;
 
-    const isRunning = player.onGround && (Math.abs(player.vx) > 0.3 || ((keys.left || keys.right) && !inputLocked));
+    const isRunning = !carEntering && !drivingCar && !carExiting && player.onGround && (Math.abs(player.vx) > 0.3 || ((keys.left || keys.right) && !inputLocked));
     if (isRunning){
       const runFrame = Math.floor(animT/90)%4;
       if (runFrame !== lastStepFrame && (runFrame === 0 || runFrame === 2)){
@@ -3894,13 +5185,13 @@
   function drawSceneBackground(){
     const dispH = CFG.H + 4;
     const scale = dispH / WORLD_IMGS.bg.naturalHeight;
-    const dispW = WORLD_IMGS.bg.naturalWidth * scale;
+    const dispW = Math.round(WORLD_IMGS.bg.naturalWidth * scale);
     const parallax = 0.25;
     const offset = camera.x * parallax;
     let startX = -(offset % dispW);
     if (startX > 0) startX -= dispW;
     for (let x = startX; x < CFG.W; x += dispW){
-      ctx.drawImage(WORLD_IMGS.bg, x, -4, dispW, dispH);
+      ctx.drawImage(WORLD_IMGS.bg, Math.round(x), -4, dispW, dispH);
     }
   }
 
@@ -3931,7 +5222,11 @@
     for (let n=treeFirst; n<=treeLast; n++){
       if (excludedTreeCells.has(n)) continue;
       const stagger = (Math.abs(n)%2)*40;
-      const bx = n*TREE_SPACING - treeOffset + stagger;
+      let bx = n*TREE_SPACING - treeOffset + stagger;
+      if (currentLevelNum === 4 && level.quiz1X != null){
+        const worldX = n*TREE_SPACING + stagger;
+        if (Math.abs(worldX - level.quiz1X) < 130) bx -= 220;
+      }
       const scale = (Math.abs(n)%3===0) ? 0.8 : 1;
       drawTree(bx, CFG.GROUND_Y - MIDGROUND_RAISE, scale);
     }
@@ -3944,7 +5239,11 @@
     for (let n=bushFirst; n<=bushLast; n++){
       if (excludedBushCells.has(n)) continue;
       const stagger = (Math.abs(n)%3)*35;
-      const bx = n*BUSH_SPACING - bushOffset + stagger;
+      let bx = n*BUSH_SPACING - bushOffset + stagger;
+      if (currentLevelNum === 4 && level.quiz1X != null){
+        const worldX = n*BUSH_SPACING + stagger;
+        if (Math.abs(worldX - level.quiz1X) < 100) bx -= 170;
+      }
       const scale = (Math.abs(n)%4===0) ? 0.8 : 1;
       drawBush(bx, CFG.GROUND_Y - MIDGROUND_RAISE, scale);
     }
@@ -3996,7 +5295,7 @@
     if (!level.quizSpots) return;
     const viewL = camera.x, viewR = camera.x + CFG.W;
     for (const q of level.quizSpots){
-      const frames = (currentLevelNum === 2 ? quizSceneImgsLevel2 : currentLevelNum === 3 ? quizSceneImgsLevel3 : quizSceneImgs)[q.quizIndex];
+      const frames = (currentLevelNum === 2 ? quizSceneImgsLevel2 : currentLevelNum === 3 ? quizSceneImgsLevel3 : currentLevelNum === 4 ? quizSceneImgsLevel4 : quizSceneImgs)[q.quizIndex];
       const sceneImg = frames[Math.floor(animT/QUIZ_SCENE_FRAME_MS) % frames.length];
       if (!imgReady(sceneImg)) continue;
       const dispH = QUIZ_SCENE_H * (activeQuizzes()[q.quizIndex].sceneScale||1);
@@ -4033,19 +5332,28 @@
 
   function drawGround(){
     const viewL = camera.x, viewR = camera.x + CFG.W;
-    const pat = getGroundPattern();
-    const scale = imgReady(WORLD_IMGS.ground) ? GROUND_TILE_W / WORLD_IMGS.ground.naturalWidth : 0;
+    const tileW = WORLD.groundTileW || GROUND_TILE_W;
+    const scale = imgReady(WORLD_IMGS.ground) ? tileW / WORLD_IMGS.ground.naturalWidth : 0;
     const dispH = WORLD_IMGS.ground.naturalHeight * scale;
     const surfaceInset = WORLD.groundInset * scale;
     const drawY = CFG.GROUND_Y - surfaceInset;
 
-    if (pat){
+    if (imgReady(WORLD_IMGS.ground)){
+      const tileWi = Math.max(1, Math.round(tileW));
+      const dispHi = Math.ceil(dispH);
       for (const [gs,ge] of level.groundSegments){
         if (ge < viewL || gs > viewR) continue;
         const x0 = Math.max(gs, viewL), x1 = Math.min(ge, viewR);
-        pat.setTransform(new DOMMatrix().translate(px(gs - camera.x), px(drawY)).scale(scale, scale));
-        ctx.fillStyle = pat;
-        ctx.fillRect(px(x0-camera.x), px(drawY), px(x1-x0), Math.ceil(dispH));
+        let tileX = gs + Math.floor((x0 - gs) / tileWi) * tileWi;
+        for (; tileX < x1; tileX += tileWi){
+          const drawW = Math.min(tileWi, ge - tileX);
+          if (drawW < tileWi){
+            const srcW = WORLD_IMGS.ground.naturalWidth * (drawW / tileWi);
+            ctx.drawImage(WORLD_IMGS.ground, 0, 0, srcW, WORLD_IMGS.ground.naturalHeight, px(tileX - camera.x), px(drawY), drawW, dispHi);
+          } else {
+            ctx.drawImage(WORLD_IMGS.ground, px(tileX - camera.x), px(drawY), tileWi, dispHi);
+          }
+        }
       }
     } else {
       for (const [gs,ge] of level.groundSegments){
@@ -4061,15 +5369,16 @@
       const edgeW = WORLD_IMGS.edge.naturalWidth * edgeScale;
       const edgeH = WORLD_IMGS.edge.naturalHeight * edgeScale;
       const edgeDrawY = CFG.GROUND_Y - WORLD.groundInset * edgeScale;
+      const edgeOffsetX = WORLD.edgeDrawOffsetX || 0;
       for (const [gapS, gapE] of level.gaps){
-        const rx = gapS;
+        const rx = gapS - edgeOffsetX;
         if (rx+edgeW > viewL-10 && rx < viewR+10){
           ctx.drawImage(WORLD_IMGS.edge, px(rx-camera.x), px(edgeDrawY), edgeW, edgeH);
         }
-        const lx = gapE - edgeW;
+        const lx = gapE + edgeOffsetX - edgeW;
         if (lx+edgeW > viewL-10 && lx < viewR+10){
           ctx.save();
-          ctx.translate(px(gapE-camera.x), px(edgeDrawY));
+          ctx.translate(px(gapE+edgeOffsetX-camera.x), px(edgeDrawY));
           ctx.scale(-1,1);
           ctx.drawImage(WORLD_IMGS.edge, 0, 0, edgeW, edgeH);
           ctx.restore();
@@ -4105,7 +5414,8 @@
       if (ob.x+ob.w < viewL || ob.x > viewR) continue;
       const sx = px(ob.x-camera.x), sy = px(ob.y);
       if (ob.kind === 'flyingBall'){
-        const img = flyingEnemySpritesL3[(ob.spriteIdx||0) % flyingEnemySpritesL3.length];
+        const flyingPool = flyingSpritePool();
+        const img = flyingPool[(ob.spriteIdx||0) % flyingPool.length];
         if (imgReady(img)){
           const cx = sx+ob.w/2, cy = sy+ob.h/2;
           ctx.save();
@@ -4118,11 +5428,23 @@
       }
       const spec = OBSTACLE_SPECS[ob.kind];
       if (spec.roofOverlay) continue;
-      if (imgReady(spec.img)){
-        ctx.drawImage(spec.img, sx, sy, ob.w, ob.h);
+      const shakeX = ob.shakeOffset || 0;
+      const shakeFrame = ob === drivingCar && spec.img2 && Math.floor(animT/90)%2===1;
+      const img = ob.kind === 'screen' && imgReady(OBSTACLE_SPECS.screenOff.img) ? OBSTACLE_SPECS.screenOff.img
+        : (shakeFrame && imgReady(spec.img2) ? spec.img2 : spec.img);
+      if (imgReady(img)){
+        if (ob.flip){
+          ctx.save();
+          ctx.translate(sx+shakeX+ob.w, sy);
+          ctx.scale(-1,1);
+          ctx.drawImage(img, 0, 0, ob.w, ob.h);
+          ctx.restore();
+        } else {
+          ctx.drawImage(img, sx+shakeX, sy, ob.w, ob.h);
+        }
       } else {
         ctx.fillStyle = COLORS.woodDark;
-        ctx.fillRect(sx, sy, ob.w, ob.h);
+        ctx.fillRect(sx+shakeX, sy, ob.w, ob.h);
       }
     }
   }
@@ -4163,6 +5485,20 @@
         ctx.fillStyle = 'rgba(255,255,255,0.85)';
         ctx.fillRect(-2, -4, 2, 2);
         ctx.restore();
+      } else if (it.type === 'crystal'){
+        ctx.save();
+        ctx.translate(cx, cy);
+        const pulse = 1 + Math.sin(animT*0.01 + it.x*0.05)*0.12;
+        ctx.scale(pulse, pulse);
+        ctx.fillStyle = COLORS.black;
+        drawDiamond(0, 0, it.w/2+2, it.h/2+3);
+        ctx.fillStyle = COLORS.crystalCyanDark;
+        drawDiamond(0, 1, it.w/2, it.h/2+1);
+        ctx.fillStyle = COLORS.crystalCyan;
+        drawDiamond(-1, -1, it.w/2-3, it.h/2-3);
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.fillRect(-2, -4, 2, 2);
+        ctx.restore();
       } else if (it.type === 'mushroom'){
         if (imgReady(mushroomImg)){
           const s = it.w * 1.7;
@@ -4179,7 +5515,8 @@
   }
 
   function drawFlyingEnemySpriteL3(cx, cy, r, wobble, spriteIdx){
-    const img = flyingEnemySpritesL3[spriteIdx % flyingEnemySpritesL3.length];
+    const flyingPool = flyingSpritePool();
+    const img = flyingPool[spriteIdx % flyingPool.length];
     if (!imgReady(img)) return;
     const dispSize = r * 2.6;
     ctx.drawImage(img, cx-dispSize/2, cy + Math.sin(wobble)*1.5 - dispSize/2, dispSize, dispSize);
@@ -4239,24 +5576,29 @@
           if (Math.floor(en.deathTimer/3)%2===0) continue;
           ctx.save();
           ctx.globalAlpha = 0.45;
-          if (currentLevelNum === 3) drawFlyingEnemySpriteL3(cx, cy, 11.7, wobble, en.spriteIdx||0);
+          if (currentLevelNum === 3 || currentLevelNum === 4) drawFlyingEnemySpriteL3(cx, cy, 11.7, wobble, en.spriteIdx||0);
           else drawSadSmiley(cx, cy, 13, wobble);
           ctx.restore();
           continue;
         }
-        if (currentLevelNum === 3) drawFlyingEnemySpriteL3(cx, cy, 11.7, wobble, en.spriteIdx||0);
+        if (currentLevelNum === 3 || currentLevelNum === 4) drawFlyingEnemySpriteL3(cx, cy, 11.7, wobble, en.spriteIdx||0);
         else drawSadSmiley(cx, cy, 13, wobble);
         continue;
       }
 
-      const framesSet = en.type === 'spiky'
+      const framesSet = currentLevelNum===4 ? (en.type === 'spiky' ? snailSpikesFramesL4 : snailFramesL4) : (en.type === 'spiky'
         ? (currentLevelNum===3 ? snailSpikyFramesL3 : snailSpikyFrames)
-        : (currentLevelNum===3 ? snailOrdinaryFramesL3 : snailOrdinaryFrames);
-      const frame = framesSet[Math.floor(animT/220)%2];
+        : (currentLevelNum===3 ? snailOrdinaryFramesL3 : snailOrdinaryFrames));
+      const frame = framesSet[Math.floor(animT/220)%framesSet.length];
       if (!imgReady(frame)) continue;
 
-      const spriteH = en.h + 14;
-      const spriteW = spriteH * (frame.naturalWidth/frame.naturalHeight);
+      let spriteH = en.h + 14;
+      let spriteW = spriteH * (frame.naturalWidth/frame.naturalHeight);
+      if (currentLevelNum === 4 && en.type === 'spiky' && imgReady(snailFramesL4[0])){
+        const refImg = snailFramesL4[0];
+        spriteW = spriteH * (refImg.naturalWidth/refImg.naturalHeight);
+        spriteH = spriteW * (frame.naturalHeight/frame.naturalWidth);
+      }
       const shakeX = en.spitWindup > 0 ? (Math.random()-0.5)*4 : 0;
       const cx = px(en.x-camera.x) + en.w/2 + shakeX;
       const drawX = cx - spriteW/2;
@@ -4426,10 +5768,51 @@
     const cx = sx+boss.w/2, cy = sy+boss.h/2;
     if (boss.alive && bossArenaEntered) drawBossAura(cx, cy, Math.max(dispW,dispH)*0.62);
     ctx.save();
+    if (boss.alive && !boss.dying){
+      const sway = Math.sin(idleT*0.7)*0.035;
+      ctx.translate(cx, cy);
+      ctx.rotate(sway);
+      ctx.translate(-cx, -cy);
+    }
     if (boss.hitFlash > 0) ctx.filter = 'brightness(2.3) saturate(0.5)';
     else if (boss.burstWindup > 0) ctx.filter = 'brightness(1.4) saturate(1.3)';
     else if (boss.alive && !boss.dying) ctx.filter = `brightness(${(1 + Math.sin(idleT*1.7)*0.06).toFixed(3)})`;
-    ctx.drawImage(bImg, cx-dispW/2, cy-dispH/2, dispW, dispH);
+    const useJutrekLayers = currentLevelNum === 4 && selectedHero === 'jutrek' &&
+      imgReady(bossImgJutrekL4Panels) && imgReady(bossImgJutrekL4Body) && imgReady(bossImgJutrekL4Head);
+    if (currentLevelNum === 4 && boss.alive && !boss.dying){
+      const glitchNow = Math.random() < 0.22;
+      const glitchX = glitchNow ? (Math.random()-0.5)*18 : 0;
+      const glitchY = glitchNow ? (Math.random()-0.5)*7 : 0;
+      if (useJutrekLayers){
+        // panels flicker on their own independent rhythm, unrelated to the
+        // character's own glitch/breathe, so the scene doesn't move as one
+        // flat rigid image
+        ctx.save();
+        ctx.globalAlpha = 0.7 + 0.3*Math.sin(animT*0.011) * (Math.random()<0.08 ? 0.2 : 1);
+        ctx.drawImage(bossImgJutrekL4Panels, cx-dispW/2, cy-dispH/2, dispW, dispH);
+        ctx.restore();
+      }
+      const bodyImg = useJutrekLayers ? bossImgJutrekL4Body : bImg;
+      if (glitchNow && Math.random() < 0.65){
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.globalAlpha = 0.4;
+        ctx.filter = 'hue-rotate(180deg) saturate(4) brightness(1.3)';
+        ctx.drawImage(bodyImg, cx-dispW/2+glitchX-7, cy-dispH/2+glitchY, dispW, dispH);
+        ctx.drawImage(bodyImg, cx-dispW/2+glitchX+7, cy-dispH/2+glitchY, dispW, dispH);
+        ctx.restore();
+      }
+      ctx.globalAlpha = glitchNow ? 0.3 + Math.random()*0.4 : 0.94 + Math.random()*0.06;
+      ctx.drawImage(bodyImg, cx-dispW/2+glitchX, cy-dispH/2+glitchY, dispW, dispH);
+      if (useJutrekLayers){
+        // head gets its own small independent bob on top of the shared
+        // glitch offset, so it doesn't feel welded to the body
+        const headBobY = Math.sin(idleT*2.3)*1.6;
+        ctx.drawImage(bossImgJutrekL4Head, cx-dispW/2+glitchX, cy-dispH/2+glitchY+headBobY, dispW, dispH);
+      }
+    } else {
+      ctx.drawImage(bImg, cx-dispW/2, cy-dispH/2, dispW, dispH);
+    }
     ctx.restore();
   }
 
@@ -4451,7 +5834,7 @@
           ctx.fillStyle = (i%2===0) ? '#e8e8e8' : '#3a3a3a';
           ctx.fillRect(tsx-size/2, tsy-size/2, size, size);
         } else {
-          ctx.fillStyle = '#ff8a3d';
+          ctx.fillStyle = s.blue ? '#4fb8ff' : '#ff8a3d';
           ctx.beginPath();
           ctx.arc(tsx, tsy, size, 0, Math.PI*2);
           ctx.fill();
@@ -4501,15 +5884,15 @@
       } else {
         ctx.save();
         ctx.globalAlpha = 0.55;
-        ctx.fillStyle = '#ff8a3d';
+        ctx.fillStyle = s.blue ? '#2a8fff' : '#ff8a3d';
         ctx.beginPath(); ctx.arc(sx, sy, 14*scale, 0, Math.PI*2); ctx.fill();
         ctx.restore();
         ctx.save();
-        ctx.fillStyle = '#ffe066';
+        ctx.fillStyle = s.blue ? '#7bd9ff' : '#ffe066';
         ctx.beginPath(); ctx.arc(sx, sy, 8*scale, 0, Math.PI*2); ctx.fill();
         ctx.restore();
         ctx.save();
-        ctx.fillStyle = '#fff6d0';
+        ctx.fillStyle = s.blue ? '#e6faff' : '#fff6d0';
         ctx.beginPath(); ctx.arc(sx, sy, 3.5*scale, 0, Math.PI*2); ctx.fill();
         ctx.restore();
       }
@@ -4549,14 +5932,48 @@
 
   function drawMeteors(){
     for (const m of meteors){
+      const sx = px(m.x-camera.x), sy = px(m.y);
+      if (m.plainOrb){
+        const scale = m.sizeScale || 1;
+        if (m.trail){
+          const n = m.trail.length;
+          for (let i=0; i<n; i++){
+            const tr = m.trail[i];
+            const frac = i/n;
+            const trailAlpha = frac * 0.5;
+            if (trailAlpha < 0.02) continue;
+            const tsx = px(tr.x-camera.x), tsy = px(tr.y);
+            const size = (2 + frac*7) * scale;
+            ctx.save();
+            ctx.globalAlpha = trailAlpha;
+            ctx.fillStyle = '#ff8a3d';
+            ctx.beginPath(); ctx.arc(tsx, tsy, size, 0, Math.PI*2); ctx.fill();
+            ctx.restore();
+          }
+        }
+        ctx.save();
+        ctx.globalAlpha = 0.55;
+        ctx.fillStyle = '#ff8a3d';
+        ctx.beginPath(); ctx.arc(sx, sy, 9*scale, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+        ctx.save();
+        ctx.fillStyle = '#ffcf5c';
+        ctx.beginPath(); ctx.arc(sx, sy, 5*scale, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+        ctx.save();
+        ctx.fillStyle = '#fff6d0';
+        ctx.beginPath(); ctx.arc(sx, sy, 2.2*scale, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+        continue;
+      }
       const img = meteorImgsL3[m.spriteIdx % meteorImgsL3.length];
       if (!imgReady(img)) continue;
-      const sx = px(m.x-camera.x), sy = px(m.y);
       const ang = Math.atan2(m.vy, m.vx);
       const dispH = 34, dispW = dispH * (img.naturalWidth/img.naturalHeight);
       ctx.save();
       ctx.translate(sx, sy);
       ctx.rotate(ang - Math.PI*3/4);
+      if (m.blue) ctx.filter = 'hue-rotate(180deg) saturate(1.6) brightness(1.15)';
       ctx.drawImage(img, -dispW*0.28, -dispH*0.85, dispW, dispH);
       ctx.restore();
     }
@@ -4569,9 +5986,9 @@
       ctx.save();
       ctx.globalAlpha = Math.max(0, 1 - frac);
       const r = 10 + frac*30;
-      ctx.fillStyle = '#ffcf5c';
+      ctx.fillStyle = b.blue ? '#bfeeff' : '#ffcf5c';
       ctx.beginPath(); ctx.arc(sx, sy, r*0.5, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle = '#ff8a3d';
+      ctx.fillStyle = b.blue ? '#2a8fff' : '#ff8a3d';
       ctx.beginPath(); ctx.arc(sx, sy, r, 0, Math.PI*2); ctx.fill();
       ctx.restore();
     }
@@ -4583,7 +6000,7 @@
       const sx = px(s.x-camera.x), sy = px(s.y);
       ctx.save();
       ctx.globalAlpha = Math.max(0, 1 - frac);
-      ctx.fillStyle = s.warm ? '#ffcf3a' : '#ff5a3a';
+      ctx.fillStyle = s.blue ? (s.warm ? '#8fe0ff' : '#2a8fff') : (s.warm ? '#ffcf3a' : '#ff5a3a');
       const size = 1.6 - frac*0.9;
       ctx.fillRect(sx-size/2, sy-size/2, size, size);
       ctx.restore();
@@ -4604,13 +6021,46 @@
           ctx.restore();
         }
       }
-      const bulletImg = currentCannonBulletImg();
-      if (imgReady(bulletImg)){
+      if (currentLevelNum === 4){
         const sx = px(b.x-camera.x), sy = px(b.y);
-        const isL2 = currentLevelNum === 2;
-        const bw = isL2 ? 28 : (currentLevelNum === 3 ? 19 : 14);
-        const bh = bw * (bulletImg.naturalHeight/bulletImg.naturalWidth);
-        ctx.drawImage(bulletImg, sx-bw/2, sy-bh/2, bw, bh);
+        if (b.trail){
+          const n = b.trail.length;
+          for (let i=0; i<n; i++){
+            const tr = b.trail[i];
+            const frac = i/n;
+            const trailAlpha = frac * 0.5;
+            if (trailAlpha < 0.02) continue;
+            const tsx = px(tr.x-camera.x), tsy = px(tr.y);
+            const size = (2 + frac*6);
+            ctx.save();
+            ctx.globalAlpha = trailAlpha;
+            ctx.fillStyle = '#ffcf5c';
+            ctx.beginPath(); ctx.arc(tsx, tsy, size, 0, Math.PI*2); ctx.fill();
+            ctx.restore();
+          }
+        }
+        ctx.save();
+        ctx.globalAlpha = 0.55;
+        ctx.fillStyle = '#e0a800';
+        ctx.beginPath(); ctx.arc(sx, sy, 10, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+        ctx.save();
+        ctx.fillStyle = '#ffe066';
+        ctx.beginPath(); ctx.arc(sx, sy, 6, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+        ctx.save();
+        ctx.fillStyle = '#fffbe0';
+        ctx.beginPath(); ctx.arc(sx, sy, 2.6, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+      } else {
+        const bulletImg = currentCannonBulletImg();
+        if (imgReady(bulletImg)){
+          const sx = px(b.x-camera.x), sy = px(b.y);
+          const isL2 = currentLevelNum === 2;
+          const bw = isL2 ? 28 : (currentLevelNum === 3 ? 19 : 14);
+          const bh = bw * (bulletImg.naturalHeight/bulletImg.naturalWidth);
+          ctx.drawImage(bulletImg, sx-bw/2, sy-bh/2, bw, bh);
+        }
       }
     }
   }
@@ -4906,10 +6356,18 @@
   const BRICK_FLOOR_COLORS_L2 = ['#132a1a', '#1a3320', '#0f2015', '#1f3a26'];
   const BRICK_WALL_COLORS_L3 = ['#4a1f14', '#5c2a18', '#3a160e', '#6b3420'];
   const BRICK_FLOOR_COLORS_L3 = ['#3a160e', '#4a1f14', '#2c100a', '#5c2a18'];
+  const BRICK_WALL_COLORS_L4 = ['#5a6c98', '#6478a8', '#4e5f88', '#7088b8'];
+  const BRICK_FLOOR_COLORS_L4 = ['#4e5f88', '#586a98', '#404f74', '#6070a0'];
   const ROOM_BG_STAINS_L3 = Array.from({length: 7}, () => ({
     x: 30 + Math.random()*(640-60),
     y: 20 + Math.random()*220,
     r: 35 + Math.random()*55,
+  }));
+  const ROOM_BG_LIGHTS_L4 = Array.from({length: 45}, () => ({
+    x: Math.random()*CFG.W,
+    y: Math.random()*CFG.H,
+    w: 3 + Math.random()*10,
+    color: ['#8fe0ff','#bff2ff','#ffffff','#5cc8ff'][Math.floor(Math.random()*4)],
   }));
   function hashInt(a, b){
     let h = (a * 374761393 + b * 668265263) | 0;
@@ -4941,11 +6399,12 @@
   function drawSecretRoom(){
     const isLevel2 = currentLevelNum === 2;
     const isLevel3 = currentLevelNum === 3;
-    const wallColors = isLevel3 ? BRICK_WALL_COLORS_L3 : (isLevel2 ? BRICK_WALL_COLORS_L2 : BRICK_WALL_COLORS);
-    const floorColors = isLevel3 ? BRICK_FLOOR_COLORS_L3 : (isLevel2 ? BRICK_FLOOR_COLORS_L2 : BRICK_FLOOR_COLORS);
-    const mortar = isLevel3 ? '#1a0a06' : (isLevel2 ? '#08170e' : '#0e081a');
-    const wallHighlight = isLevel3 ? '#7a3f22' : (isLevel2 ? '#2e5a3a' : '#4a2e6a');
-    const platHighlight = isLevel3 ? '#8a4a28' : (isLevel2 ? '#3a6a48' : '#5a3a7a');
+    const isLevel4 = currentLevelNum === 4;
+    const wallColors = isLevel3 ? BRICK_WALL_COLORS_L3 : (isLevel2 ? BRICK_WALL_COLORS_L2 : (isLevel4 ? BRICK_WALL_COLORS_L4 : BRICK_WALL_COLORS));
+    const floorColors = isLevel3 ? BRICK_FLOOR_COLORS_L3 : (isLevel2 ? BRICK_FLOOR_COLORS_L2 : (isLevel4 ? BRICK_FLOOR_COLORS_L4 : BRICK_FLOOR_COLORS));
+    const mortar = isLevel3 ? '#1a0a06' : (isLevel2 ? '#08170e' : (isLevel4 ? '#242e48' : '#0e081a'));
+    const wallHighlight = isLevel3 ? '#7a3f22' : (isLevel2 ? '#2e5a3a' : (isLevel4 ? '#7bc8ff' : '#4a2e6a'));
+    const platHighlight = isLevel3 ? '#8a4a28' : (isLevel2 ? '#3a6a48' : (isLevel4 ? '#9bdcff' : '#5a3a7a'));
 
     if (isLevel3){
       const grad = ctx.createLinearGradient(0, 0, 0, CFG.H);
@@ -4968,6 +6427,34 @@
         ctx.fillRect(x, 0, 4, CFG.H);
       }
       ctx.restore();
+    } else if (isLevel4){
+      const grad = ctx.createLinearGradient(0, 0, 0, CFG.H);
+      grad.addColorStop(0, '#5a6c98');
+      grad.addColorStop(0.45, '#4a5c88');
+      grad.addColorStop(1, '#333f60');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, CFG.W, CFG.H);
+      ctx.save();
+      ctx.globalAlpha = 0.16;
+      ctx.fillStyle = '#bfe8ff';
+      for (let x = 0; x < CFG.W; x += 40){
+        ctx.fillRect(x, 0, 3, CFG.H);
+      }
+      ctx.restore();
+      ctx.save();
+      ctx.globalAlpha = 0.06;
+      ctx.fillStyle = '#000000';
+      for (let x = 0; x < CFG.W; x += 8){
+        ctx.fillRect(x, 0, 4, CFG.H);
+      }
+      ctx.restore();
+      for (const l of ROOM_BG_LIGHTS_L4){
+        ctx.save();
+        ctx.globalAlpha = 0.85;
+        ctx.fillStyle = l.color;
+        ctx.fillRect(l.x, l.y, l.w, 2);
+        ctx.restore();
+      }
     } else {
       ctx.fillStyle = '#050208';
       ctx.fillRect(0, 0, CFG.W, CFG.H);
@@ -5021,10 +6508,10 @@
 
     for (const en of activeRoomEnemies()){
       if (!en.alive && !en.dying) continue;
-      const framesSet = en.type === 'spiky'
+      const framesSet = currentLevelNum===4 ? (en.type === 'spiky' ? snailSpikesFramesL4 : snailFramesL4) : (en.type === 'spiky'
         ? (currentLevelNum===3 ? snailSpikyFramesL3 : snailSpikyFrames)
-        : (currentLevelNum===3 ? snailOrdinaryFramesL3 : snailOrdinaryFrames);
-      const enFrame = framesSet[Math.floor(animT/220)%2];
+        : (currentLevelNum===3 ? snailOrdinaryFramesL3 : snailOrdinaryFrames));
+      const enFrame = framesSet[Math.floor(animT/220)%framesSet.length];
       if (!imgReady(enFrame)) continue;
       const spriteH = en.h + 14;
       const spriteW = spriteH * (enFrame.naturalWidth/enFrame.naturalHeight);
@@ -5087,11 +6574,11 @@
     drawQuizSpots();
     drawPlatforms();
     drawCannon();
-    if (pipeState) drawPlayer();
+    if (pipeState || carEntering || carExiting || player.ridingDrone) drawPlayer();
     drawObstacles();
     drawEntryHints();
     drawItems();
-    drawFlag();
+    if (currentLevelNum !== 4) drawFlag();
     drawBoss();
     drawBossSparks();
     drawSlimeSpits();
@@ -5101,7 +6588,7 @@
     drawBossProjectiles();
     drawBossFx();
     drawEnemies();
-    if (!pipeState) drawPlayer();
+    if (!pipeState && !drivingCar && !carEntering && !carExiting && !player.ridingDrone) drawPlayer();
     drawObstaclesOverlay();
     drawCoinPops();
     drawBossHealthBar();
