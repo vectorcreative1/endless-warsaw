@@ -2999,9 +2999,10 @@ window.addEventListener('error', function(e){
   }
 
   const TEMP_FORCE_DRONE_TEST = false;
-  const DEBUG_START_LEVEL_PARAM = Number(new URLSearchParams(location.search).get('level'));
+  const ALLOW_DEBUG_URL_PARAMS = true; // set to false before public launch to block ?level=/?spot= links
+  const DEBUG_START_LEVEL_PARAM = ALLOW_DEBUG_URL_PARAMS ? Number(new URLSearchParams(location.search).get('level')) : NaN;
   const DEBUG_START_LEVEL = [1,2,3,4].includes(DEBUG_START_LEVEL_PARAM) ? DEBUG_START_LEVEL_PARAM : (TEMP_FORCE_DRONE_TEST ? 4 : 1);
-  const DEBUG_START_SPOT = new URLSearchParams(location.search).get('spot') || (TEMP_FORCE_DRONE_TEST ? 'drone' : null);
+  const DEBUG_START_SPOT = ALLOW_DEBUG_URL_PARAMS ? (new URLSearchParams(location.search).get('spot') || (TEMP_FORCE_DRONE_TEST ? 'drone' : null)) : null;
   function resetGame(){
     heroStats = HERO_STATS[selectedHero] || HERO_STATS.dzisiek;
     maxLives = heroStats.maxLives;
