@@ -599,6 +599,8 @@
   </div>
   <div class="credit">VECTRA × ENDLESS — 8BIT DEMO</div>
 
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-check-compat.js"></script>
 <script>
 window.addEventListener('error', function(e){
   var el = document.getElementById('debug-error-box');
@@ -615,6 +617,31 @@ window.addEventListener('error', function(e){
 
   const FIRESTORE_PROJECT = 'vectragame';
   const FIRESTORE_DOCS_URL = `https://firestore.googleapis.com/v1/projects/${FIRESTORE_PROJECT}/databases/(default)/documents`;
+
+  let appCheck = null;
+  try {
+    firebase.initializeApp({
+      apiKey: "AIzaSyAHdp_e1wZVswLDX82HHVoSodmwG0ifRsM",
+      authDomain: "vectragame.firebaseapp.com",
+      projectId: "vectragame",
+      storageBucket: "vectragame.firebasestorage.app",
+      messagingSenderId: "338788252546",
+      appId: "1:338788252546:web:ab3f98f83630cf60782d9b",
+    });
+    appCheck = firebase.appCheck();
+    appCheck.activate(
+      new firebase.appCheck.ReCaptchaEnterpriseProvider('6Lf2Pq4tAAAAAKtvHBAcQG_MQ_zKCsVW34pj_XsD'),
+      true
+    );
+  } catch (e){ console.error('App Check init failed', e); }
+
+  async function appCheckHeaders(){
+    if (!appCheck) return {};
+    try {
+      const { token } = await appCheck.getToken();
+      return { 'X-Firebase-AppCheck': token };
+    } catch (e){ console.error('App Check token fetch failed', e); return {}; }
+  }
 
   function loadSavedField(key){
     try { return localStorage.getItem(key) || ''; } catch (e){ return ''; }
@@ -641,7 +668,7 @@ window.addEventListener('error', function(e){
     try {
       const res = await fetch(`${FIRESTORE_DOCS_URL}/scores`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(await appCheckHeaders()) },
         body: JSON.stringify({
           fields: {
             name: { stringValue: cleanName },
@@ -656,7 +683,7 @@ window.addEventListener('error', function(e){
       }
       await fetch(`${FIRESTORE_DOCS_URL}/rate_limits/${encodeURIComponent(token)}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(await appCheckHeaders()) },
         body: JSON.stringify({ fields: { lastWrite: { timestampValue: new Date().toISOString() } } }),
       });
     } catch (e){ console.error('submitScore failed', e); }
@@ -666,7 +693,7 @@ window.addEventListener('error', function(e){
     const nickId = encodeURIComponent(nick.trim().toLowerCase());
     const emailLower = email.trim().toLowerCase();
     try {
-      const res = await fetch(`${FIRESTORE_DOCS_URL}/nicknames/${nickId}`);
+      const res = await fetch(`${FIRESTORE_DOCS_URL}/nicknames/${nickId}`, { headers: await appCheckHeaders() });
       if (res.ok){
         const doc = await res.json();
         const ownerEmail = doc.fields && doc.fields.email ? doc.fields.email.stringValue : null;
@@ -675,7 +702,7 @@ window.addEventListener('error', function(e){
       if (res.status === 404){
         const createRes = await fetch(`${FIRESTORE_DOCS_URL}/nicknames?documentId=${nickId}`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...(await appCheckHeaders()) },
           body: JSON.stringify({ fields: { email: { stringValue: emailLower } } }),
         });
         if (!createRes.ok){
@@ -694,7 +721,7 @@ window.addEventListener('error', function(e){
     try {
       const res = await fetch(`${FIRESTORE_DOCS_URL}:runQuery`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(await appCheckHeaders()) },
         body: JSON.stringify({
           structuredQuery: {
             from: [{ collectionId: 'scores' }],
@@ -1404,7 +1431,7 @@ window.addEventListener('error', function(e){
     gain.gain.value = 0.0001;
     osc.connect(gain).connect(audioCtx.destination);
     const now = audioCtx.currentTime;
-    gain.gain.setTargetAtTime(0.027, now, 0.08);
+    gain.gain.setTargetAtTime(0.0135, now, 0.08);
     osc.start(now);
     carEngineNodes = {osc, gain};
   }
@@ -1412,7 +1439,7 @@ window.addEventListener('error', function(e){
     if (!carEngineNodes || !audioCtx) return;
     const now = audioCtx.currentTime;
     carEngineNodes.osc.frequency.setTargetAtTime(52 + vxRatio*85, now, 0.1);
-    carEngineNodes.gain.gain.setTargetAtTime(0.027 + vxRatio*0.03, now, 0.1);
+    carEngineNodes.gain.gain.setTargetAtTime(0.0135 + vxRatio*0.015, now, 0.1);
   }
   function stopCarEngine(){
     if (!carEngineNodes || !audioCtx) return;
@@ -1438,7 +1465,7 @@ window.addEventListener('error', function(e){
     lfo.connect(lfoGain).connect(gain.gain);
     osc.connect(gain).connect(audioCtx.destination);
     const now = audioCtx.currentTime;
-    gain.gain.setTargetAtTime(0.045, now, 0.08);
+    gain.gain.setTargetAtTime(0.0225, now, 0.08);
     osc.start(now);
     lfo.start(now);
     droneBuzzNodes = { osc, gain, lfo, lfoGain };
