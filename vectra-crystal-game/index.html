@@ -240,15 +240,28 @@
     );
     padding:26px 34px; cursor:pointer;
     box-shadow:0 5px 0 #8a4a10, inset 0 2px 0 rgba(255,255,255,.55), inset 0 -8px 0 rgba(190,80,20,.45);
+    transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
   }
+  .btn-arcade:hover{ filter:brightness(1.08); transform:translateY(-2px); box-shadow:0 7px 0 #8a4a10, inset 0 2px 0 rgba(255,255,255,.55), inset 0 -8px 0 rgba(190,80,20,.45); }
   .btn-arcade:active{ transform:translateY(3px); box-shadow:0 2px 0 #8a4a10, inset 0 2px 0 rgba(255,255,255,.55); }
+  .btn-arcade-blue{
+    color:#fff; text-shadow:2px 0 0 #123a52, -2px 0 0 #123a52, 0 2px 0 #123a52, 0 -2px 0 #123a52,
+      2px 2px 0 #123a52, -2px -2px 0 #123a52, 2px -2px 0 #123a52, -2px 2px 0 #123a52, 3px 4px 0 rgba(0,0,0,.4);
+    background:linear-gradient(180deg, #9fe8ff 0%, #2ea8e6 55%, #1c6fa8 100%);
+    box-shadow:0 5px 0 #0e3550, inset 0 2px 0 rgba(255,255,255,.55), inset 0 -8px 0 rgba(10,60,90,.45);
+  }
+  .btn-arcade-blue:hover{ box-shadow:0 7px 0 #0e3550, inset 0 2px 0 rgba(255,255,255,.55), inset 0 -8px 0 rgba(10,60,90,.45); }
+  .btn-arcade-blue:active{ box-shadow:0 2px 0 #0e3550, inset 0 2px 0 rgba(255,255,255,.55); }
+  .win-btn-row{ display:flex; flex-direction:column; gap:16px; justify-content:center; align-items:center; }
+  .win-btn-row .btn-arcade{ width:440px; text-align:center; white-space:nowrap; }
   .blink{ animation:blink 1s steps(1) infinite; }
   @keyframes blink{ 50%{ opacity:0; } }
   .score-line{ color:var(--cyan); font-size:12px; }
   #screen-over .score-line{ font-size:24px; }
+  #screen-win .score-line{ font-size:26px; }
   .win-congrats{
-    color:var(--cyan); font-size:22px; text-align:center; margin:18px 0 8px;
-    text-shadow:2px 2px 0 #000, 0 0 18px rgba(123,227,255,.8);
+    color:#fff; font-size:66px; line-height:1.15; text-align:center; margin:18px 0 8px;
+    text-shadow:4px 4px 0 #000;
   }
   .win-congrats-text{
     color:var(--white); font-size:10px; text-align:center; max-width:420px;
@@ -267,10 +280,13 @@
   }
   .player-name-input:focus{ outline:none; border-color:var(--cyan); }
   .player-name-input.shake{ animation:shakeInput .4s ease; border-color:#ff4d5e; }
-  #screen-name{ position:absolute; overflow:hidden; z-index:0; isolation:isolate; }
-  #screen-name .splash-stage > img{ z-index:-2; }
+  #screen-name, #screen-win{ position:absolute; overflow:hidden; z-index:0; isolation:isolate; }
+  #screen-name .splash-stage > img, #screen-win .splash-stage > img{ z-index:-2; }
   .name-screen-dim{ position:absolute; inset:0; background:rgba(6,10,18,.78); z-index:-1; }
-  #screen-name .splash-stage > img.splash-vectra-logo{ z-index:1; }
+  #screen-name .splash-stage > img.splash-vectra-logo, #screen-win .splash-stage > img.splash-vectra-logo{ z-index:1; }
+  #screen-win .splash-stage > img.win-corner{ position:absolute; bottom:0; z-index:1; width:280px; height:auto; image-rendering:pixelated; }
+  .win-corner-left{ left:0; }
+  #screen-win .splash-stage > img.win-corner-right{ right:0; width:360px; }
   .name-form-wrap{ display:flex; flex-direction:column; align-items:center; width:976px; margin-top:80px; }
   #btn-continue{ width:352px; }
   #btn-start{ width:352px; }
@@ -522,12 +538,21 @@
       <div class="level-intro" id="level-intro"></div>
 
       <div class="overlay hidden" id="screen-win">
-        <h1 id="win-title">35 LAT VECTRA<br/><span class="v">ZA NAMI!</span></h1>
+        <div class="splash-stage">
+          <img class="splash-layer name-screen-bg" src="assets/bg_start_new2.png" alt=""/>
+          <img class="splash-35y" src="assets/35_Y.png" alt=""/>
+          <div class="name-screen-dim"></div>
+          <img class="splash-vectra-logo" src="assets/мectra_przedstawia.png" alt="Vectra"/>
+          <img class="win-corner win-corner-left" src="assets/last_left_bottom-corner.png" alt=""/>
+          <img class="win-corner win-corner-right" src="assets/last_right_bottom-corner.png" alt=""/>
+        </div>
         <p class="score-line">WYNIK: <span id="win-score">0</span></p>
-        <h2 class="win-congrats">GRATULACJE, MISTRZU!</h2>
+        <h2 class="win-congrats">GRATULACJE,<br/>MISTRZU!</h2>
         <p class="win-congrats-text" id="win-next">Przeszedłeś 35 lat razem z Vectrą, a teraz sprawdź, czy wygrasz nagrody.</p>
-        <button class="btn-arcade" id="btn-win-contest">KONKURS</button>
-        <button class="btn" id="btn-win-restart">ZAGRAJ PONOWNIE</button>
+        <div class="win-btn-row">
+          <button class="btn-arcade" id="btn-win-contest">O KONKURSIE</button>
+          <button class="btn-arcade btn-arcade-blue" id="btn-win-restart">ZAGRAJ PONOWNIE</button>
+        </div>
       </div>
 
       <div class="overlay hidden" id="screen-map">
@@ -3991,7 +4016,7 @@ window.addEventListener('error', function(e){
     const finish = ()=>{
       setTimeout(()=>{
         overlay.classList.remove('show');
-        setTimeout(()=>{ overlay.classList.add('hidden'); bonusSequenceActive = false; }, 300);
+        setTimeout(()=>{ overlay.classList.add('hidden'); bonusSequenceActive = false; win(); }, 300);
       }, 900);
     };
     if (totalSec <= 0){
