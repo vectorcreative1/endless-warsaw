@@ -2519,7 +2519,8 @@ window.addEventListener('error', function(e){
         moving:true, axis:'y', range:22, speed:0.5, dir:1, dx:0, dy:0, isCannonPlatform:true,
       };
       platforms.push(cannonPlatform);
-      const bossMaxHp = currentLevelNum === 4 ? 14 : 8;
+      const BOSS_HP_BY_LEVEL = {1:3, 2:4, 3:5, 4:14};
+      const bossMaxHp = BOSS_HP_BY_LEVEL[currentLevelNum] || 8;
       const bossSize = currentLevelNum === 4 ? 110 : 80;
       bossData = {
         x0:bossX, x:bossX, y0:CFG.GROUND_Y-190, y:CFG.GROUND_Y-120, dormantY:CFG.GROUND_Y-120, w:bossSize, h:bossSize,
@@ -2788,9 +2789,18 @@ window.addEventListener('error', function(e){
     return { gaps: sortedGaps, groundSegments, platforms, enemies, items, obstacles, quizSpots, flagX: CFG.LEVEL_W - 120 - LEVEL4_SHORTEN, secretGap: sortedGaps[secretGapIndex] || null, boss: bossData, cannon: cannonPlatform, quiz1X: level4Quiz1X, droneX, longGapEnd, nextGapAfterCorridorX };
   }
 
-  const GAP_EDGE_FORGIVENESS = 12;
+  const GAP_EDGE_FORGIVENESS = 26;
+  function getEdgeForgiveness(){
+    if (WORLD.gapEdgeForgiveness != null) return WORLD.gapEdgeForgiveness;
+    // let the player stand anywhere the edge-cap graphic still visually covers
+    // the ground, so the collision edge matches what's drawn, not a guess
+    const tileW = WORLD.groundTileW || GROUND_TILE_W;
+    const scale = imgReady(WORLD_IMGS.ground) ? tileW / WORLD_IMGS.ground.naturalWidth : 0;
+    const edgeW = (scale && imgReady(WORLD_IMGS.edge)) ? WORLD_IMGS.edge.naturalWidth * scale : 0;
+    return edgeW || GAP_EDGE_FORGIVENESS;
+  }
   function isOverGap(px){
-    const forgiveness = WORLD.gapEdgeForgiveness != null ? WORLD.gapEdgeForgiveness : GAP_EDGE_FORGIVENESS;
+    const forgiveness = getEdgeForgiveness();
     for (const [gs,ge] of level.gaps){ if (px >= gs+forgiveness && px <= ge-forgiveness) return true; }
     return false;
   }
@@ -2849,7 +2859,7 @@ window.addEventListener('error', function(e){
   // ---------- game state ----------
   let player, camera, score, lives, maxLives, heroStats, state, invincible, turboT, mushroomT, animT, lastSafeX, lastSafeY, landingTimer, lastStepFrame, hurtTimer, deathStartTime, respawnFreeze;
   let pipeState = null, pipeT = 0, pipeBaseY = 0, pipeCenterX = 0, pipeReady = true, pipeCoinCount = 10;
-  let secretRoomState = null, secretRoomT = 0, secretRoomSide = 'left', playerRoomJumped = false;
+  let secretRoomState = null, secretRoomT = 0, playerRoomJumped = false;
   let trampolineWillExit = true;
   const SECRET_ROOM_COINS_L1 = Array.from({length: 40}, () => ({
     x: 45 + Math.random()*(610-45-30),
@@ -3281,7 +3291,7 @@ window.addEventListener('error', function(e){
     if (fromPit){
       player.y -= 60;
       player.onGround = false;
-      respawnFreeze = 70;
+      respawnFreeze = 18;
     }
   }
 
@@ -3737,8 +3747,8 @@ window.addEventListener('error', function(e){
     }
   }
 
-  function landOnTrampoline(){
-    trampolineWillExit = Math.abs(player.vx) < 1.0;
+  function landOnTrampoline(fromFall){
+    trampolineWillExit = !fromFall && Math.abs(player.vx) < 1.0;
     player.y = SECRET_TRAMP_HIT_TOP - player.h;
     player.vx = 0; player.vy = 0; player.onGround = true;
     secretRoomState = 'bounce';
@@ -3747,58 +3757,50 @@ window.addEventListener('error', function(e){
     sfx.coin();
   }
 
-  function steerRoomPlayerX(timeScale){
-    const roomSpeedMul = turboT > 0 ? 1.6 : 1;
-    if (keys.left){ player.vx -= ROOM_ACCEL*roomSpeedMul*timeScale; player.facing = -1; }
-    else if (keys.right){ player.vx += ROOM_ACCEL*roomSpeedMul*timeScale; player.facing = 1; }
-    else {
-      const fric = ROOM_FRICTION*timeScale;
-      if (player.vx > 0) player.vx = Math.max(0, player.vx - fric);
-      else if (player.vx < 0) player.vx = Math.min(0, player.vx + fric);
-    }
-    const roomMaxSpeed = ROOM_MAX_SPEED*roomSpeedMul;
-    player.vx = Math.max(-roomMaxSpeed, Math.min(roomMaxSpeed, player.vx));
-    player.x += player.vx*timeScale;
-    if (player.x < ROOM_LEFT){ player.x = ROOM_LEFT; player.vx = 0; }
-    if (player.x + player.w > ROOM_RIGHT){ player.x = ROOM_RIGHT - player.w; player.vx = 0; }
-  }
-
   function updateSecretRoom(dt){
     secretRoomT += dt;
     const timeScale = dt / (1000/60);
 
     if (secretRoomState === 'fall' || secretRoomState === 'room'){
-      const wantsCrouch = keys.down && player.onGround;
-      if (wantsCrouch && !player.crouching){
-        player.y += player.h - CFG.CROUCH_H;
-        player.h = CFG.CROUCH_H;
-        player.crouching = true;
-      } else if (!wantsCrouch && player.crouching){
-        player.y -= CFG.STAND_H - player.h;
-        player.h = CFG.STAND_H;
-        player.crouching = false;
-      }
+      if (secretRoomState === 'fall'){
+        // no player control while falling in - always drift straight to the
+        // trampoline's center so the landing (and the bounce that follows)
+        // is reliable, not dependent on the player's aim
+        player.x = SECRET_TRAMPOLINE_X - player.w/2;
+        player.vx = 0;
+      } else {
+        const wantsCrouch = keys.down && player.onGround;
+        if (wantsCrouch && !player.crouching){
+          player.y += player.h - CFG.CROUCH_H;
+          player.h = CFG.CROUCH_H;
+          player.crouching = true;
+        } else if (!wantsCrouch && player.crouching){
+          player.y -= CFG.STAND_H - player.h;
+          player.h = CFG.STAND_H;
+          player.crouching = false;
+        }
 
-      const roomSpeedMul = turboT > 0 ? 1.6 : 1;
-      if (player.crouching){
-        const slideFriction = ROOM_FRICTION * 0.08 * timeScale;
-        if (player.vx > 0) player.vx = Math.max(0, player.vx - slideFriction);
-        else if (player.vx < 0) player.vx = Math.min(0, player.vx + slideFriction);
-      } else if (keys.left){ player.vx -= ROOM_ACCEL*roomSpeedMul*timeScale; player.facing = -1; }
-      else if (keys.right){ player.vx += ROOM_ACCEL*roomSpeedMul*timeScale; player.facing = 1; }
-      else {
-        const fric = ROOM_FRICTION*timeScale;
-        if (player.vx > 0) player.vx = Math.max(0, player.vx - fric);
-        else if (player.vx < 0) player.vx = Math.min(0, player.vx + fric);
-      }
-      const roomMaxSpeed = ROOM_MAX_SPEED*roomSpeedMul;
-      player.vx = Math.max(-roomMaxSpeed, Math.min(roomMaxSpeed, player.vx));
+        const roomSpeedMul = turboT > 0 ? 1.6 : 1;
+        if (player.crouching){
+          const slideFriction = ROOM_FRICTION * 0.08 * timeScale;
+          if (player.vx > 0) player.vx = Math.max(0, player.vx - slideFriction);
+          else if (player.vx < 0) player.vx = Math.min(0, player.vx + slideFriction);
+        } else if (keys.left){ player.vx -= ROOM_ACCEL*roomSpeedMul*timeScale; player.facing = -1; }
+        else if (keys.right){ player.vx += ROOM_ACCEL*roomSpeedMul*timeScale; player.facing = 1; }
+        else {
+          const fric = ROOM_FRICTION*timeScale;
+          if (player.vx > 0) player.vx = Math.max(0, player.vx - fric);
+          else if (player.vx < 0) player.vx = Math.min(0, player.vx + fric);
+        }
+        const roomMaxSpeed = ROOM_MAX_SPEED*roomSpeedMul;
+        player.vx = Math.max(-roomMaxSpeed, Math.min(roomMaxSpeed, player.vx));
 
-      if (keys.jump && player.onGround && !player.crouching){
-        player.vy = ROOM_JUMP_V;
-        player.onGround = false;
-        playerRoomJumped = true;
-        sfx.jump();
+        if (keys.jump && player.onGround && !player.crouching){
+          player.vy = ROOM_JUMP_V;
+          player.onGround = false;
+          playerRoomJumped = true;
+          sfx.jump();
+        }
       }
       player.vy += ROOM_GRAVITY*timeScale;
       if (player.vy > 14) player.vy = 14;
@@ -3816,7 +3818,7 @@ window.addEventListener('error', function(e){
         const overTramp = player.x+player.w > SECRET_TRAMPOLINE_X-SECRET_TRAMP_HIT_W/2 && player.x < SECRET_TRAMPOLINE_X+SECRET_TRAMP_HIT_W/2;
         const fellFromHeight = secretRoomState === 'fall';
         if ((playerRoomJumped || fellFromHeight) && overTramp && prevBottom <= SECRET_TRAMP_HIT_TOP+4 && newBottom >= SECRET_TRAMP_HIT_TOP){
-          landOnTrampoline();
+          landOnTrampoline(fellFromHeight);
           return;
         }
         for (const p of activeRoomPlatforms()){
@@ -3879,7 +3881,6 @@ window.addEventListener('error', function(e){
 
       updateRoomEnemies(dt, timeScale, prevBottom);
     } else if (secretRoomState === 'bounce'){
-      steerRoomPlayerX(timeScale);
       const t = Math.min(1, secretRoomT / SECRET_BOUNCE_MS);
       player.y = (SECRET_TRAMP_HIT_TOP - player.h) + Math.sin(t*Math.PI) * -6;
       if (t >= 1){
@@ -3896,18 +3897,12 @@ window.addEventListener('error', function(e){
         }
       }
     } else if (secretRoomState === 'exit'){
-      steerRoomPlayerX(timeScale);
       const t = Math.min(1, secretRoomT / SECRET_EXIT_MS);
       player.y = (SECRET_TRAMP_HIT_TOP - player.h) - t*(SECRET_TRAMP_HIT_TOP + 60);
       if (t >= 1){
-        const [gs, ge] = level.secretGap;
-        if (secretRoomSide === 'left'){
-          player.x = gs - player.w - 5;
-          player.facing = -1;
-        } else {
-          player.x = ge + 5;
-          player.facing = 1;
-        }
+        const [, ge] = level.secretGap;
+        player.x = ge + 5;
+        player.facing = 1;
         player.y = CFG.GROUND_Y - player.h - 40;
         player.vx = 0;
         player.vy = -10;
@@ -4454,7 +4449,7 @@ window.addEventListener('error', function(e){
     if (player.x > CFG.LEVEL_W) player.x = CFG.LEVEL_W;
 
     if (level.boss && level.boss.alive){
-      if (!bossArenaEntered && player.x >= level.boss.arenaX){
+      if (!bossArenaEntered && (player.ridingPlatform === level.cannon || player.x >= level.boss.arenaX)){
         bossArenaEntered = true;
         level.boss.wakeT = 0;
         bossCameraLockX = level.boss.fixedCameraX;
@@ -4620,15 +4615,9 @@ window.addEventListener('error', function(e){
           if (isOverGap(ob.x + ob.w/2)){
             ob.falling = true;
             ob.vy = 0;
-            let fallX = ob.x + ob.w/2;
-            for (const [gs, ge] of level.gaps){
-              if (fallX >= gs && fallX <= ge){ fallX = (gs+ge)/2; break; }
-            }
-            const fallCoinCount = ob.kind === 'phoneBooth' ? 10 : 1;
             setTimeout(()=>{
               if (state !== 'playing') return;
               sfx.objectFall();
-              spawnPitCoins(fallX, fallCoinCount);
             }, 1000);
           }
         } else {
@@ -4749,7 +4738,6 @@ window.addEventListener('error', function(e){
         if (gx >= gs && gx <= ge && newBottom > CFG.GROUND_Y + 10){
           secretRoomState = 'fall';
           secretRoomT = 0;
-          secretRoomSide = player.facing < 0 ? 'left' : 'right';
           player.x = CFG.W/2 - player.w/2;
           player.y = -40;
           player.vx = 0; player.vy = 0;
@@ -6167,7 +6155,11 @@ window.addEventListener('error', function(e){
     const unit = 3;
     const ox = sx - 2*unit, oy = sy - unit;
     ctx.save();
-    ctx.fillStyle = '#555555';
+    ctx.fillStyle = '#000000';
+    for (const [r,c] of ARROW_PIXELS){
+      ctx.fillRect(ox+c*unit-1, oy+r*unit-1, unit+2, unit+2);
+    }
+    ctx.fillStyle = '#ffd400';
     for (const [r,c] of ARROW_PIXELS){
       ctx.fillRect(ox+c*unit, oy+r*unit, unit, unit);
     }
