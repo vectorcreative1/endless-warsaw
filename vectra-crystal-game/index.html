@@ -397,8 +397,8 @@
   }
   body.touch-mode .touch-controls{ display:flex; }
   .tbtn{
-    pointer-events:auto; width:56px; height:56px; background:rgba(46,168,230,.5); border:none; border-radius:10px;
-    color:var(--white); font-size:18px; display:flex; align-items:center; justify-content:center; user-select:none; -webkit-user-select:none;
+    pointer-events:auto; width:60px; height:60px; background:rgba(46,168,230,.5); border:none; border-radius:10px;
+    color:var(--white); font-size:19px; display:flex; align-items:center; justify-content:center; user-select:none; -webkit-user-select:none;
   }
   .ctrl-group{ display:flex; gap:10px; }
   .jbtn{ background:rgba(123,227,255,.55); color:#04283a; }
@@ -814,8 +814,8 @@ window.addEventListener('error', function(e){
     LIVES: 5,
     LEVEL_W: 15000,
     INVINCIBLE_T: 90,
-    TURBO_T: 300,
-    MUSHROOM_T: 540,
+    TURBO_T: 180,
+    MUSHROOM_T: 300,
     STAND_H: 34,
     CROUCH_H: 20,
   };
@@ -949,7 +949,7 @@ window.addEventListener('error', function(e){
     car: { img: obCarImg, w: 66, h: 64, hitW: 66, hitH: 58, sink: 3 },
     car2: { img: obCar2Img, w: 81, h: 59, hitW: 81, hitH: 59, sink: 10 },
     kiosk: { img: obKioskImg, w: 138, h: 100, hitW: 138, hitH: 100, sink: 8 },
-    phoneBooth: { img: obPhoneBoothImg, w: 72, h: 120, hitW: 72, hitH: 120, sink: 11, pushable: true, pushSpeedMul: 0.22 },
+    phoneBooth: { img: obPhoneBoothImg, w: 72, h: 120, hitW: 72, hitH: 120, sink: 11, pushable: false, pushSpeedMul: 0.22 },
     cdStack: { img: obCdStackImg, w: 72, h: 70, hitW: 72, hitH: 70, sink: 12 },
     dvdPlayer: { img: obDvdPlayerImg, w: 54, h: 23, hitW: 54, hitH: 23, sink: 4, pushable: true },
     computers: { img: obComputersImg, w: 101, h: 96, hitW: 101, hitH: 96, sink: 6 },
@@ -2315,9 +2315,9 @@ window.addEventListener('error', function(e){
           alive:true, type:'flying', dying:false, deathTimer:0, flying:true, spriteIdx:0,
         });
       }
-      [0.3, 0.7].forEach(fr => {
+      [0.2, 0.4, 0.6, 0.8].forEach(fr => {
         const ix = longGapStart + (longGapEnd-longGapStart)*fr;
-        items.push({x:ix, y:CFG.GROUND_Y-120-rand()*60, w:16, h:16, type:'crystal', taken:false});
+        items.push({x:ix, y:CFG.GROUND_Y-120-rand()*60, w:16, h:16, type:'turbo', taken:false});
       });
 
       cursorX = placeVariedRow(longGapEnd + 10, ['screen', 'bigCar2'], {skipHelper:true});
@@ -2438,15 +2438,20 @@ window.addEventListener('error', function(e){
     const islandX = findSafeX(CFG.LEVEL_W * 0.55);
     platforms.push({ x:islandX, x0:islandX, y:CFG.GROUND_Y-120, w:90, moving:true, range:90, speed:1.2, dir:1, dx:0 });
 
-    const turboItemCount = 2;
+    const turboItemCount = 4;
     for (let i=0; i<turboItemCount; i++){
-      const bx = findSafeX(CFG.LEVEL_W * (0.50 + i*0.12));
+      const frac = 0.15 + i*(0.7/(turboItemCount-1));
+      const bx = findSafeX(CFG.LEVEL_W * frac);
       items.push({x:bx, y:CFG.GROUND_Y-48, w:16, h:16, type:'turbo', taken:false});
     }
-    const mushroomItemCount = 3;
+    const mushroomItemCount = 6;
     for (let i=0; i<mushroomItemCount; i++){
-      const bx = findSafeX(CFG.LEVEL_W * (0.56 + i*0.12));
-      items.push({x:bx, y:CFG.GROUND_Y-48, w:16, h:16, type:'mushroom', taken:false});
+      // offset half a step from the turbo items above so they never land on
+      // the same spot and end up drawn on top of each other
+      const frac = 0.15 + (i+0.5)*(0.7/mushroomItemCount);
+      const bx = findSafeX(CFG.LEVEL_W * frac);
+      const my = i % 2 === 0 ? CFG.GROUND_Y-48 : CFG.GROUND_Y-130;
+      items.push({x:bx, y:my, w:16, h:16, type:'mushroom', taken:false});
     }
 
     const highIslandFracs = [0.15, 0.32, 0.58, 0.85];
@@ -2857,7 +2862,7 @@ window.addEventListener('error', function(e){
   bindHold('t-down', ()=>keys.down=true, ()=>keys.down=false);
 
   // ---------- game state ----------
-  let player, camera, score, lives, maxLives, heroStats, state, invincible, turboT, mushroomT, animT, lastSafeX, lastSafeY, landingTimer, lastStepFrame, hurtTimer, deathStartTime, respawnFreeze;
+  let player, camera, score, lives, maxLives, heroStats, state, invincible, turboT, mushroomT, crystalT, animT, lastSafeX, lastSafeY, landingTimer, lastStepFrame, hurtTimer, deathStartTime, respawnFreeze;
   let pipeState = null, pipeT = 0, pipeBaseY = 0, pipeCenterX = 0, pipeReady = true, pipeCoinCount = 10;
   let secretRoomState = null, secretRoomT = 0, playerRoomJumped = false;
   let trampolineWillExit = true;
@@ -3041,7 +3046,7 @@ window.addEventListener('error', function(e){
   function resetGame(){
     heroStats = HERO_STATS[selectedHero] || HERO_STATS.dzisiek;
     maxLives = heroStats.maxLives;
-    score = 0; lives = maxLives; invincible = 0; turboT = 0; mushroomT = 0; animT = 0; landingTimer = 0; lastStepFrame = -1; hurtTimer = 0; respawnFreeze = 0;
+    score = 0; lives = maxLives; invincible = 0; turboT = 0; mushroomT = 0; crystalT = 0; animT = 0; landingTimer = 0; lastStepFrame = -1; hurtTimer = 0; respawnFreeze = 0;
     computerSparks = [];
     lastComputerSoundAt = -99999;
     startLevel(DEBUG_START_LEVEL);
@@ -4338,7 +4343,7 @@ window.addEventListener('error', function(e){
 
     const timeScale = dt / (1000/60);
 
-    if (respawnFreeze > 0) respawnFreeze--;
+    if (respawnFreeze > 0) respawnFreeze = Math.max(0, respawnFreeze - timeScale);
     const inputLocked = respawnFreeze > 0;
     const inCarProtected = !!(carEntering || drivingCar || carExiting || pipeState);
 
@@ -4710,6 +4715,10 @@ window.addEventListener('error', function(e){
           player.vy = 0;
           player.onGround = true;
           if (p.moving){ player.x += p.dx; player.ridingPlatform = p; }
+          // landing on a platform is a valid respawn point in its own right,
+          // even when it sits over a pit (e.g. an island-hopping sequence)
+          // where the generic gap-safety check below would never pass
+          lastSafeX = player.x; lastSafeY = player.y + player.h;
           break;
         }
       }
@@ -4771,11 +4780,12 @@ window.addEventListener('error', function(e){
 
     }
 
-    if (invincible > 0) invincible--;
-    if (turboT > 0) turboT--;
-    if (mushroomT > 0) mushroomT--;
-    if (landingTimer > 0) landingTimer--;
-    if (hurtTimer > 0) hurtTimer--;
+    if (invincible > 0) invincible = Math.max(0, invincible - timeScale);
+    if (turboT > 0) turboT = Math.max(0, turboT - timeScale);
+    if (mushroomT > 0) mushroomT = Math.max(0, mushroomT - timeScale);
+    if (crystalT > 0) crystalT = Math.max(0, crystalT - timeScale);
+    if (landingTimer > 0) landingTimer = Math.max(0, landingTimer - timeScale);
+    if (hurtTimer > 0) hurtTimer = Math.max(0, hurtTimer - timeScale);
     if (levelTimeLeft > 0 && !bonusSequenceActive){
       levelTimeLeft = Math.max(0, levelTimeLeft - dt);
       updateTimerDisplay();
@@ -5075,7 +5085,7 @@ window.addEventListener('error', function(e){
           if (player.vy < 0) player.vy *= Math.sqrt(0.14);
           sfx.mushroom();
         }
-        else if (it.type === 'crystal'){ invincible = 360; sfx.lifeUp(); }
+        else if (it.type === 'crystal'){ invincible = 300; crystalT = 300; sfx.lifeUp(); }
         else { score += 10; sfx.coin(); }
         updateHud();
       }
@@ -5105,7 +5115,6 @@ window.addEventListener('error', function(e){
       if (caught){
         if (cp.isHeart){
           grantExtraLife();
-          player.vy = -7; player.onGround = false;
         }
         else if (cp.bonus){ score += 10; updateHud(); sfx.coin(); }
         coinPops.splice(i, 1);
@@ -5185,6 +5194,27 @@ window.addEventListener('error', function(e){
     ctx.lineTo(cx-rw, cy);
     ctx.closePath();
     ctx.fill();
+  }
+
+  function drawTurboDiamondIcon(w, h){
+    ctx.fillStyle = COLORS.black;
+    drawDiamond(0, 0, w/2+2, h/2+3);
+    ctx.fillStyle = COLORS.crystalPurpleDark;
+    drawDiamond(0, 1, w/2, h/2+1);
+    ctx.fillStyle = COLORS.crystalPurple;
+    drawDiamond(-1, -1, w/2-3, h/2-3);
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillRect(-2, -4, 2, 2);
+  }
+  function drawCrystalDiamondIcon(w, h){
+    ctx.fillStyle = COLORS.black;
+    drawDiamond(0, 0, w/2+2, h/2+3);
+    ctx.fillStyle = COLORS.crystalCyanDark;
+    drawDiamond(0, 1, w/2, h/2+1);
+    ctx.fillStyle = COLORS.crystalCyan;
+    drawDiamond(-1, -1, w/2-3, h/2-3);
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.fillRect(-2, -4, 2, 2);
   }
 
   function drawCloud(x,y,w){
@@ -5517,28 +5547,14 @@ window.addEventListener('error', function(e){
       if (it.type === 'turbo'){
         ctx.save();
         ctx.translate(cx, cy);
-        ctx.fillStyle = COLORS.black;
-        drawDiamond(0, 0, it.w/2+2, it.h/2+3);
-        ctx.fillStyle = COLORS.crystalPurpleDark;
-        drawDiamond(0, 1, it.w/2, it.h/2+1);
-        ctx.fillStyle = COLORS.crystalPurple;
-        drawDiamond(-1, -1, it.w/2-3, it.h/2-3);
-        ctx.fillStyle = 'rgba(255,255,255,0.85)';
-        ctx.fillRect(-2, -4, 2, 2);
+        drawTurboDiamondIcon(it.w, it.h);
         ctx.restore();
       } else if (it.type === 'crystal'){
         ctx.save();
         ctx.translate(cx, cy);
         const pulse = 1 + Math.sin(animT*0.01 + it.x*0.05)*0.12;
         ctx.scale(pulse, pulse);
-        ctx.fillStyle = COLORS.black;
-        drawDiamond(0, 0, it.w/2+2, it.h/2+3);
-        ctx.fillStyle = COLORS.crystalCyanDark;
-        drawDiamond(0, 1, it.w/2, it.h/2+1);
-        ctx.fillStyle = COLORS.crystalCyan;
-        drawDiamond(-1, -1, it.w/2-3, it.h/2-3);
-        ctx.fillStyle = 'rgba(255,255,255,0.9)';
-        ctx.fillRect(-2, -4, 2, 2);
+        drawCrystalDiamondIcon(it.w, it.h);
         ctx.restore();
       } else if (it.type === 'mushroom'){
         if (imgReady(mushroomImg)){
@@ -6150,6 +6166,31 @@ window.addEventListener('error', function(e){
     [1,1],[1,3],
     [2,2],
   ];
+  function drawEffectBadge(cx, cy, n, type){
+    const color = type === 'turbo' ? '#ffe066' : type === 'crystal' ? '#7be3ff' : '#ff6b6b';
+    ctx.save();
+    ctx.translate(cx, cy);
+    if (type === 'mushroom'){
+      if (imgReady(mushroomImg)){
+        const s = 10;
+        ctx.drawImage(mushroomImg, -13, -s/2, s, s);
+      }
+    } else {
+      ctx.save();
+      ctx.translate(-9, 0);
+      ctx.scale(0.4, 0.4);
+      if (type === 'turbo') drawTurboDiamondIcon(16, 16); else drawCrystalDiamondIcon(16, 16);
+      ctx.restore();
+    }
+    ctx.font = "6px 'Press Start 2P', monospace";
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#000';
+    ctx.fillText(String(n), 2, 3);
+    ctx.fillStyle = color;
+    ctx.fillText(String(n), 1, 2);
+    ctx.restore();
+  }
+
   function drawDownArrow(wx, wy){
     const sx = px(wx - camera.x), sy = px(wy);
     const unit = 3;
@@ -6393,6 +6434,11 @@ window.addEventListener('error', function(e){
     ctx.drawImage(img, 0, bodySrcTop, img.naturalWidth, img.naturalHeight-bodySrcTop, drawX, drawY+bodyDrawTop, spriteW, spriteH-bodyDrawTop);
     ctx.drawImage(img, 0, 0, img.naturalWidth, headSrcH, drawX, drawY+headBob, spriteW, headDrawH);
     ctx.restore();
+
+    const timerY = drawY - 6;
+    if (turbo) drawEffectBadge(centerX, timerY, Math.ceil(turboT/60), 'turbo');
+    if (mushroomT > 0) drawEffectBadge(centerX, timerY, Math.ceil(mushroomT/60), 'mushroom');
+    if (crystalT > 0) drawEffectBadge(centerX, timerY, Math.ceil(crystalT/60), 'crystal');
   }
 
   const BRICK_WALL_COLORS = ['#2a1d42', '#33244e', '#241a3a', '#3a2758'];
