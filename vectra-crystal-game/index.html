@@ -814,8 +814,8 @@ window.addEventListener('error', function(e){
     LIVES: 5,
     LEVEL_W: 15000,
     INVINCIBLE_T: 90,
-    TURBO_T: 180,
-    MUSHROOM_T: 300,
+    TURBO_T: 300,
+    MUSHROOM_T: 180,
     STAND_H: 34,
     CROUCH_H: 20,
   };
@@ -4233,7 +4233,7 @@ window.addEventListener('error', function(e){
             damageBoss(boss, player.x+player.w/2, boss.y);
             boss.stompCooldown = 1200;
           }
-        } else if (invincible <= 0){
+        } else if (invincible <= 0 && turboT <= 0){
           loseLife(); return true;
         }
       }
@@ -4247,7 +4247,7 @@ window.addEventListener('error', function(e){
       const offscreen = s.x < camera.x-100 || s.x > camera.x+CFG.W+100 || s.y < -100 || s.y > CFG.H+100;
       if (s.t > s.life || offscreen){ bossSparks.splice(i,1); continue; }
       const hr = (s.small ? 6 : 10) * (currentLevelNum === 2 ? 1.7 : 1);
-      const hit = invincible<=0 && player.x < s.x+hr && player.x+player.w > s.x-hr &&
+      const hit = invincible<=0 && turboT<=0 && player.x < s.x+hr && player.x+player.w > s.x-hr &&
                   player.y < s.y+hr && player.y+player.h > s.y-hr;
       if (hit){
         bossSparks.splice(i,1);
@@ -4266,7 +4266,7 @@ window.addEventListener('error', function(e){
       const offscreen = m.x < camera.x-100 || m.x > camera.x+CFG.W+500;
       if (offscreen){ meteors.splice(i,1); continue; }
       const hr = 9;
-      const midairHit = invincible<=0 && player.x < m.x+hr && player.x+player.w > m.x-hr &&
+      const midairHit = invincible<=0 && turboT<=0 && player.x < m.x+hr && player.x+player.w > m.x-hr &&
                          player.y < m.y+hr && player.y+player.h > m.y-hr;
       if (midairHit){
         meteors.splice(i,1);
@@ -4287,7 +4287,7 @@ window.addEventListener('error', function(e){
         sfx.meteorBoom();
         meteors.splice(i,1);
         const blastR = 34;
-        const blastHit = invincible<=0 && Math.abs((player.x+player.w/2)-m.x) < blastR &&
+        const blastHit = invincible<=0 && turboT<=0 && Math.abs((player.x+player.w/2)-m.x) < blastR &&
                           Math.abs((player.y+player.h)-CFG.GROUND_Y) < blastR;
         if (blastHit){
           loseLife();
@@ -4853,7 +4853,7 @@ window.addEventListener('error', function(e){
               score += 30; updateHud();
               sfx.stomp();
               coinPops.push({ x: en.x + en.w/2, y: en.y, vy:-3.2, t:0 });
-            } else if (invincible <= 0){
+            } else if (invincible <= 0 && turboT <= 0){
               loseLife(); return;
             }
           }
@@ -5028,7 +5028,7 @@ window.addEventListener('error', function(e){
         const offscreen = s.x < camera.x-100 || s.x > camera.x+CFG.W+100 || s.y < -100 || s.y > CFG.H+100;
         if (s.t > s.life || offscreen){ bossSparks.splice(i,1); continue; }
         const hr = (s.small ? 6 : 10) * (currentLevelNum === 2 ? 1.7 : 1);
-        const hit = !inCarProtected && invincible<=0 && player.x < s.x+hr && player.x+player.w > s.x-hr &&
+        const hit = !inCarProtected && invincible<=0 && turboT<=0 && player.x < s.x+hr && player.x+player.w > s.x-hr &&
                     player.y < s.y+hr && player.y+player.h > s.y-hr;
         if (hit){
           bossSparks.splice(i,1);
@@ -5046,7 +5046,7 @@ window.addEventListener('error', function(e){
       const offscreen = s.x < camera.x-100 || s.x > camera.x+CFG.W+100 || s.y < -100 || s.y > CFG.H+100;
       if (s.t > s.life || offscreen){ slimeSpits.splice(i,1); continue; }
       const hr = 5;
-      const hit = !inCarProtected && invincible<=0 && player.x < s.x+hr && player.x+player.w > s.x-hr &&
+      const hit = !inCarProtected && invincible<=0 && turboT<=0 && player.x < s.x+hr && player.x+player.w > s.x-hr &&
                   player.y < s.y+hr && player.y+player.h > s.y-hr;
       if (hit){
         slimeSpits.splice(i,1);
