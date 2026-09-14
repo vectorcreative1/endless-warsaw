@@ -3286,18 +3286,20 @@ window.addEventListener('error', function(e){
       player.vx = 0; player.vy = 0;
       player.onGround = true;
       player.ridingDrone = ob;
-    } else {
+      player.ridingPlatform = null;
+    } else if (fromPit){
       player.x = lastSafeX; player.y = lastSafeY - player.h;
       player.vx = 0; player.vy = 0;
       player.ridingDrone = null;
-    }
-    player.ridingPlatform = null;
-    invincible = CFG.INVINCIBLE_T;
-    if (fromPit){
+      player.ridingPlatform = null;
       player.y -= 60;
       player.onGround = false;
       respawnFreeze = 18;
     }
+    // ordinary enemy/projectile damage (not a pit fall, not a mid-flight
+    // drone loss): leave the player exactly where they are - just grant the
+    // brief post-hit invincibility, no teleport back to the last safe spot
+    invincible = CFG.INVINCIBLE_T;
   }
 
   function loseLifeInRoom(){
