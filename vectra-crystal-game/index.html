@@ -821,8 +821,8 @@ window.addEventListener('error', function(e){
   };
 
   const HERO_STATS = {
-    jutrek:  { speedMul:1.67, jumpMul:0.75, airSpeedMul:1.17, maxLives:CFG.LIVES,   speedPct:100, powerPct:50,  jumpPct:75  },
-    dzisiek: { speedMul:1.15, jumpMul:1.15, airSpeedMul:1.0, maxLives:5,           speedPct:75,  powerPct:100, jumpPct:100 },
+    jutrek:  { speedMul:1.6032, jumpMul:0.75, airSpeedMul:1.17, maxLives:CFG.LIVES,   speedPct:100, powerPct:50,  jumpPct:75, turboMul:1.6 },
+    dzisiek: { speedMul:1.15, jumpMul:1.15, airSpeedMul:1.0, maxLives:5,           speedPct:75,  powerPct:100, jumpPct:100, turboMul:1.5 },
   };
 
   // ---------- 35 lat Vectra: timeline eras ----------
@@ -4402,7 +4402,7 @@ window.addEventListener('error', function(e){
       player.crouching = false;
     }
 
-    const speedMul = (turboT > 0 ? 1.6 : 1) * heroStats.speedMul * (mushroomT > 0 ? 0.22 : 1) * (!player.onGround ? (heroStats.airSpeedMul||1) : 1);
+    const speedMul = (turboT > 0 ? (heroStats.turboMul||1.6) : 1) * heroStats.speedMul * (mushroomT > 0 ? 0.22 : 1) * (!player.onGround ? (heroStats.airSpeedMul||1) : 1);
     if (player.crouching){
       const slideFriction = CFG.FRICTION * 0.08 * timeScale;
       if (player.vx > 0) player.vx = Math.max(0, player.vx - slideFriction);
