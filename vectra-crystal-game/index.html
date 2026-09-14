@@ -503,8 +503,9 @@
                 <div class="hero-label" id="label-dzisiek">DZISIEK</div>
                 <div class="stat-bars" id="bars-dzisiek">
                   <div class="stat-row"><span class="stat-label">PRĘDKOŚĆ</span><div class="stat-track"><div class="stat-fill" id="bar-dzisiek-speed"></div></div></div>
-                  <div class="stat-row"><span class="stat-label">SIŁA</span><div class="stat-track"><div class="stat-fill" id="bar-dzisiek-power"></div></div></div>
                   <div class="stat-row"><span class="stat-label">SKOK</span><div class="stat-track"><div class="stat-fill" id="bar-dzisiek-jump"></div></div></div>
+                  <div class="stat-row"><span class="stat-label">ŻYCIA</span><div class="stat-track"><div class="stat-fill" id="bar-dzisiek-lives"></div></div></div>
+                  <div class="stat-row"><span class="stat-label">SIŁA</span><div class="stat-track"><div class="stat-fill" id="bar-dzisiek-power"></div></div></div>
                 </div>
               </div>
               <div class="hero-card" id="card-dzisiek" data-hero="dzisiek">
@@ -521,8 +522,9 @@
                 <div class="hero-label" id="label-jutrek">JUTREK</div>
                 <div class="stat-bars" id="bars-jutrek">
                   <div class="stat-row"><span class="stat-label">PRĘDKOŚĆ</span><div class="stat-track"><div class="stat-fill" id="bar-jutrek-speed"></div></div></div>
-                  <div class="stat-row"><span class="stat-label">SIŁA</span><div class="stat-track"><div class="stat-fill" id="bar-jutrek-power"></div></div></div>
                   <div class="stat-row"><span class="stat-label">SKOK</span><div class="stat-track"><div class="stat-fill" id="bar-jutrek-jump"></div></div></div>
+                  <div class="stat-row"><span class="stat-label">ŻYCIA</span><div class="stat-track"><div class="stat-fill" id="bar-jutrek-lives"></div></div></div>
+                  <div class="stat-row"><span class="stat-label">SIŁA</span><div class="stat-track"><div class="stat-fill" id="bar-jutrek-power"></div></div></div>
                 </div>
               </div>
             </div>
@@ -821,8 +823,8 @@ window.addEventListener('error', function(e){
   };
 
   const HERO_STATS = {
-    jutrek:  { speedMul:1.6032, jumpMul:0.75, airSpeedMul:1.17, maxLives:CFG.LIVES,   speedPct:100, powerPct:50,  jumpPct:75, turboMul:1.6 },
-    dzisiek: { speedMul:1.15, jumpMul:1.15, airSpeedMul:1.0, maxLives:5,           speedPct:75,  powerPct:100, jumpPct:100, turboMul:1.5 },
+    jutrek:  { speedMul:1.6032, jumpMul:0.75, airSpeedMul:1.17, maxLives:4,   speedPct:100, powerPct:100, jumpPct:75, livesPct:80,  turboMul:1.6 },
+    dzisiek: { speedMul:1.15, jumpMul:1.15, airSpeedMul:1.0, maxLives:5,      speedPct:75,  powerPct:50,  jumpPct:100, livesPct:100, turboMul:1.5 },
   };
 
   // ---------- 35 lat Vectra: timeline eras ----------
@@ -2922,6 +2924,7 @@ window.addEventListener('error', function(e){
       document.getElementById(`bar-${hero}-speed`).style.width = st.speedPct + '%';
       document.getElementById(`bar-${hero}-power`).style.width = st.powerPct + '%';
       document.getElementById(`bar-${hero}-jump`).style.width = st.jumpPct + '%';
+      document.getElementById(`bar-${hero}-lives`).style.width = st.livesPct + '%';
     }
   }
   initStatBars();
