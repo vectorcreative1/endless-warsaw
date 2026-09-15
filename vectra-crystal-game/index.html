@@ -475,7 +475,7 @@
             </div>
             <div class="field-col">
               <p class="field-error" id="name-error"></p>
-              <input type="text" id="player-name" class="player-name-input" maxlength="12" placeholder="NICKNAME"/>
+              <input type="text" id="player-name" class="player-name-input" maxlength="20" placeholder="NICKNAME"/>
             </div>
           </div>
           <label class="rodo-consent" id="rodo-consent-wrap">
@@ -690,7 +690,7 @@ window.addEventListener('error', function(e){
   }
 
   async function submitScore(name, score){
-    const cleanName = (name || '').trim().slice(0,12).toUpperCase() || 'ANONIM';
+    const cleanName = (name || '').trim().slice(0,20).toUpperCase() || 'ANONIM';
     const token = getDeviceToken();
     try {
       const res = await fetch(`${FIRESTORE_DOCS_URL}/scores`, {
@@ -3160,6 +3160,14 @@ window.addEventListener('error', function(e){
   }
 
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // Latin script only (incl. Polish diacritics) - blocks Cyrillic and other
+  // non-Latin scripts, which otherwise slip straight past the profanity
+  // filter below since it only matches transliterated Latin roots.
+  // (kept as two regexes, not one reused with/without its "g" flag: a global
+  // regex's .test() mutates lastIndex, which would corrupt the very next
+  // .replace() call that reuses it in the input listener below)
+  const NICK_ALLOWED_RE = /^[A-Za-z0-9 ąćęłńóśźżĄĆĘŁŃÓŚŹŻ_.-]*$/;
+  const NICK_DISALLOWED_CHARS_RE = /[^A-Za-z0-9 ąćęłńóśźżĄĆĘŁŃÓŚŹŻ_.-]/g;
 
   // Polish profanity filter for nicknames: matched against normalized roots
   // (diacritics stripped, common leetspeak folded back to letters, all
@@ -3202,6 +3210,14 @@ window.addEventListener('error', function(e){
       sfx.wrongBuzz();
       return;
     }
+    if (!NICK_ALLOWED_RE.test(playerName)){
+      const el = document.getElementById('player-name');
+      shakeEl(el);
+      el.focus();
+      showFieldError('name-error', 'TYLKO LITERY ŁACIŃSKIE');
+      sfx.wrongBuzz();
+      return;
+    }
     if (containsProfanity(playerName)){
       const el = document.getElementById('player-name');
       shakeEl(el);
@@ -3235,7 +3251,9 @@ window.addEventListener('error', function(e){
   const playerNameInput = document.getElementById('player-name');
   playerNameInput.value = playerName;
   playerNameInput.addEventListener('input', ()=>{
-    playerName = playerNameInput.value.slice(0,12);
+    const filtered = playerNameInput.value.replace(NICK_DISALLOWED_CHARS_RE, '').slice(0,20);
+    if (filtered !== playerNameInput.value) playerNameInput.value = filtered;
+    playerName = filtered;
     saveField('vectraPlayerName', playerName);
     hideFieldError('name-error');
   });
