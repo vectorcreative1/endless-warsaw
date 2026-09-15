@@ -5483,7 +5483,16 @@ window.addEventListener('error', function(e){
           const drawW = Math.min(tileWi, ge - tileX);
           if (drawW < tileWi){
             const srcW = WORLD_IMGS.ground.naturalWidth * (drawW / tileWi);
-            ctx.drawImage(WORLD_IMGS.ground, 0, 0, srcW, WORLD_IMGS.ground.naturalHeight, px(tileX - camera.x), px(drawY), drawW, dispHi);
+            // Round the tile's start AND end screen positions independently
+            // (rather than rounding the start and adding the raw fractional
+            // width) so this partial tile's right edge always lands exactly
+            // on the same rounded pixel as the gap edge-cap sprite anchored
+            // to the same level-space point (ge) - otherwise the two round
+            // differently frame to frame as the camera scrolls, opening and
+            // closing a flickering 1px gap only on this (clipped) side.
+            const destX0 = px(tileX - camera.x);
+            const destX1 = px(tileX + drawW - camera.x);
+            ctx.drawImage(WORLD_IMGS.ground, 0, 0, srcW, WORLD_IMGS.ground.naturalHeight, destX0, px(drawY), destX1 - destX0, dispHi);
           } else {
             ctx.drawImage(WORLD_IMGS.ground, px(tileX - camera.x), px(drawY), tileWi, dispHi);
           }
