@@ -3458,10 +3458,10 @@ window.addEventListener('error', function(e){
     requestAnimationFrame(step);
   }
 
-  const TEMP_LEVEL_ORDER_AFTER = { 3: 1, 1: 2 };
+  const LEVEL_ORDER_AFTER = { 1: 2, 2: 3, 3: 4 };
   function win(){
     state = 'levelTransition';
-    const next = TEMP_LEVEL_ORDER_AFTER[currentLevelNum];
+    const next = LEVEL_ORDER_AFTER[currentLevelNum];
     if (next){
       sfx.win95Chime();
       setTimeout(()=>sfx.win(), 500);
