@@ -3838,6 +3838,7 @@ window.addEventListener('error', function(e){
           player.y += player.h - CFG.CROUCH_H;
           player.h = CFG.CROUCH_H;
           player.crouching = true;
+          if (Math.abs(player.vx) > 1.0) sfx.slide();
         } else if (!wantsCrouch && player.crouching){
           player.y -= CFG.STAND_H - player.h;
           player.h = CFG.STAND_H;
