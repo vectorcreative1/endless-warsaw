@@ -3169,12 +3169,18 @@ window.addEventListener('error', function(e){
   const NICK_ALLOWED_RE = /^[A-Za-z0-9 ąćęłńóśźżĄĆĘŁŃÓŚŹŻ_.-]*$/;
   const NICK_DISALLOWED_CHARS_RE = /[^A-Za-z0-9 ąćęłńóśźżĄĆĘŁŃÓŚŹŻ_.-]/g;
 
-  // Polish profanity filter for nicknames: matched against normalized roots
-  // (diacritics stripped, common leetspeak folded back to letters, all
-  // non-letters removed) so "kurw4", "ch.u.j" etc. get caught too.
+  // Polish + English profanity filter for nicknames: matched against
+  // normalized roots (diacritics stripped, common leetspeak folded back to
+  // letters, all non-letters removed) so "kurw4", "ch.u.j", "fu(k" etc. get
+  // caught too.
   const BANNED_NAME_ROOTS = [
+    // Polish
     'kurw', 'chuj', 'huj', 'xuj', 'jeb', 'pierd', 'pizd', 'cip',
     'dziwk', 'suka', 'gnoj', 'gowno', 'rucha', 'cwel', 'pedal', 'szmata',
+    // English
+    'fuck', 'shit', 'cunt', 'dick', 'cock', 'pussy', 'bitch', 'asshole',
+    'bastard', 'whore', 'slut', 'nigger', 'nigga', 'faggot', 'retard',
+    'twat', 'douche', 'wank',
   ];
   function normalizeForProfanityCheck(s){
     const leet = { '0':'o', '1':'i', '3':'e', '4':'a', '5':'s', '7':'t', '@':'a', '$':'s' };
