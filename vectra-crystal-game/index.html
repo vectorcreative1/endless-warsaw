@@ -3161,6 +3161,27 @@ window.addEventListener('error', function(e){
 
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+  // Polish profanity filter for nicknames: matched against normalized roots
+  // (diacritics stripped, common leetspeak folded back to letters, all
+  // non-letters removed) so "kurw4", "ch.u.j" etc. get caught too.
+  const BANNED_NAME_ROOTS = [
+    'kurw', 'chuj', 'huj', 'xuj', 'jeb', 'pierd', 'pizd', 'pozda', 'cip',
+    'dziwk', 'suka', 'gnoj', 'gowno', 'rucha', 'cwel', 'pedal', 'szmata',
+  ];
+  function normalizeForProfanityCheck(s){
+    const leet = { '0':'o', '1':'i', '3':'e', '4':'a', '5':'s', '7':'t', '@':'a', '$':'s' };
+    const diacritics = { 'ą':'a', 'ć':'c', 'ę':'e', 'ł':'l', 'ń':'n', 'ó':'o', 'ś':'s', 'ź':'z', 'ż':'z' };
+    let x = s.toLowerCase();
+    x = x.replace(/[013457@$]/g, ch => leet[ch] || ch);
+    x = x.replace(/[ąćęłńóśźż]/g, ch => diacritics[ch] || ch);
+    x = x.replace(/[^a-z]/g, '');
+    return x;
+  }
+  function containsProfanity(name){
+    const norm = normalizeForProfanityCheck(name);
+    return BANNED_NAME_ROOTS.some(root => norm.includes(root));
+  }
+
   document.getElementById('btn-continue').addEventListener('click', async ()=>{
     ensureAudio();
     hideFieldError('name-error');
@@ -3178,6 +3199,14 @@ window.addEventListener('error', function(e){
       shakeEl(el);
       el.focus();
       showFieldError('name-error', 'WPISZ NICK');
+      sfx.wrongBuzz();
+      return;
+    }
+    if (containsProfanity(playerName)){
+      const el = document.getElementById('player-name');
+      shakeEl(el);
+      el.focus();
+      showFieldError('name-error', 'GRZECZNIE PLS :)');
       sfx.wrongBuzz();
       return;
     }
