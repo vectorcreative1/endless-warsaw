@@ -5321,7 +5321,11 @@ window.addEventListener('error', function(e){
     let startX = -(offset % dispW);
     if (startX > 0) startX -= dispW;
     for (let x = startX; x < CFG.W; x += dispW){
-      ctx.drawImage(WORLD_IMGS.bg, Math.round(x), -4, dispW, dispH);
+      // draw 2px wider than the tile step so adjacent tiles overlap instead
+      // of leaving a sub-pixel rounding gap - with imageSmoothingEnabled
+      // off (pixel-art) and the canvas later CSS-scaled up to fill the
+      // screen, even a 1px native gap renders as a hard visible seam
+      ctx.drawImage(WORLD_IMGS.bg, Math.round(x), -4, dispW+2, dispH);
     }
   }
 
