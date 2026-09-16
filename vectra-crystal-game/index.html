@@ -149,6 +149,17 @@
     image-rendering:pixelated; user-select:none; -webkit-user-select:none; pointer-events:auto; cursor:pointer;
     animation:splashBtnPulse 1.4s ease-in-out infinite;
   }
+  .splash-choice-row{
+    position:absolute;
+    left:13%; top:72%; width:74%; height:17.5%;
+    display:flex; justify-content:center; align-items:flex-start; gap:3.5%;
+  }
+  .splash-choice-wrap{ width:30.5%; }
+  .splash-choice-btn{
+    display:block; width:100%; height:auto; object-fit:contain;
+    image-rendering:pixelated; user-select:none; -webkit-user-select:none; pointer-events:auto; cursor:pointer;
+    animation:splashBtnPulse 1.4s ease-in-out infinite;
+  }
   @keyframes splashBtnPulse{ 0%,100%{ transform:scale(1); filter:brightness(1); } 50%{ transform:scale(1.045); filter:brightness(1.15); } }
   .mute-btn{
     position:absolute; bottom:10px; right:14px; font-family:'Press Start 2P',monospace; font-size:14px;
@@ -454,8 +465,13 @@
           <img class="splash-layer splash-anim-head splash-head-jutrek" src="assets/splash_jutrek_head.png" alt=""/>
           <img class="splash-layer splash-anim-head splash-head-dzisiek splash-blink" id="blink-dzisiek" src="assets/splash_dzisiek_head_blink.png" alt=""/>
           <img class="splash-layer splash-anim-head splash-head-jutrek splash-blink" id="blink-jutrek" src="assets/splash_jutrek_head_blink.png" alt=""/>
-          <div class="splash-btn-wrap magnet-btn" id="btn-play-wrap">
-            <img class="splash-play-btn" id="btn-play" src="assets/splash_button_separate.png" alt="PLAY"/>
+          <div class="splash-choice-row">
+            <div class="splash-choice-wrap magnet-btn" id="btn-gram-wrap">
+              <img class="splash-choice-btn" id="btn-gram" src="assets/button_gram.png" alt="GRAM"/>
+            </div>
+            <div class="splash-choice-wrap magnet-btn" id="btn-testuj-wrap">
+              <img class="splash-choice-btn" id="btn-testuj" src="assets/button_testuje.png" alt="TESTUJĘ"/>
+            </div>
           </div>
         </div>
       </div>
@@ -679,6 +695,7 @@ window.addEventListener('error', function(e){
 
   let playerName = loadSavedField('vectraPlayerName');
   let playerEmail = loadSavedField('vectraPlayerEmail');
+  let testMode = false;
 
   function getDeviceToken(){
     let token = loadSavedField('vectraDeviceToken');
@@ -714,6 +731,12 @@ window.addEventListener('error', function(e){
         body: JSON.stringify({ fields: { lastWrite: { timestampValue: new Date().toISOString() } } }),
       });
     } catch (e){ console.error('submitScore failed', e); }
+  }
+
+  function submitScoreMaybe(name, score){
+    // TESTUJĘ mode: play without a nickname/email, score never touches the
+    // ranking at all (not even under a placeholder name)
+    return testMode ? Promise.resolve() : submitScore(name, score);
   }
 
   async function checkAndClaimNickname(nick, email){
@@ -2818,7 +2841,7 @@ window.addEventListener('error', function(e){
     ensureAudio(); if (audioCtx && audioCtx.state==='suspended') audioCtx.resume();
     if (e.code === 'Enter'){
       if (!document.getElementById('screen-splash').classList.contains('hidden')){
-        document.getElementById('btn-play').click();
+        document.getElementById('btn-gram').click();
       } else if (!document.getElementById('screen-name').classList.contains('hidden')){
         document.getElementById('btn-continue').click();
       } else if (!document.getElementById('screen-start').classList.contains('hidden')){
@@ -3136,11 +3159,21 @@ window.addEventListener('error', function(e){
     }
   }
 
-  document.getElementById('btn-play').addEventListener('click', ()=>{
+  document.getElementById('btn-gram').addEventListener('click', ()=>{
     ensureAudio(); if (audioCtx && audioCtx.state==='suspended') audioCtx.resume();
     sfx.confirm();
     requestFullscreenOnce();
+    testMode = false;
     showScreen('screen-name');
+  });
+
+  document.getElementById('btn-testuj').addEventListener('click', ()=>{
+    ensureAudio(); if (audioCtx && audioCtx.state==='suspended') audioCtx.resume();
+    sfx.confirm();
+    requestFullscreenOnce();
+    testMode = true;
+    if (!selectedHero) selectHero('dzisiek');
+    showScreen('screen-start');
   });
 
   function shakeEl(el){
@@ -3308,7 +3341,8 @@ window.addEventListener('error', function(e){
       el.style.setProperty('--mscale', '1');
     });
   }
-  attachMagnetHover(document.getElementById('btn-play-wrap'), 9);
+  attachMagnetHover(document.getElementById('btn-gram-wrap'), 9);
+  attachMagnetHover(document.getElementById('btn-testuj-wrap'), 9);
   attachMagnetHover(document.getElementById('btn-continue-wrap'), 9);
   attachMagnetHover(document.getElementById('btn-start-wrap'), 9);
   attachMagnetHover(document.getElementById('btn-over-restart-wrap'), 9);
@@ -3377,7 +3411,7 @@ window.addEventListener('error', function(e){
         state = 'over';
         document.getElementById('over-score').textContent = score;
         showScreen('screen-over');
-        submitScore(playerName, score).then(loadLeaderboard);
+        submitScoreMaybe(playerName, score).then(loadLeaderboard);
       }, 2000);
     } else {
       sfx.hurt();
@@ -3409,7 +3443,7 @@ window.addEventListener('error', function(e){
         state = 'over';
         document.getElementById('over-score').textContent = score;
         showScreen('screen-over');
-        submitScore(playerName, score).then(loadLeaderboard);
+        submitScoreMaybe(playerName, score).then(loadLeaderboard);
       }, 2000);
     } else {
       sfx.hurt();
@@ -3482,7 +3516,7 @@ window.addEventListener('error', function(e){
     sfx.win95Chime();
     setTimeout(()=>sfx.win(), 500);
     showScreen('screen-win');
-    submitScore(playerName, score).then(loadLeaderboard);
+    submitScoreMaybe(playerName, score).then(loadLeaderboard);
   }
 
   let activeQuiz = null;
