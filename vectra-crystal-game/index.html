@@ -5529,7 +5529,14 @@ window.addEventListener('error', function(e){
             const destX1 = px(tileX + drawW - camera.x);
             ctx.drawImage(WORLD_IMGS.ground, 0, 0, srcW, WORLD_IMGS.ground.naturalHeight, destX0, px(drawY), destX1 - destX0, dispHi);
           } else {
-            ctx.drawImage(WORLD_IMGS.ground, px(tileX - camera.x), px(drawY), tileWi, dispHi);
+            // draw 2px wider than the tile step: at this downscale factor
+            // (tileWi < naturalWidth) nearest-neighbor sampling never
+            // actually reads the source's true last column for a tile's
+            // right edge, only the source's true first column for the next
+            // tile's left edge - so even a perfectly edge-matched source
+            // texture still shows a seam. Overlapping hides it the same way
+            // it does for the parallax background tiles.
+            ctx.drawImage(WORLD_IMGS.ground, px(tileX - camera.x), px(drawY), tileWi+2, dispHi);
           }
         }
       }
