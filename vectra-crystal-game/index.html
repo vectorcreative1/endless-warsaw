@@ -1047,7 +1047,7 @@ window.addEventListener('error', function(e){
       bg: 'assets/bg_scene_city.png', platform: 'assets/platform_island_city.png',
       groundTile: 'assets/ground_tile_city.png', groundEdge: 'assets/ground_edge_city.png',
       tree: 'assets/tree_city.png', bush: 'assets/bush_city.png',
-      groundInset: 115,
+      groundInset: 115, bgZoom: 1.08,
     },
     future: {
       bg: 'assets/bg_scene_level-3_2.png', platform: 'assets/platform_island_level3.png',
@@ -5490,7 +5490,11 @@ window.addEventListener('error', function(e){
   }
 
   function drawSceneBackground(){
-    const dispH = CFG.H + 4;
+    // zooming in slightly (keeping the top edge anchored at the same spot)
+    // pushes the visible content of the background down, since a taller
+    // slice of the source gets cropped off the bottom instead - used on
+    // level 1 to lower the skyline without leaving a gap at the top
+    const dispH = (CFG.H + 4) * (WORLD.bgZoom || 1);
     const scale = dispH / WORLD_IMGS.bg.naturalHeight;
     const dispW = Math.round(WORLD_IMGS.bg.naturalWidth * scale);
     const parallax = 0.25;
