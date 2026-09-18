@@ -2746,16 +2746,28 @@ window.addEventListener('error', function(e){
         const EDGE_MARGIN = 40;
         const neededWidth = helperSpec.w + HELPER_TO_PHONE_GAP + phoneSpec.w + EDGE_MARGIN*2;
 
-        let segStart = null;
+        let foundHelperX = null, foundPhoneX = null;
         for (const [gs, ge] of groundSegments){
           if (ge <= secretGapEnd) continue;
-          const usableStart = Math.max(gs, secretGapEnd);
-          if (ge - usableStart >= neededWidth){ segStart = usableStart; break; }
+          let usableStart = Math.max(gs, secretGapEnd);
+          // don't start inside a quiz's reserved clear-zone - jump past it
+          for (const qx of placedQuizX){
+            const zoneEnd = qx + QUIZ_CLEAR_HALF_W;
+            if (usableStart < zoneEnd && usableStart + neededWidth > qx - QUIZ_CLEAR_HALF_W){
+              usableStart = Math.max(usableStart, zoneEnd);
+            }
+          }
+          if (ge - usableStart < neededWidth) continue;
+          const spanEnd = usableStart + neededWidth;
+          if (placedQuizX.some(qx => usableStart < qx+QUIZ_CLEAR_HALF_W && spanEnd > qx-QUIZ_CLEAR_HALF_W)) continue;
+          foundHelperX = usableStart + EDGE_MARGIN;
+          foundPhoneX = foundHelperX + helperSpec.w + HELPER_TO_PHONE_GAP;
+          break;
         }
 
-        if (segStart != null){
-          const helperX = segStart + EDGE_MARGIN;
-          const phoneX = helperX + helperSpec.w + HELPER_TO_PHONE_GAP;
+        if (foundHelperX != null){
+          const helperX = foundHelperX;
+          const phoneX = foundPhoneX;
           const clearFrom = helperX - 20, clearTo = phoneX + phoneSpec.w + 20;
           for (let j=obstacles.length-1; j>=0; j--){
             const ob = obstacles[j];
