@@ -1792,7 +1792,15 @@ window.addEventListener('error', function(e){
           const helperKind = helperKindGeneric;
           const helperSpec = OBSTACLE_SPECS[helperKind];
           const gap = 45 + rand()*35;
-          const helperX = Math.min(keepObstacleOffGap(x - gap - helperSpec.w, helperSpec.w), x - helperSpec.w - 10);
+          let helperX = Math.min(x - gap - helperSpec.w, x - helperSpec.w - 10);
+          // clamp-then-gap-check loop (not a one-shot Math.min of two
+          // independently-adjusted values) so pushing past a gap can't
+          // silently get reverted back onto it, leaving the helper floating
+          for (let pass=0; pass<3; pass++){
+            const adjusted = keepObstacleOffGap(helperX, helperSpec.w);
+            if (adjusted === helperX) break;
+            helperX = Math.min(adjusted, x - helperSpec.w - 10);
+          }
           obstacles.push({x:helperX, y:CFG.GROUND_Y-helperSpec.h+(helperSpec.sink||0), w:helperSpec.w, h:helperSpec.h, hitW:helperSpec.hitW, hitH:helperSpec.hitH, kind:helperKind, pushable:true});
         }
         obstacles.push({x, y:CFG.GROUND_Y-spec.h+(spec.sink||0), w:spec.w, h:spec.h, hitW:spec.hitW, hitH:spec.hitH, kind, pushable:spec.pushable||false});
