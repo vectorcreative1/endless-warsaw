@@ -2729,7 +2729,15 @@ window.addEventListener('error', function(e){
       if (ACTIVE_WORLD === 'nature' && secretGapCandidate){
         const [, secretGapEnd] = secretGapCandidate;
         const phoneSpec = OBSTACLE_SPECS.phone;
-        const phoneX = secretGapEnd + 500;
+        let phoneX = secretGapEnd + 500;
+        // don't let it land floating over some other gap between here and
+        // there - push past any gap it overlaps (looped in case pushing
+        // past one gap lands it right on top of another)
+        for (let pass=0; pass<3; pass++){
+          const adjusted = keepObstacleOffGap(phoneX, phoneSpec.w);
+          if (adjusted === phoneX) break;
+          phoneX = adjusted;
+        }
         const clearMargin = phoneSpec.w + 40;
         for (let j=obstacles.length-1; j>=0; j--){
           const ob = obstacles[j];
