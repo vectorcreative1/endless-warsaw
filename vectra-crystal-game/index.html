@@ -2733,47 +2733,41 @@ window.addEventListener('error', function(e){
 
       // guaranteed secret-code phone, always right after the secret-room
       // pit (not left to the random obstacle pool like the other 'phone'
-      // spawns)
+      // spawns). Rather than placing it at a fixed offset and then patching
+      // up gap overlaps after the fact, find a ground segment that's
+      // actually wide enough to hold both it and its stepping obstacle
+      // (with real spacing between them) and place them inside that.
       if (ACTIVE_WORLD === 'nature' && secretGapCandidate){
         const [, secretGapEnd] = secretGapCandidate;
         const phoneSpec = OBSTACLE_SPECS.phone;
-        let phoneX = secretGapEnd + 500;
-        // don't let it land floating over some other gap between here and
-        // there - push past any gap it overlaps (looped in case pushing
-        // past one gap lands it right on top of another)
-        for (let pass=0; pass<3; pass++){
-          const adjusted = keepObstacleOffGap(phoneX, phoneSpec.w);
-          if (adjusted === phoneX) break;
-          phoneX = adjusted;
+        const helperKind = 'phoneHoriz';
+        const helperSpec = OBSTACLE_SPECS[helperKind];
+        const HELPER_TO_PHONE_GAP = 300;
+        const EDGE_MARGIN = 40;
+        const neededWidth = helperSpec.w + HELPER_TO_PHONE_GAP + phoneSpec.w + EDGE_MARGIN*2;
+
+        let segStart = null;
+        for (const [gs, ge] of groundSegments){
+          if (ge <= secretGapEnd) continue;
+          const usableStart = Math.max(gs, secretGapEnd);
+          if (ge - usableStart >= neededWidth){ segStart = usableStart; break; }
         }
-        const clearMargin = phoneSpec.w + 40;
-        for (let j=obstacles.length-1; j>=0; j--){
-          const ob = obstacles[j];
-          if (ob.x+ob.w >= phoneX-clearMargin && ob.x <= phoneX+clearMargin) obstacles.splice(j,1);
-        }
-        for (let j=platforms.length-1; j>=0; j--){
-          const p = platforms[j];
-          if (p.x+p.w >= phoneX-clearMargin && p.x <= phoneX+clearMargin) platforms.splice(j,1);
-        }
-        if (phoneSpec.h > 80){
-          // same "small stepping obstacle in front of a tall one" pattern
-          // used for the random obstacle pool - Jutrek's weaker jump needs
-          // it to reach the top of the (now taller) phone
-          const helperKind = 'phoneHoriz';
-          const helperSpec = OBSTACLE_SPECS[helperKind];
-          const gap = 45 + rand()*35;
-          let helperX = Math.min(phoneX - gap - helperSpec.w, phoneX - helperSpec.w - 10);
-          // clamp-then-gap-check loop (not a one-shot Math.min of two
-          // independently-adjusted values) so pushing past a gap can't
-          // silently get reverted back onto it
-          for (let pass=0; pass<3; pass++){
-            const adjusted = keepObstacleOffGap(helperX, helperSpec.w);
-            if (adjusted === helperX) break;
-            helperX = Math.min(adjusted, phoneX - helperSpec.w - 10);
+
+        if (segStart != null){
+          const helperX = segStart + EDGE_MARGIN;
+          const phoneX = helperX + helperSpec.w + HELPER_TO_PHONE_GAP;
+          const clearFrom = helperX - 20, clearTo = phoneX + phoneSpec.w + 20;
+          for (let j=obstacles.length-1; j>=0; j--){
+            const ob = obstacles[j];
+            if (ob.x+ob.w >= clearFrom && ob.x <= clearTo) obstacles.splice(j,1);
+          }
+          for (let j=platforms.length-1; j>=0; j--){
+            const p = platforms[j];
+            if (p.x+p.w >= clearFrom && p.x <= clearTo) platforms.splice(j,1);
           }
           obstacles.push({x:helperX, y:CFG.GROUND_Y-helperSpec.h+(helperSpec.sink||0), w:helperSpec.w, h:helperSpec.h, hitW:helperSpec.hitW, hitH:helperSpec.hitH, kind:helperKind, pushable:true});
+          obstacles.push({x:phoneX, y:CFG.GROUND_Y-phoneSpec.h+(phoneSpec.sink||0), w:phoneSpec.w, h:phoneSpec.h, hitW:phoneSpec.hitW, hitH:phoneSpec.hitH, kind:'phone', pushable:false});
         }
-        obstacles.push({x:phoneX, y:CFG.GROUND_Y-phoneSpec.h+(phoneSpec.sink||0), w:phoneSpec.w, h:phoneSpec.h, hitW:phoneSpec.hitW, hitH:phoneSpec.hitH, kind:'phone', pushable:false});
       }
     }
 
