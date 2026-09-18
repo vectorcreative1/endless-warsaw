@@ -930,6 +930,7 @@ window.addEventListener('error', function(e){
   const obComputersImg = loadImg('assets/obsticle_computers_level_2.png');
   const obErrorScreenImg = loadImg('assets/obsticle_erroe_level_2.png');
   const obPhoneImg = loadImg('assets/obsticle_smartphone_level_2.png');
+  const obPhoneEmptyImg = loadImg('assets/obsticle_smartphone_level_2_empny.png');
   const obPhoneHorizImg = loadImg('assets/obsticle_smartphone_horisontal_level_2.png');
   const obTrashBin2Img = loadImg('assets/obsticle_trash_bin_level_2.png');
   const obCafeImg = loadImg('assets/obsticle_cafe_level3.png');
@@ -979,7 +980,7 @@ window.addEventListener('error', function(e){
     dvdPlayer: { img: obDvdPlayerImg, w: 54, h: 23, hitW: 54, hitH: 23, sink: 4, pushable: true },
     computers: { img: obComputersImg, w: 101, h: 96, hitW: 101, hitH: 96, sink: 6 },
     errorScreen: { img: obErrorScreenImg, w: 120, h: 78, hitW: 120, hitH: 78 },
-    phone: { img: obPhoneImg, w: 42, h: 95, hitW: 42, hitH: 95 },
+    phone: { img: obPhoneImg, w: 48, h: 108, hitW: 48, hitH: 106 },
     phoneHoriz: { img: obPhoneHorizImg, w: 110, h: 50, hitW: 110, hitH: 50, sink: 6 },
     trashBin2: { img: obTrashBin2Img, w: 35, h: 38, hitW: 35, hitH: 38, sink: 4 },
     cafe: { img: obCafeImg, w: 150, h: 106, hitW: 150, hitH: 106, sink: 8 },
@@ -1559,6 +1560,13 @@ window.addEventListener('error', function(e){
     secretBounce: ()=>sweep(200,900,0.3,'square',0.16),
     pipeDown: ()=>sweep(520,140,0.4,'square',0.16),
     pipeUp: ()=>sweep(140,520,0.35,'square',0.16),
+    phoneWake: ()=>{
+      [1400,1800,1400,1800].forEach((f,i)=>setTimeout(()=>beep(f,0.09,'square',0.12), i*120));
+    },
+    phoneKey: ()=>beep(1500,0.035,'square',0.09),
+    phoneSuccess: ()=>{
+      [660,880,1100,1320].forEach((f,i)=>setTimeout(()=>beep(f,0.14,'square',0.13), i*90));
+    },
     oldComputerHum: ()=>{
       sweep(180,220,0.4,'sawtooth',0.14);
       setTimeout(()=>beep(2200,0.05,'square',0.09), 220);
@@ -2714,6 +2722,35 @@ window.addEventListener('error', function(e){
         const pushX = gs - pushSpec.w - 20;
         obstacles.push({x:pushX, y:CFG.GROUND_Y-pushSpec.h+(pushSpec.sink||0), w:pushSpec.w, h:pushSpec.h, hitW:pushSpec.hitW, hitH:pushSpec.hitH, kind:helperKindGeneric, pushable:true});
       }
+
+      // guaranteed secret-code phone, always right after the secret-room
+      // pit (not left to the random obstacle pool like the other 'phone'
+      // spawns)
+      if (ACTIVE_WORLD === 'nature' && secretGapCandidate){
+        const [, secretGapEnd] = secretGapCandidate;
+        const phoneSpec = OBSTACLE_SPECS.phone;
+        const phoneX = secretGapEnd + 60;
+        const clearMargin = phoneSpec.w + 40;
+        for (let j=obstacles.length-1; j>=0; j--){
+          const ob = obstacles[j];
+          if (ob.x+ob.w >= phoneX-clearMargin && ob.x <= phoneX+clearMargin) obstacles.splice(j,1);
+        }
+        for (let j=platforms.length-1; j>=0; j--){
+          const p = platforms[j];
+          if (p.x+p.w >= phoneX-clearMargin && p.x <= phoneX+clearMargin) platforms.splice(j,1);
+        }
+        if (phoneSpec.h > 80){
+          // same "small stepping obstacle in front of a tall one" pattern
+          // used for the random obstacle pool - Jutrek's weaker jump needs
+          // it to reach the top of the (now taller) phone
+          const helperKind = helperKindGeneric;
+          const helperSpec = OBSTACLE_SPECS[helperKind];
+          const gap = 45 + rand()*35;
+          const helperX = Math.min(keepObstacleOffGap(phoneX - gap - helperSpec.w, helperSpec.w), phoneX - helperSpec.w - 10);
+          obstacles.push({x:helperX, y:CFG.GROUND_Y-helperSpec.h+(helperSpec.sink||0), w:helperSpec.w, h:helperSpec.h, hitW:helperSpec.hitW, hitH:helperSpec.hitH, kind:helperKind, pushable:true});
+        }
+        obstacles.push({x:phoneX, y:CFG.GROUND_Y-phoneSpec.h+(phoneSpec.sink||0), w:phoneSpec.w, h:phoneSpec.h, hitW:phoneSpec.hitW, hitH:phoneSpec.hitH, kind:'phone', pushable:false});
+      }
     }
 
     if (ACTIVE_WORLD === 'nature'){
@@ -2837,6 +2874,12 @@ window.addEventListener('error', function(e){
 
   // ---------- input ----------
   const keys = { left:false, right:false, jump:false, down:false, up:false };
+  const DIGIT_KEY_MAP = {
+    Digit0:'0', Digit1:'1', Digit2:'2', Digit3:'3', Digit4:'4',
+    Digit5:'5', Digit6:'6', Digit7:'7', Digit8:'8', Digit9:'9',
+    Numpad0:'0', Numpad1:'1', Numpad2:'2', Numpad3:'3', Numpad4:'4',
+    Numpad5:'5', Numpad6:'6', Numpad7:'7', Numpad8:'8', Numpad9:'9',
+  };
   window.addEventListener('keydown', (e)=>{
     ensureAudio(); if (audioCtx && audioCtx.state==='suspended') audioCtx.resume();
     if (e.code === 'Enter'){
@@ -2853,6 +2896,9 @@ window.addEventListener('error', function(e){
     if (!document.getElementById('screen-start').classList.contains('hidden')){
       if (['ArrowLeft','KeyA'].includes(e.code)) selectHero('dzisiek');
       if (['ArrowRight','KeyD'].includes(e.code)) selectHero('jutrek');
+    }
+    if (state === 'playing' && DIGIT_KEY_MAP[e.code] && activePhoneEgg && activePhoneEgg.phoneAwake){
+      handlePhoneDigit(DIGIT_KEY_MAP[e.code]);
     }
     if (['ArrowLeft','KeyA'].includes(e.code)) keys.left = true;
     if (['ArrowRight','KeyD'].includes(e.code)) keys.right = true;
@@ -2916,7 +2962,7 @@ window.addEventListener('error', function(e){
     };
   });
   function activeRoomCoins(){ if (currentLevelNum === 3) return SECRET_ROOM_COINS_L3; return currentLevelNum === 2 ? SECRET_ROOM_COINS_L2 : SECRET_ROOM_COINS_L1; }
-  const PIPE_ENTERABLE_KINDS = ['kiosk', 'computers', 'phone', 'paczkomat', 'paczkomatY', 'cafe', 'server'];
+  const PIPE_ENTERABLE_KINDS = ['kiosk', 'computers', 'paczkomat', 'paczkomatY', 'cafe', 'server'];
   const PIPE_COIN_KINDS = { paczkomat: 15, paczkomatY: 15 };
   const PIPE_SINK_MS = 450, PIPE_HIDE_MS = 1600, PIPE_RISE_MS = 450, PIPE_SINK_DIST = 90;
   const CAR_DRIVE_KINDS = ['bigCar'];
@@ -2939,6 +2985,8 @@ window.addEventListener('error', function(e){
   const BOSS_CAMERA_PAN_MS = 700;
   let coinPops = [];
   let nextRandomFallTimer = 600 + Math.random()*600;
+  let fallEnemyLastSpawnX = 0;
+  const FALL_ENEMY_PROGRESS_GATE = 450; // must advance this far since the last spawn - stops farming score by standing still
   let selectedHero = null;
 
   function initStatBars(){
@@ -3026,6 +3074,12 @@ window.addEventListener('error', function(e){
     } else if (DEBUG_START_SPOT === 'drone' && num === 4 && level.longGapEnd != null){
       player.x = level.longGapEnd + 40;
       camera.x = Math.max(0, Math.min(player.x - CFG.W/2, CFG.LEVEL_W - CFG.W));
+    } else if (DEBUG_START_SPOT === 'phone' && num === 2){
+      const phoneOb = level.obstacles.find(o => o.kind === 'phone');
+      if (phoneOb){
+        player.x = Math.max(40, phoneOb.x - 40);
+        camera.x = Math.max(0, Math.min(player.x - CFG.W/2, CFG.LEVEL_W - CFG.W));
+      }
     }
     pipeState = null; pipeT = 0; pipeReady = true;
     drivingCar = null;
@@ -3057,6 +3111,7 @@ window.addEventListener('error', function(e){
     bossCameraPanFrom = 0; bossCameraPanT = 0;
     coinPops = [];
     nextRandomFallTimer = 600 + Math.random()*600;
+    fallEnemyLastSpawnX = player.x;
     bonusSequenceActive = false;
     const bonusOverlayEl = document.getElementById('bonus-overlay');
     bonusOverlayEl.classList.remove('show');
@@ -3622,6 +3677,60 @@ window.addEventListener('error', function(e){
         const worldX = centerX + (Math.random()*2-1)*spread;
         coinPops.push({ x: worldX, y: -20, homing: true, t: 0, bonus: true });
       }, i*140);
+    }
+  }
+
+  // ---------- secret phone easter egg (level 2) ----------
+  // Approach a 'phone' obstacle -> it wakes up (rings, screen lights up).
+  // Type 601601601 on the keyboard while nearby -> 20 coins rain down.
+  const PHONE_CODE = '601601601';
+  const PHONE_WAKE_RADIUS = 60;
+  let activePhoneEgg = null;
+  const PHONE_CELEBRATE_FRAMES = 110; // ~1.8s at 60fps - how long the solved code blinks before the logo comes back
+  function updatePhoneEasterEgg(timeScale){
+    let nearest = null, nearestDist = Infinity;
+    for (const ob of level.obstacles){
+      if (ob.kind !== 'phone') continue;
+      if (ob.phoneSolved){
+        if (ob.phoneAwake){
+          ob.phoneCelebrateT = (ob.phoneCelebrateT||0) + timeScale;
+          if (ob.phoneCelebrateT > PHONE_CELEBRATE_FRAMES) ob.phoneAwake = false;
+        }
+        continue;
+      }
+      const dx = Math.abs((player.x+player.w/2) - (ob.x+ob.w/2));
+      const dy = Math.abs((player.y+player.h) - (ob.y+ob.h));
+      if (dx < PHONE_WAKE_RADIUS && dy < 70 && dx < nearestDist){
+        nearest = ob; nearestDist = dx;
+      }
+    }
+    if (activePhoneEgg && activePhoneEgg !== nearest && !activePhoneEgg.phoneSolved){
+      activePhoneEgg.phoneAwake = false;
+    }
+    activePhoneEgg = nearest;
+    if (activePhoneEgg && !activePhoneEgg.phoneAwake){
+      activePhoneEgg.phoneAwake = true;
+      activePhoneEgg.phoneInput = '';
+      sfx.phoneWake();
+    }
+    if (activePhoneEgg){
+      activePhoneEgg.phoneCursorT = (activePhoneEgg.phoneCursorT||0) + timeScale;
+    }
+  }
+  function handlePhoneDigit(d){
+    const ob = activePhoneEgg;
+    if (!ob || !ob.phoneAwake || ob.phoneSolved) return;
+    ob.phoneInput = (ob.phoneInput||'') + d;
+    ob.phoneCursorT = 0;
+    sfx.phoneKey();
+    if (ob.phoneInput.length >= PHONE_CODE.length){
+      if (ob.phoneInput === PHONE_CODE){
+        ob.phoneSolved = true;
+        sfx.phoneSuccess();
+        spawnCoinRainAt(ob.x+ob.w/2, 20, 40);
+      } else {
+        ob.phoneInput = '';
+      }
     }
   }
 
@@ -4437,6 +4546,8 @@ window.addEventListener('error', function(e){
 
     const timeScale = dt / (1000/60);
 
+    if (currentLevelNum === 2) updatePhoneEasterEgg(timeScale);
+
     if (respawnFreeze > 0) respawnFreeze = Math.max(0, respawnFreeze - timeScale);
     const inputLocked = respawnFreeze > 0;
     const inCarProtected = !!(carEntering || drivingCar || carExiting || pipeState);
@@ -5217,8 +5328,8 @@ window.addEventListener('error', function(e){
       if (cp.t > (cp.bonus ? 160 : 30)) coinPops.splice(i, 1);
     }
 
-    nextRandomFallTimer--;
-    if (currentLevelNum === 2 && nextRandomFallTimer <= 0){
+    nextRandomFallTimer -= timeScale;
+    if (currentLevelNum === 2 && nextRandomFallTimer <= 0 && player.x > fallEnemyLastSpawnX + FALL_ENEMY_PROGRESS_GATE){
       const fallX = safeXNear(player.x + 150 + Math.random()*250);
       level.enemies.push({
         x0:fallX, x:fallX, y:-40-Math.random()*60, w:20, h:16,
@@ -5226,6 +5337,7 @@ window.addEventListener('error', function(e){
         alive:true, type: Math.random()<0.25 ? 'spiky' : 'ordinary', dying:false, deathTimer:0,
         falling:true, vy:0,
       });
+      fallEnemyLastSpawnX = player.x;
       sfx.snailFall();
       nextRandomFallTimer = 720 + Math.random()*720;
     }
@@ -5616,6 +5728,7 @@ window.addEventListener('error', function(e){
       const shakeX = ob.shakeOffset || 0;
       const shakeFrame = ob === drivingCar && spec.img2 && Math.floor(animT/90)%2===1;
       const img = ob.kind === 'screen' && imgReady(OBSTACLE_SPECS.screenOff.img) ? OBSTACLE_SPECS.screenOff.img
+        : (ob.kind === 'phone' && ob.phoneAwake && imgReady(obPhoneEmptyImg)) ? obPhoneEmptyImg
         : (shakeFrame && imgReady(spec.img2) ? spec.img2 : spec.img);
       if (imgReady(img)){
         if (ob.flip){
@@ -5631,7 +5744,41 @@ window.addEventListener('error', function(e){
         ctx.fillStyle = COLORS.woodDark;
         ctx.fillRect(sx+shakeX, sy, ob.w, ob.h);
       }
+      if (ob.kind === 'phone' && ob.phoneAwake) drawPhoneScreen(ob, sx+shakeX, sy);
     }
+  }
+
+  function drawPhoneScreen(ob, sx, sy){
+    // screen area as a fraction of the sprite box, measured from the
+    // "empty screen" art vs the normal art (natural coords 30,107 - 169,236
+    // out of the 200x454 source image)
+    const screenX0 = ob.w*0.15, screenX1 = ob.w*0.845;
+    const screenY0 = ob.h*0.2357, screenY1 = ob.h*0.5198;
+    const cx = sx + (screenX0+screenX1)/2;
+    const boxTop = sy + screenY0;
+    const boxH = screenY1 - screenY0;
+    const lineH = 8.5;
+    const groupTop = boxTop + (boxH - lineH*3)/2;
+    ctx.save();
+    ctx.font = '7px "Press Start 2P", monospace';
+    ctx.fillStyle = '#3c3e5d';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const input = ob.phoneInput || '';
+    const lines = [input.slice(0,3), input.slice(3,6), input.slice(6,9)];
+    const showCursor = !ob.phoneSolved && Math.floor(animT/300)%2===0;
+    const curLineIdx = Math.min(2, Math.floor(input.length/3));
+    // solved: blink the completed code for a bit before the logo comes back
+    const celebrateBlinkOn = !ob.phoneSolved || Math.floor(animT/150)%2===0;
+    if (celebrateBlinkOn){
+      for (let i=0; i<3; i++){
+        let text = lines[i];
+        if (i === curLineIdx && showCursor && input.length < PHONE_CODE.length) text += '_';
+        if (!text) continue;
+        ctx.fillText(text, cx, groupTop + lineH*(i+0.5));
+      }
+    }
+    ctx.restore();
   }
 
   function drawObstaclesOverlay(){
