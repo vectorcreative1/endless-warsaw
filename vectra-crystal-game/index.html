@@ -6558,7 +6558,10 @@ window.addEventListener('error', function(e){
     const showJutrek = selectedHero !== 'jutrek';
     const otherImg = showJutrek ? jutrekPointFrame(animT) : idleImg;
     if (imgReady(otherImg)){
-      const gSpriteH = 72;
+      // Dzisiek's art has more transparent margin baked in than Jutrek's,
+      // so at the same box height he reads visibly smaller - give him a
+      // bigger box here so the two look comparably sized
+      const gSpriteH = showJutrek ? 72 : 92;
       const gSpriteW = gSpriteH * (otherImg.naturalWidth/otherImg.naturalHeight);
       const gx = cx + dispW/2 - 14;
       const gy = baseY - gSpriteH + 3;
