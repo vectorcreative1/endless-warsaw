@@ -2751,10 +2751,18 @@ window.addEventListener('error', function(e){
           // same "small stepping obstacle in front of a tall one" pattern
           // used for the random obstacle pool - Jutrek's weaker jump needs
           // it to reach the top of the (now taller) phone
-          const helperKind = helperKindGeneric;
+          const helperKind = 'dvdPlayer';
           const helperSpec = OBSTACLE_SPECS[helperKind];
           const gap = 45 + rand()*35;
-          const helperX = Math.min(keepObstacleOffGap(phoneX - gap - helperSpec.w, helperSpec.w), phoneX - helperSpec.w - 10);
+          let helperX = Math.min(phoneX - gap - helperSpec.w, phoneX - helperSpec.w - 10);
+          // clamp-then-gap-check loop (not a one-shot Math.min of two
+          // independently-adjusted values) so pushing past a gap can't
+          // silently get reverted back onto it
+          for (let pass=0; pass<3; pass++){
+            const adjusted = keepObstacleOffGap(helperX, helperSpec.w);
+            if (adjusted === helperX) break;
+            helperX = Math.min(adjusted, phoneX - helperSpec.w - 10);
+          }
           obstacles.push({x:helperX, y:CFG.GROUND_Y-helperSpec.h+(helperSpec.sink||0), w:helperSpec.w, h:helperSpec.h, hitW:helperSpec.hitW, hitH:helperSpec.hitH, kind:helperKind, pushable:true});
         }
         obstacles.push({x:phoneX, y:CFG.GROUND_Y-phoneSpec.h+(phoneSpec.sink||0), w:phoneSpec.w, h:phoneSpec.h, hitW:phoneSpec.hitW, hitH:phoneSpec.hitH, kind:'phone', pushable:false});
