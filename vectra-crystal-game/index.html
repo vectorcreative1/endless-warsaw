@@ -2759,7 +2759,7 @@ window.addEventListener('error', function(e){
           // same "small stepping obstacle in front of a tall one" pattern
           // used for the random obstacle pool - Jutrek's weaker jump needs
           // it to reach the top of the (now taller) phone
-          const helperKind = 'dvdPlayer';
+          const helperKind = 'phoneHoriz';
           const helperSpec = OBSTACLE_SPECS[helperKind];
           const gap = 45 + rand()*35;
           let helperX = Math.min(phoneX - gap - helperSpec.w, phoneX - helperSpec.w - 10);
