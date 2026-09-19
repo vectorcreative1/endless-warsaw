@@ -2698,6 +2698,20 @@ window.addEventListener('error', function(e){
       return { x, quizIndex: i };
     });
 
+    // when a platform gets cleared away, whatever patrolling enemy was placed
+    // on top of it must go too - otherwise it hangs in mid-air on an
+    // invisible island (non-flying enemies standing above ground level and
+    // inside the removed platform's span)
+    function removeEnemiesStandingOn(p){
+      for (let k=enemies.length-1; k>=0; k--){
+        const en = enemies[k];
+        if (en.flying || en.type === 'flying') continue;
+        if (en.y >= CFG.GROUND_Y - 24) continue;
+        const ex = en.x0 != null ? en.x0 : en.x;
+        if (ex >= p.x - 4 && ex <= p.x + p.w + 4) enemies.splice(k,1);
+      }
+    }
+
     {
       const excludeXs = [ferryGapX, skyGapX];
       const secretGapCandidate = sortedGaps[ACTIVE_WORLD === 'nature' ? 2 : 1];
@@ -2725,7 +2739,7 @@ window.addEventListener('error', function(e){
         }
         for (let j=platforms.length-1; j>=0; j--){
           const p = platforms[j];
-          if (p.x+p.w >= gs-margin && p.x <= gs+margin) platforms.splice(j,1);
+          if (p.x+p.w >= gs-margin && p.x <= gs+margin){ removeEnemiesStandingOn(p); platforms.splice(j,1); }
         }
         const pushX = gs - pushSpec.w - 20;
         obstacles.push({x:pushX, y:CFG.GROUND_Y-pushSpec.h+(pushSpec.sink||0), w:pushSpec.w, h:pushSpec.h, hitW:pushSpec.hitW, hitH:pushSpec.hitH, kind:helperKindGeneric, pushable:true});
@@ -2775,7 +2789,7 @@ window.addEventListener('error', function(e){
           }
           for (let j=platforms.length-1; j>=0; j--){
             const p = platforms[j];
-            if (p.x+p.w >= clearFrom && p.x <= clearTo) platforms.splice(j,1);
+            if (p.x+p.w >= clearFrom && p.x <= clearTo){ removeEnemiesStandingOn(p); platforms.splice(j,1); }
           }
           obstacles.push({x:helperX, y:CFG.GROUND_Y-helperSpec.h+(helperSpec.sink||0), w:helperSpec.w, h:helperSpec.h, hitW:helperSpec.hitW, hitH:helperSpec.hitH, kind:helperKind, pushable:true});
           obstacles.push({x:phoneX, y:CFG.GROUND_Y-phoneSpec.h+(phoneSpec.sink||0), w:phoneSpec.w, h:phoneSpec.h, hitW:phoneSpec.hitW, hitH:phoneSpec.hitH, kind:'phone', pushable:false});
