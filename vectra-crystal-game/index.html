@@ -322,6 +322,15 @@
   }
   .rodo-consent.shake{ animation:shakeInput .4s ease; }
   .rodo-consent.shake span{ color:#ff4d5e; }
+  .regulamin-link{ color:var(--cyan); text-decoration:underline; }
+  .regulamin-link:hover{ color:var(--white); }
+  .rodo-legal-note{
+    font-family:system-ui, -apple-system, sans-serif; text-transform:none;
+    font-size:11px; line-height:1.6; color:#9fd8f0; text-align:left;
+    max-width:900px; margin:10px auto 0; opacity:.85;
+  }
+  .rodo-legal-note a{ color:var(--cyan); text-decoration:underline; }
+  .rodo-legal-note a:hover{ color:var(--white); }
   @keyframes shakeInput{
     0%, 100%{ transform:translateX(0); }
     20%{ transform:translateX(-8px); }
@@ -494,10 +503,16 @@
               <input type="text" id="player-name" class="player-name-input" maxlength="20" placeholder="NICKNAME"/>
             </div>
           </div>
+          <!-- TODO: replace both href="#" below with the real Regulamin PDF
+               link once it's available (client confirmed to ship without it
+               for now) -->
           <label class="rodo-consent" id="rodo-consent-wrap">
             <input type="checkbox" id="rodo-checkbox"/>
-            <span>Zgadzam się na przetwarzanie mojego adresu e-mail przez Vectra w celu udziału w grze i ewentualnego kontaktu w związku z konkursem.</span>
+            <span>Zapoznałem/am się i akceptuję <a href="#" target="_blank" rel="noopener" class="regulamin-link" onclick="event.stopPropagation()">Regulamin Konkursu</a></span>
           </label>
+          <p class="rodo-legal-note">
+            Administratorem danych osobowych jest Organizator Konkursu: VECTRA S.A z siedzibą w Gdyni, al. Zwycięstwa 253, KRS: 0000089460, NIP 586-20-40-690, REGON 170801142. Podane dane osobowe przetwarzane będą w celu organizacji, przeprowadzenia oraz rozliczenia Konkursu. Podmiot danych ma prawo dostępu do danych osobowych, ich sprostowania, usunięcia, ograniczenia przetwarzania, przenoszenia danych, wniesienia sprzeciwu wobec ich przetwarzania - w przypadkach i na zasadach określonych w przepisach RODO, a także prawo do złożenia skargi do organu nadzorczego. Szczegółowe informacje dotyczące przetwarzania danych osobowych dostępne są w <a href="#" target="_blank" rel="noopener">Regulaminie</a>.
+          </p>
         </div>
         <div class="start-row">
           <div class="magnet-btn" id="btn-continue-wrap">
