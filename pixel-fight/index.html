@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+<title>PIXEL FIGHT — prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"/>
+<style>
+  :root{ --black:#0b0e18; --blue:#2ea8e6; --red:#e23b3b; --yellow:#ffd23f; }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; width:100%; height:100%; background:var(--black); overflow:hidden;
+    font-family:'Press Start 2P', monospace; text-transform:uppercase; color:#fff;
+    touch-action:none; user-select:none; -webkit-user-select:none;
+  }
+  #frame{
+    position:absolute; left:50%; top:50%; width:480px; height:270px; margin:-135px 0 0 -240px;
+    transform-origin:center center; box-shadow:0 20px 60px rgba(0,0,0,.8); overflow:hidden;
+  }
+  canvas{ display:block; width:480px; height:270px; image-rendering:pixelated; image-rendering:crisp-edges; }
+  .scanlines{
+    position:absolute; inset:0; pointer-events:none;
+    background:repeating-linear-gradient(rgba(0,0,0,0) 0px, rgba(0,0,0,0) 1px, rgba(0,0,0,.12) 2px, rgba(0,0,0,0) 3px);
+  }
+
+  .ov{
+    position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:8px; background:rgba(8,6,20,.55); text-align:center;
+  }
+  .ov.hidden{ display:none; }
+  .ov h1{
+    margin:0 0 4px; font-size:30px; line-height:1.15; color:var(--yellow);
+    text-shadow:3px 3px 0 #b5361f, 6px 6px 0 #000;
+  }
+  .ov h2{ margin:0 0 8px; font-size:18px; color:var(--yellow); text-shadow:3px 3px 0 #000; }
+  .ov .sub{ margin:0 0 6px; font-size:7px; letter-spacing:2px; color:#7be3ff; }
+  .ov button{
+    font:inherit; font-size:10px; color:#fff; background:#1c6fa8; border:3px solid #fff;
+    box-shadow:3px 3px 0 #000; padding:7px 14px; min-width:170px; cursor:pointer; text-transform:uppercase;
+  }
+  .ov button:hover, .ov button:focus{ background:var(--blue); outline:none; }
+  .ov button.red{ background:#a42626; }
+  .ov button.red:hover, .ov button.red:focus{ background:var(--red); }
+  .help{
+    margin-top:6px; font-size:6px; line-height:1.8; color:#d8d0ff; background:rgba(0,0,0,.55);
+    padding:6px 10px; border:2px solid rgba(255,255,255,.25);
+  }
+  .help b{ color:var(--yellow); font-weight:normal; }
+
+  /* touch controls */
+  #touch{ position:fixed; inset:auto 0 0 0; height:0; display:none; pointer-events:none; }
+  @media (pointer:coarse){ #touch{ display:block; } }
+  .pad{ position:fixed; bottom:14px; display:grid; gap:6px; pointer-events:auto; }
+  .pad.l{ left:14px; grid-template-columns:repeat(3,52px); grid-template-rows:repeat(2,52px); }
+  .pad.r{ right:14px; grid-template-columns:repeat(2,58px); grid-template-rows:repeat(2,52px); }
+  .pad button{
+    font:inherit; font-size:11px; color:#fff; background:rgba(255,255,255,.14); border:2px solid rgba(255,255,255,.45);
+    border-radius:10px; padding:0; touch-action:none;
+  }
+  .pad button.on{ background:rgba(46,168,230,.55); }
+  .pad .up{ grid-column:2; grid-row:1; } .pad .lf{ grid-column:1; grid-row:2; }
+  .pad .dn{ grid-column:2; grid-row:2; } .pad .rt{ grid-column:3; grid-row:2; }
+  #rotate{ display:none; }
+  @media (pointer:coarse) and (orientation:portrait){
+    #rotate{ display:flex; position:fixed; inset:0; z-index:9; background:var(--black); align-items:center;
+      justify-content:center; text-align:center; font-size:12px; line-height:2; padding:20px; }
+  }
+</style>
+</head>
+<body>
+<div id="frame">
+  <canvas id="game" width="480" height="270"></canvas>
+  <div class="scanlines"></div>
+
+  <div id="menu" class="ov">
+    <h1>PIXEL<br/>FIGHT</h1>
+    <p class="sub">prototype</p>
+    <button data-mode="1p">1 player (vs cpu)</button>
+    <button data-mode="2p" class="red">2 players</button>
+    <div class="help">
+      <b>P1</b> WASD move · J punch · K kick · L block<br/>
+      <b>P2</b> arrows · , punch · . kick · / block<br/>
+      down+punch: uppercut · down+kick: sweep<br/>
+      <b>special</b>: down, forward + punch (P1: I · P2: ;)
+    </div>
+  </div>
+
+  <div id="over" class="ov hidden">
+    <h2 id="overTitle">P1 WINS</h2>
+    <button id="again">rematch</button>
+    <button id="toMenu" class="red">menu</button>
+  </div>
+</div>
+
+<div id="touch">
+  <div class="pad l">
+    <button class="up" data-act="up">▲</button>
+    <button class="lf" data-act="left">◀</button>
+    <button class="dn" data-act="down">▼</button>
+    <button class="rt" data-act="right">▶</button>
+  </div>
+  <div class="pad r">
+    <button data-act="punch">P</button>
+    <button data-act="kick">K</button>
+    <button data-act="block">B</button>
+    <button data-act="special">SP</button>
+  </div>
+</div>
+<div id="rotate">Rotate your device<br/>to landscape</div>
+
+<script>
+'use strict';
+const W = 480, H = 270, GROUND = 234;
+const cvs = document.getElementById('game');
+const ctx = cvs.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+const FONT = '"Press Start 2P", monospace';
+const rnd = (a, b) => a + Math.random() * (b - a);
+const pick = a => a[(Math.random() * a.length) | 0];
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+
+/* ---------------- audio ---------------- */
+let AC = null, NOISE = null;
+function initAudio(){
+  if (AC) return;
+  try {
+    AC = new (window.AudioContext || window.webkitAudioContext)();
+    NOISE = AC.createBuffer(1, AC.sampleRate * 0.6, AC.sampleRate);
+    const d = NOISE.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  } catch (e) { AC = null; }
+}
+function tone(type, f1, f2, dur, vol, delay = 0){
+  const t = AC.currentTime + delay, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type; o.frequency.setValueAtTime(f1, t);
+  o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + dur);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g).connect(AC.destination); o.start(t); o.stop(t + dur + 0.02);
+}
+function noise(dur, vol, freq, delay = 0){
+  const t = AC.currentTime + delay, s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+  s.buffer = NOISE; f.type = 'lowpass'; f.frequency.value = freq;
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  s.connect(f).connect(g).connect(AC.destination); s.start(t); s.stop(t + dur);
+}
+function sfx(n){
+  if (!AC || game.mode === 'demo') return;
+  switch (n){
+    case 'swish': noise(.07, .12, 5000); break;
+    case 'hit': noise(.1, .45, 1400); tone('square', 190, 60, .1, .2); break;
+    case 'heavy': noise(.18, .6, 900); tone('square', 150, 40, .2, .28); break;
+    case 'block': tone('square', 900, 500, .05, .1); noise(.04, .2, 5000); break;
+    case 'fire': tone('sawtooth', 180, 720, .25, .1); break;
+    case 'land': noise(.1, .3, 400); break;
+    case 'ko': tone('sawtooth', 320, 40, .9, .22); break;
+    case 'boom': noise(.6, .8, 500); tone('square', 110, 30, .7, .3); break;
+    case 'round': tone('square', 440, 440, .1, .1); tone('square', 660, 660, .16, .1, .1); break;
+    case 'fight': [523, 659, 784, 1046].forEach((f, i) => tone('square', f, f, .12, .1, i * .07)); break;
+    case 'select': tone('square', 600, 900, .06, .1); break;
+  }
+}
+
+/* ---------------- background ---------------- */
+const bg = document.createElement('canvas'); bg.width = W; bg.height = H;
+(function buildBg(){
+  const g = bg.getContext('2d');
+  const bands = ['#140a26','#1f0f38','#33154a','#4f1d55','#782a57','#a63d50','#d4644a','#f08f4f'];
+  const bh = 26;
+  bands.forEach((c, i) => {
+    g.fillStyle = c; g.fillRect(0, i * bh, W, bh);
+    if (i){ g.fillStyle = bands[i - 1];
+      for (let y = i * bh; y < i * bh + 3; y++)
+        for (let x = y % 2; x < W; x += 2) if (y - i * bh < 2 || x % 4 === 0) g.fillRect(x, y, 1, 1);
+    }
+  });
+  // striped retro sun
+  const sx = 352, sy = 128, r = 38;
+  for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++){
+    if (dx * dx + dy * dy > r * r) continue;
+    if (dy > 4 && (dy % 7) < 2 + dy / 14) continue;
+    g.fillStyle = dy < -10 ? '#fff0a8' : dy < 10 ? '#ffd27a' : '#ffaa5c';
+    g.fillRect(sx + dx, sy + dy, 1, 1);
+  }
+  // mountains
+  g.fillStyle = '#3a1640'; g.beginPath(); g.moveTo(0, 210);
+  let my = 150;
+  for (let x = 0; x <= W; x += 6){ my = clamp(my + rnd(-7, 7), 120, 170); g.lineTo(x, my); }
+  g.lineTo(W, 210); g.fill();
+  // city skyline
+  for (let x = 0; x < W;){
+    const w = (rnd(14, 30)) | 0, h = (rnd(18, 62)) | 0;
+    g.fillStyle = '#1a0b28'; g.fillRect(x, 200 - h, w, h);
+    g.fillStyle = '#ffcf6b';
+    for (let wy = 200 - h + 4; wy < 196; wy += 5) for (let wx = x + 3; wx < x + w - 3; wx += 4)
+      if (Math.random() < .28) g.fillRect(wx, wy, 2, 2);
+    x += w + ((rnd(0, 4)) | 0);
+  }
+  // back wall
+  g.fillStyle = '#3a2a3f'; g.fillRect(0, 186, W, 20);
+  g.fillStyle = '#2a1d30';
+  for (let y = 186; y < 206; y += 5){ g.fillRect(0, y, W, 1);
+    for (let x = ((y / 5) % 2) * 8; x < W; x += 16) g.fillRect(x, y, 1, 5); }
+  g.fillStyle = '#574158'; g.fillRect(0, 186, W, 2);
+  // floor
+  g.fillStyle = '#4a3646'; g.fillRect(0, 206, W, H - 206);
+  g.fillStyle = '#3a2838';
+  for (let y = 206, gap = 4; y < H; gap += 2, y += gap) g.fillRect(0, y, W, 1);
+  for (let k = -14; k <= 14; k++){
+    const x0 = 240 + k * 26, x1 = 240 + k * 26 * 2.4;
+    for (let y = 206; y < H; y++){ const tt = (y - 206) / (H - 206); g.fillRect(Math.round(x0 + (x1 - x0) * tt), y, 1, 1); }
+  }
+  g.fillStyle = '#6b5468'; g.fillRect(0, 206, W, 1);
+  // pillars
+  [[16, 48], [432, 464]].forEach(([a, b]) => {
+    g.fillStyle = '#3b2a44'; g.fillRect(a, 74, b - a, 136);
+    g.fillStyle = '#57405f'; g.fillRect(a, 74, 4, 136);
+    g.fillStyle = '#24182c'; g.fillRect(b - 5, 74, 5, 136);
+    g.fillStyle = '#4c3656'; g.fillRect(a - 4, 70, b - a + 8, 8); g.fillRect(a - 4, 204, b - a + 8, 6);
+    g.fillStyle = '#6b4a2a'; g.fillRect(a + 6, 62, b - a - 12, 8);
+  });
+})();
+const TORCHES = [32, 448];
+function drawTorches(){
+  TORCHES.forEach(x => {
+    ctx.fillStyle = 'rgba(255,170,80,.08)';
+    ctx.beginPath(); ctx.arc(x, 56, 24 + Math.sin(game.frame * .3) * 2, 0, 7); ctx.fill();
+    for (let i = 0; i < 7; i++){
+      ctx.fillStyle = pick(['#fff3a0', '#ffb347', '#ff6b2b', '#ff6b2b']);
+      const s = (rnd(2, 5)) | 0;
+      ctx.fillRect((x + rnd(-7, 5)) | 0, (60 - rnd(0, 16)) | 0, s, s);
+    }
+  });
+}
+
+/* ---------------- pixel drawing helpers ---------------- */
+function seg(g, x1, y1, x2, y2, w, c){
+  g.fillStyle = c;
+  const d = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1)) | 0 || 1, o = w / 2;
+  for (let i = 0; i <= d; i++)
+    g.fillRect(Math.round(x1 + (x2 - x1) * i / d - o), Math.round(y1 + (y2 - y1) * i / d - o), w, w);
+}
+function txt(s, x, y, size, col, align = 'center'){
+  ctx.font = `${size}px ${FONT}`; ctx.textAlign = align; ctx.textBaseline = 'middle';
+  const o = Math.max(1, Math.round(size / 8));
+  ctx.fillStyle = '#000';
+  for (let dx = -o; dx <= o; dx += o) for (let dy = -o; dy <= o; dy += o) ctx.fillText(s, x + dx, y + dy);
+  ctx.fillStyle = col; ctx.fillText(s, x, y);
+}
+
+/* ---------------- poses (relative to feet, facing right) ---------------- */
+const IDLE = {hip:[0,-30],neck:[2,-50],head:[3,-58],bE:[-4,-41],bH:[5,-47],fE:[9,-42],fH:[15,-50],bK:[-5,-15],bF:[-10,0],fK:[9,-16],fF:[11,0]};
+const CROUCH = {hip:[0,-18],neck:[5,-35],head:[6,-43],bE:[1,-27],bH:[10,-32],fE:[12,-26],fH:[17,-33],bK:[-10,-11],bF:[-10,0],fK:[13,-12],fF:[11,0]};
+const JUMP = {hip:[0,-36],neck:[2,-55],head:[3,-63],bE:[-6,-47],bH:[2,-53],fE:[10,-48],fH:[15,-56],bK:[7,-28],bF:[-3,-20],fK:[13,-32],fF:[7,-22]};
+const DOWN = {hip:[0,-5],neck:[-20,-6],head:[-28,-7],bE:[-15,-3],bH:[-9,-2],fE:[-20,-10],fH:[-12,-13],bK:[10,-6],bF:[22,-2],fK:[11,-10],fF:[24,-4]};
+const AIR = {hip:[0,-26],neck:[-14,-36],head:[-21,-40],bE:[-16,-44],bH:[-22,-52],fE:[-6,-44],fH:[-4,-54],bK:[8,-34],bF:[18,-40],fK:[10,-28],fF:[22,-30]};
+const P = (base, o) => Object.assign({}, base, o);
+
+const AP = {
+  punch: [P(IDLE,{fE:[4,-44],fH:[0,-46]}),
+          P(IDLE,{neck:[5,-50],head:[7,-58],fE:[18,-48],fH:[31,-49],fK:[13,-16],fF:[17,0],bH:[6,-44]}),
+          P(IDLE,{fE:[12,-46],fH:[20,-48]})],
+  kick:  [P(IDLE,{fK:[13,-30],fF:[10,-16]}),
+          {hip:[-2,-32],neck:[-6,-50],head:[-8,-58],bE:[-12,-44],bH:[-16,-38],fE:[2,-44],fH:[6,-50],bK:[-4,-15],bF:[-6,0],fK:[18,-38],fF:[42,-42]},
+          P(IDLE,{fK:[13,-30],fF:[10,-16]})],
+  upper: [CROUCH,
+          {hip:[2,-31],neck:[7,-52],head:[8,-60],fE:[14,-62],fH:[16,-77],bE:[0,-42],bH:[6,-46],bK:[-6,-15],bF:[-10,0],fK:[8,-16],fF:[10,0]},
+          P(CROUCH,{fE:[12,-40],fH:[14,-50]})],
+  sweep: (() => { const b = {hip:[0,-14],neck:[-9,-28],head:[-11,-36],bE:[-12,-18],bH:[-16,-4],fE:[-2,-22],fH:[4,-26],bK:[-8,-8],bF:[-2,0]};
+          return [P(b,{fK:[10,-8],fF:[14,0]}), P(b,{fK:[22,-6],fF:[44,-2]}), P(b,{fK:[14,-8],fF:[24,-1]})]; })(),
+  jkick: [P(JUMP,{fK:[12,-34],fF:[6,-26]}),
+          P(JUMP,{fK:[18,-36],fF:[36,-32],bK:[2,-28],bF:[-8,-24],neck:[-2,-55],head:[-3,-63]})],
+  special:[P(IDLE,{bE:[-8,-44],bH:[-14,-46],fE:[-4,-44],fH:[-10,-48]}),
+           P(IDLE,{neck:[4,-50],head:[6,-58],fE:[16,-47],fH:[28,-47],bE:[13,-44],bH:[26,-43],fK:[13,-16],fF:[17,0]}),
+           P(IDLE,{neck:[4,-50],head:[6,-58],fE:[16,-47],fH:[28,-47],bE:[13,-44],bH:[26,-43],fK:[13,-16],fF:[17,0]})],
+};
+
+function poseOf(f){
+  const t = f.t;
+  switch (f.state){
+    case 'idle': { const b = Math.round(Math.sin(t * .08)); const p = P(IDLE, {});
+      ['neck','head','bE','bH','fE','fH'].forEach(k => p[k] = [p[k][0], p[k][1] + b]); return p; }
+    case 'walk': { const w = Math.sin(t * .22), c = Math.cos(t * .22);
+      return P(IDLE, {fF:[10 * w + 2, -Math.max(0, c) * 3], bF:[-10 * w - 2, -Math.max(0, -c) * 3],
+                      fK:[5 * w + 5, -16], bK:[-5 * w + 1, -16]}); }
+    case 'crouch': case 'getup': return CROUCH;
+    case 'block': return f.crouching ? P(CROUCH,{bE:[6,-30],bH:[11,-42],fE:[13,-28],fH:[17,-40]})
+                                     : P(IDLE,{bE:[5,-45],bH:[10,-56],fE:[11,-41],fH:[15,-54]});
+    case 'jump': return JUMP;
+    case 'attack': { const a = f.atk, ph = f.t < a.s ? 0 : (a.air || f.t < a.s + a.a) ? 1 : 2;
+      const arr = AP[f.atkName]; return arr[Math.min(ph, arr.length - 1)]; }
+    case 'hit': return P(IDLE,{hip:[-2,-30],neck:[-8,-48],head:[-11,-55],bE:[-12,-44],bH:[-18,-50],fE:[-2,-41],fH:[2,-35]});
+    case 'air': return AIR;
+    case 'down': case 'ko': return DOWN;
+    case 'dizzy': { const s = Math.round(Math.sin(t * .09) * 3);
+      const p = P(IDLE,{bE:[-4,-38],bH:[-3,-28],fE:[6,-38],fH:[8,-28]});
+      ['neck','head','bE','bH','fE','fH'].forEach(k => p[k] = [p[k][0] + s, p[k][1]]);
+      p.hip = [p.hip[0] + (s >> 1), p.hip[1]]; return p; }
+    case 'win': return P(IDLE,{fE:[10,-58],fH:[13,-74],bE:[-6,-40],bH:[0,-34],head:[2,-59]});
+  }
+  return IDLE;
+}
+
+/* ---------------- fighter ---------------- */
+const ATK = {
+  punch: {s:4, a:3, r:9,  dmg:5,  reach:[6,33], y:[-56,-40], knock:2.2, stun:14},
+  kick:  {s:7, a:4, r:14, dmg:8,  reach:[8,44], y:[-50,-30], knock:3,   stun:18, heavy:true},
+  upper: {s:6, a:4, r:22, dmg:12, reach:[4,24], y:[-80,-34], knock:2,   launch:-8, heavy:true},
+  sweep: {s:6, a:4, r:18, dmg:7,  reach:[8,46], y:[-12,0],   knock:1.5, launch:-3, low:true},
+  jkick: {s:3, a:99,r:0,  dmg:9,  reach:[6,36], y:[-42,-20], knock:2.6, stun:16, air:true},
+  special:{s:12,a:0, r:20, proj:true},
+};
+const PROJ = {dmg:10, knock:3, stun:18, heavy:true};
+const OL = '#0a0612';
+
+class Fighter {
+  constructor(name, pal){ this.name = name; this.pal = pal; this.wins = 0; this.cpu = false; this.brain = null;
+    this.hold = {left:false,right:false,up:false,down:false,block:false}; }
+  reset(x, facing){
+    Object.assign(this, {x, y:GROUND, vx:0, vy:0, facing, hp:100, lagHp:100, lagDelay:0, atk:null, atkName:'',
+      combo:0, fireCd:0, flashT:0, stun:0, blockstun:0, crouching:false, hitDone:false, airUsed:false,
+      seqDown:-99, seqFwd:-99});
+    this.buf = {punch:-99, kick:-99, special:-99};
+    this.set('idle');
+  }
+  set(s){ this.state = s; this.t = 0; }
+  go(s){ if (this.state !== s) this.set(s); }
+  press(a){
+    const f = game.frame;
+    if (a === 'down') this.seqDown = f;
+    else if (a === 'left' || a === 'right'){
+      if ((a === 'right') === (this.facing === 1) && f - this.seqDown < 18) this.seqFwd = f;
+    } else if (a in this.buf) this.buf[a] = f;
+  }
+  take(a){ if (game.frame - this.buf[a] <= 6){ this.buf[a] = -99; return true; } return false; }
+  canFire(){ return this.fireCd === 0 && !game.projectiles.some(p => p.owner === this); }
+  attack(name){ this.atkName = name; this.atk = ATK[name]; this.hitDone = false; this.vx = 0; this.set('attack'); }
+  phys(){
+    this.vy += .5; this.x += this.vx; this.y += this.vy;
+    if (this.y >= GROUND){ this.y = GROUND; this.vy = 0; return true; }
+    return false;
+  }
+  active(){ const a = this.atk; return this.state === 'attack' && a && !a.proj && this.t >= a.s && (a.air || this.t < a.s + a.a); }
+  hitbox(){
+    const a = this.atk, f = this.facing;
+    const x0 = f > 0 ? this.x + a.reach[0] : this.x - a.reach[1];
+    return {x0, x1:x0 + a.reach[1] - a.reach[0], y0:this.y + a.y[0], y1:this.y + a.y[1]};
+  }
+  hurtbox(){
+    const s = this.state;
+    if (s === 'down' || s === 'getup' || s === 'ko' || s === 'dead') return null;
+    if (s === 'air') return {x0:this.x - 14, x1:this.x + 14, y0:this.y - 40, y1:this.y};
+    const low = s === 'crouch' || (s === 'block' && this.crouching) || (s === 'attack' && this.atkName === 'sweep');
+    return {x0:this.x - 11, x1:this.x + 11, y0:this.y + (low ? -40 : -62), y1:this.y};
+  }
+  update(o){
+    this.t++;
+    if (this.fireCd > 0) this.fireCd--;
+    if (this.flashT > 0) this.flashT--;
+    if (this.lagHp > this.hp){ if (this.lagDelay > 0) this.lagDelay--; else this.lagHp = Math.max(this.hp, this.lagHp - .6); }
+    const h = this.hold, st = this.state;
+    if (st === 'block' && this.blockstun > 0){ this.blockstun--; this.x += this.vx; this.vx *= .8; }
+    const free = st === 'idle' || st === 'walk' || st === 'crouch' || (st === 'block' && this.blockstun <= 0);
+    if (free){
+      if (o.x !== this.x) this.facing = o.x > this.x ? 1 : -1;
+      if (!game.canAct(this)){
+        this.vx = 0; this.go('idle'); this.buf.punch = this.buf.kick = this.buf.special = -99;
+      } else {
+        const dir = (h.right ? 1 : 0) - (h.left ? 1 : 0);
+        const seqOk = game.frame - this.seqFwd < 16 && this.seqFwd >= this.seqDown;
+        if (this.take('special')){ if (this.canFire()) this.attack('special'); }
+        else if (this.take('punch')){ if (seqOk && this.canFire()) this.attack('special'); else this.attack(h.down ? 'upper' : 'punch'); }
+        else if (this.take('kick')) this.attack(h.down ? 'sweep' : 'kick');
+        else if (h.block){ this.go('block'); this.crouching = h.down; this.vx = 0; }
+        else if (h.up){ this.set('jump'); this.vy = -9.6; this.vx = dir * 2.6; this.airUsed = false; }
+        else if (h.down){ this.go('crouch'); this.vx = 0; }
+        else if (dir){ this.go('walk'); this.vx = dir * (dir === this.facing ? 2.1 : 1.6); }
+        else { this.go('idle'); this.vx = 0; }
+        if (this.state === 'walk') this.x += this.vx;
+      }
+    }
+    switch (this.state){
+      case 'jump':
+        if (!this.airUsed && game.canAct(this) && (this.take('punch') || this.take('kick'))){
+          this.airUsed = true; this.atkName = 'jkick'; this.atk = ATK.jkick; this.hitDone = false; this.set('attack');
+        }
+        if (this.phys()){ this.set('idle'); this.vx = 0; dust(this.x); }
+        break;
+      case 'attack': {
+        const a = this.atk;
+        if (this.t === a.s && !a.proj) sfx('swish');
+        if (a.air){ if (this.phys()){ this.set('idle'); this.vx = 0; this.atk = null; dust(this.x); } break; }
+        this.x += this.vx; this.vx *= .7;
+        if (a.proj && this.t === a.s) spawnProj(this);
+        if (this.t >= a.s + a.a + a.r){ this.set(this.hold.down && game.canAct(this) ? 'crouch' : 'idle'); this.atk = null; }
+        break; }
+      case 'hit': this.x += this.vx; this.vx *= .85; if (--this.stun <= 0) this.set('idle'); break;
+      case 'air':
+        if (this.phys()){
+          this.vx = 0; sfx('land'); game.shake = Math.max(game.shake, 3); dust(this.x);
+          this.set(this.hp <= 0 && !(game.finishPending && this === game.loser) ? 'ko' : 'down');
+        }
+        break;
+      case 'down': if (this.t > (this.hp <= 0 ? 60 : 34)) this.set('getup'); break;
+      case 'getup':
+        if (this.t > 14){
+          if (this.hp <= 0){ this.set('dizzy'); game.toFinish(); } else this.set('idle');
+        }
+        break;
+    }
+    this.x = clamp(this.x, 14, W - 14);
+  }
+  draw(g, ox = this.x, oy = this.y){
+    if (this.state === 'dead') return;
+    const p = poseOf(this), f = this.facing, fl = this.flashT > 0;
+    const pal = this.pal, C = c => fl ? '#fff' : c;
+    const X = v => Math.round(ox + v[0] * f), Y = v => Math.round(oy + v[1]);
+    const sh = [p.neck[0], p.neck[1] + 3];
+    const limb = (a, b, c, w, col) => {
+      seg(g, X(a), Y(a), X(b), Y(b), w + 2, OL); seg(g, X(b), Y(b), X(c), Y(c), w + 2, OL);
+      seg(g, X(a), Y(a), X(b), Y(b), w, col); seg(g, X(b), Y(b), X(c), Y(c), w, col);
+    };
+    const fist = (v, col) => { g.fillStyle = OL; g.fillRect(X(v) - 3, Y(v) - 3, 6, 6); g.fillStyle = col; g.fillRect(X(v) - 2, Y(v) - 2, 4, 4); };
+    limb(p.hip, p.bK, p.bF, 5, C(pal.dark));
+    limb(sh, p.bE, p.bH, 4, C(pal.dark)); fist(p.bH, C(pal.glove));
+    seg(g, X(p.hip), Y(p.hip), X(p.neck), Y(p.neck), 12, OL);
+    seg(g, X(p.hip), Y(p.hip), X(p.neck), Y(p.neck), 10, C(pal.main));
+    g.fillStyle = C(pal.belt); g.fillRect(X(p.hip) - 6, Y(p.hip) - 2, 12, 3);
+    limb(p.hip, p.fK, p.fF, 5, C(pal.main));
+    // head
+    const hx = X(p.head), hy = Y(p.head);
+    const wave = Math.round(Math.sin(game.frame * .3 + ox) * 1.5);
+    seg(g, hx - f * 5, hy - 4, hx - f * 13, hy - 3 + wave, 2, C(pal.belt));
+    g.fillStyle = OL; g.fillRect(hx - 6, hy - 6, 13, 13);
+    g.fillStyle = C(pal.main); g.fillRect(hx - 5, hy - 5, 11, 11);
+    g.fillStyle = C(pal.belt); g.fillRect(hx - 5, hy - 5, 11, 2);
+    g.fillStyle = C(pal.skin); g.fillRect(hx - 5, hy - 2, 11, 3);
+    g.fillStyle = this.state === 'ko' || this.state === 'dizzy' ? '#000' : '#fff';
+    g.fillRect(hx + (f > 0 ? 0 : -1), hy - 1, 2, 1); g.fillRect(hx + (f > 0 ? 3 : -4), hy - 1, 2, 1);
+    limb(sh, p.fE, p.fH, 4, C(pal.main)); fist(p.fH, C(pal.glove));
+    if (this.state === 'dizzy') for (let i = 0; i < 3; i++){
+      const a = game.frame * .12 + i * 2.1;
+      g.fillStyle = '#ffe066'; g.fillRect(Math.round(hx + Math.cos(a) * 10) - 1, Math.round(hy - 11 + Math.sin(a) * 3) - 1, 3, 3);
+    }
+  }
+}
+
+const PAL_BLUE = {main:'#2ea8e6', dark:'#17608f', belt:'#ffd23f', skin:'#f0b98a', glove:'#1b2230', fx:'#7be3ff', fx2:'#2ea8e6'};
+const PAL_RED  = {main:'#e23b3b', dark:'#8f1d24', belt:'#f2f2f2', skin:'#e8a87c', glove:'#2a1414', fx:'#ffd27a', fx2:'#ff6b2b'};
+const p1 = new Fighter('VOLT', PAL_BLUE);
+const p2 = new Fighter('BLAZE', PAL_RED);
+
+/* ---------------- CPU brain ---------------- */
+class Brain {
+  constructor(me, skill){ this.me = me; this.skill = skill; this.intent = 'idle'; this.left = 0; this.react = 0; this.fresh = false; this.atk = null; this.kicked = false; }
+  set(i, n, atk){ this.intent = i; this.left = n | 0; this.fresh = true; this.atk = atk || null; this.kicked = false; }
+  tick(o){
+    const me = this.me, h = me.hold;
+    h.left = h.right = h.up = h.down = h.block = false;
+    if (!game.canAct(me)){ this.left = 0; return; }
+    const dx = o.x - me.x, dist = Math.abs(dx), tw = dx >= 0 ? 1 : -1;
+    if (this.react > 0) this.react--;
+    else if (this.intent !== 'block' && this.intent !== 'cblock' && game.phase === 'fight'){
+      const melee = o.state === 'attack' && o.atk && !o.atk.proj && o.t <= o.atk.s + 1 && dist < 64;
+      const pr = game.projectiles.find(p => p.owner === o && Math.sign(me.x - p.x) === Math.sign(p.vx) && Math.abs(me.x - p.x) < 120);
+      if (melee || pr){
+        this.react = 20;
+        if (Math.random() < this.skill){
+          if (pr && !melee){ const r = Math.random(); r < .35 ? this.set('jumpfwd', 30) : r < .7 ? this.set('crouch', 30) : this.set('block', 30); }
+          else this.set(o.atk.low ? 'cblock' : 'block', 18);
+        }
+      }
+    }
+    if (this.left <= 0) this.decide(o, dist);
+    this.left--;
+    const fresh = this.fresh; this.fresh = false;
+    switch (this.intent){
+      case 'approach': h[tw > 0 ? 'right' : 'left'] = true; break;
+      case 'retreat': h[tw > 0 ? 'left' : 'right'] = true; break;
+      case 'block': h.block = true; break;
+      case 'cblock': h.block = true; h.down = true; break;
+      case 'crouch': h.down = true; break;
+      case 'jumpfwd':
+        if (fresh){ h.up = true; h[tw > 0 ? 'right' : 'left'] = true; }
+        if (!this.kicked && me.state === 'jump' && dist < 50 && me.vy > -3){ me.press('kick'); this.kicked = true; }
+        break;
+      case 'atk':
+        if (this.atk === 'upper' || this.atk === 'sweep') h.down = true;
+        if (fresh) me.press(this.atk === 'upper' ? 'punch' : this.atk === 'sweep' ? 'kick' : this.atk);
+        break;
+    }
+  }
+  decide(o, dist){
+    const r = Math.random(), me = this.me;
+    if (game.phase === 'finish'){
+      if (dist > 34) this.set('approach', 4); else this.set('atk', 20, Math.random() < .5 ? 'upper' : 'kick');
+      return;
+    }
+    if (['down','getup','ko'].includes(o.state)){
+      if (r < .35 && me.canFire()) this.set('atk', 22, 'special'); else if (r < .6) this.set('retreat', 12); else this.set('idle', 14);
+      return;
+    }
+    if ((o.state === 'hit' || o.state === 'air') && dist < 48){ this.set('atk', 10, r < .45 ? 'punch' : r < .75 ? 'upper' : 'kick'); return; }
+    if (dist < 48){
+      if (r < .2) this.set('atk', 12, 'punch'); else if (r < .36) this.set('atk', 16, 'kick');
+      else if (r < .46) this.set('atk', 20, 'upper'); else if (r < .56) this.set('atk', 18, 'sweep');
+      else if (r < .72) this.set('block', 16); else if (r < .86) this.set('retreat', 12); else this.set('idle', 8);
+    } else if (dist < 140){
+      if (r < .45) this.set('approach', rnd(8, 26)); else if (r < .6) this.set('jumpfwd', 40);
+      else if (r < .72 && me.canFire()) this.set('atk', 22, 'special'); else if (r < .8) this.set('block', 10);
+      else this.set('idle', rnd(8, 18));
+    } else {
+      if (r < .35 && me.canFire()) this.set('atk', 22, 'special'); else if (r < .85) this.set('approach', 20); else this.set('idle', 12);
+    }
+    this.left += ((1 - this.skill) * 12) | 0;
+  }
+}
+
+/* ---------------- effects ---------------- */
+function sparks(x, y, kind, n = 10){
+  const cols = kind === 'block' ? ['#fff', '#7be3ff', '#2ea8e6'] : ['#fff', '#ffe066', '#ff9f1c', '#ff4d4d'];
+  for (let i = 0; i < n; i++)
+    game.particles.push({x, y, vx:rnd(-3, 3), vy:rnd(-3.5, 1.5), g:.15, life:rnd(10, 22) | 0, c:pick(cols), s:Math.random() < .3 ? 3 : 2});
+  game.particles.push({x, y, star:true, life:6, c:kind === 'block' ? '#bff3ff' : '#fff'});
+}
+function dust(x){
+  for (let i = 0; i < 6; i++)
+    game.particles.push({x:x + rnd(-10, 10), y:GROUND - 1, vx:rnd(-1, 1), vy:rnd(-1, -.2), g:0, life:rnd(12, 20) | 0, c:'#8a7488', s:2});
+}
+function shatter(a, d){
+  const oc = document.createElement('canvas'); oc.width = 100; oc.height = 100;
+  const og = oc.getContext('2d'); d.draw(og, 50, 92);
+  const img = og.getImageData(0, 0, 100, 100).data;
+  for (let py = 0; py < 100; py += 2) for (let px = 0; px < 100; px += 2){
+    const i = (py * 100 + px) * 4; if (img[i + 3] < 128) continue;
+    game.particles.push({x:d.x - 50 + px, y:d.y - 92 + py, vx:(px - 50) * .05 + a.facing * rnd(.5, 4), vy:-rnd(1.5, 7),
+      g:.28, life:rnd(110, 200) | 0, c:`rgb(${img[i]},${img[i + 1]},${img[i + 2]})`, s:2, floor:true});
+  }
+}
+function spawnProj(f){
+  game.projectiles.push({x:f.x + f.facing * 24, y:GROUND - 50, vx:f.facing * 4.6, owner:f, t:0});
+  f.fireCd = 50; sfx('fire');
+}
+
+/* ---------------- game flow ---------------- */
+const game = {
+  mode:'demo', phase:'intro', phaseT:0, round:1, timer:60, frame:0, hitstop:0, slow:0, shake:0, flash:0,
+  texts:[], projectiles:[], particles:[], winner:null, loser:null, finishPending:false, finishT:0,
+  canAct(f){ return this.phase === 'fight' || (this.phase === 'finish' && f === this.winner); },
+  say(s, size = 28, col = '#ffd23f', life = 90, y = 110){ this.texts = this.texts.filter(t => !t.big); this.texts.push({s, size, col, life, max:life, y, big:true}); },
+  comboText(a){
+    this.texts = this.texts.filter(t => t.owner !== a);
+    this.texts.push({s:a.combo + ' HITS', size:10, col:'#ffe066', life:60, max:60, y:62, x:a === p1 ? 70 : W - 70, owner:a});
+  },
+  startMatch(mode){
+    this.mode = mode; p1.wins = p2.wins = 0; this.round = 1;
+    p1.cpu = mode === 'demo'; p2.cpu = mode !== '2p';
+    p1.brain = p1.cpu ? new Brain(p1, .5) : null;
+    p2.brain = p2.cpu ? new Brain(p2, mode === 'demo' ? .5 : .55) : null;
+    this.startRound();
+  },
+  startRound(){
+    p1.reset(150, 1); p2.reset(330, -1);
+    Object.assign(this, {phase:'intro', phaseT:0, timer:60, projectiles:[], texts:[], winner:null, loser:null, finishPending:false, slow:0});
+  },
+  onKO(a, d, dir){
+    Object.assign(this, {phase:'ko', phaseT:0, winner:a, loser:d, slow:50, projectiles:[]});
+    a.wins++; this.finishPending = a.wins >= 2;
+    d.set('air'); d.vy = -6.5; d.vx = dir * 2.6; d.facing = -dir;
+    sfx('ko'); if (!this.finishPending) this.say('K.O.', 34, '#ff4d4d');
+  },
+  toFinish(){ this.phase = 'finish'; this.finishT = 300; this.say('FINISH!', 30, '#ff4d4d', 120); },
+  finisher(a, d){
+    shatter(a, d); d.set('dead');
+    Object.assign(this, {phase:'fatal', phaseT:0, flash:1, shake:14, hitstop:12});
+    sfx('boom'); this.say('FINAL BLOW!', 24, '#ff4d4d', 170);
+  },
+  timeUp(){
+    this.phase = 'ko'; this.phaseT = 0; this.finishPending = false; this.say('TIME!', 30);
+    if (p1.hp !== p2.hp){ this.winner = p1.hp > p2.hp ? p1 : p2; this.loser = this.winner === p1 ? p2 : p1; this.winner.wins++; }
+  },
+  endRound(){
+    const champ = [p1, p2].find(f => f.wins >= 2);
+    if (!champ){ this.round++; this.startRound(); return; }
+    if (this.mode === 'demo'){ this.startMatch('demo'); return; }
+    this.phase = 'over';
+    document.getElementById('overTitle').textContent =
+      this.mode === '1p' ? (champ === p1 ? 'YOU WIN!' : 'CPU WINS') : champ.name + ' WINS';
+    showOverlay('over');
+  },
+  updatePhase(){
+    this.phaseT++;
+    const t = this.phaseT;
+    switch (this.phase){
+      case 'intro':
+        if (t === 1){ this.say(this.round === 3 && p1.wins === 1 && p2.wins === 1 ? 'FINAL ROUND' : 'ROUND ' + this.round, 22, '#fff', 75); sfx('round'); }
+        if (t === 80){ this.say('FIGHT!', 34, '#ffd23f', 50); sfx('fight'); }
+        if (t >= 120){ this.phase = 'fight'; this.phaseT = 0; }
+        break;
+      case 'fight':
+        if (t % 60 === 0 && --this.timer <= 0) this.timeUp();
+        break;
+      case 'ko': {
+        const w = this.winner;
+        if (t === 140 && w && w.y >= GROUND && w.state !== 'dead'){ w.set('win'); w.vx = 0;
+          if (w.hp === 100) this.say('PERFECT!', 26, '#7be3ff', 80); }
+        if (t >= 230 && !this.finishPending) this.endRound();
+        break; }
+      case 'finish':
+        if (--this.finishT <= 0){
+          const d = this.loser; this.finishPending = false; this.phase = 'ko'; this.phaseT = 60;
+          d.set('air'); d.vy = -2; d.vx = 0; this.say('K.O.', 34, '#ff4d4d');
+        }
+        break;
+      case 'fatal':
+        if (t === 70 && this.winner.y >= GROUND) this.winner.set('win');
+        if (t >= 230) this.endRound();
+        break;
+    }
+  },
+};
+
+function resolveHit(a, d, atk, px, py, proj){
+  if (d.state === 'dizzy'){ if (game.phase === 'finish' && a === game.winner) game.finisher(a, d); return; }
+  if (game.phase !== 'fight') return;
+  const dir = proj ? Math.sign(proj.vx) : a.facing;
+  const blocking = d.state === 'block' && d.facing === -dir && (!atk.low || d.crouching);
+  if (blocking){
+    if (proj) d.hp = Math.max(1, d.hp - 2);
+    d.blockstun = 10; d.vx = dir * 2; game.hitstop = 4; a.combo = 0;
+    sparks(px, py, 'block', 6); sfx('block'); return;
+  }
+  a.combo = (d.state === 'hit' || d.state === 'air') ? a.combo + 1 : 1;
+  const dmg = Math.round(atk.dmg * Math.max(.5, 1 - (a.combo - 1) * .12));
+  d.hp = Math.max(0, d.hp - dmg); d.lagDelay = 30; d.flashT = 4; d.blockstun = 0; d.atk = null; d.facing = -dir;
+  game.hitstop = atk.heavy ? 8 : 6; game.shake = Math.max(game.shake, atk.heavy ? 5 : 3);
+  sparks(px, py, 'hit', atk.heavy ? 16 : 10); sfx(atk.heavy ? 'heavy' : 'hit');
+  if (a.combo >= 2) game.comboText(a);
+  if (d.hp <= 0){ game.onKO(a, d, dir); return; }
+  if (atk.launch || d.y < GROUND){ d.set('air'); d.vy = atk.launch || -4; d.vx = dir * (atk.knock || 2); }
+  else { d.set('hit'); d.stun = atk.stun; d.vx = dir * atk.knock; }
+}
+
+const overlap = (a, b) => a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
+
+function separate(){
+  const skip = s => s === 'down' || s === 'ko' || s === 'dead' || s === 'getup';
+  if (skip(p1.state) || skip(p2.state) || Math.abs(p1.y - p2.y) > 40) return;
+  const dx = p2.x - p1.x, min = 22;
+  if (Math.abs(dx) >= min) return;
+  const s = dx > 0 ? 1 : dx < 0 ? -1 : p1.facing, push = (min - Math.abs(dx)) / 2;
+  p1.x -= push * s; p2.x += push * s;
+  const fix = (f, o) => { const c = clamp(f.x, 14, W - 14); if (c !== f.x){ o.x += (c - f.x); f.x = c; } };
+  fix(p1, p2); fix(p2, p1);
+}
+
+function step(){
+  game.frame++;
+  readInput();
+  if (game.hitstop > 0){ game.hitstop--; updateParticles(); return; }
+  if (game.slow > 0){ game.slow--; if (game.frame % 3){ updateParticles(); return; } }
+  if (game.phase !== 'over') game.updatePhase();
+  if (p1.brain) p1.brain.tick(p2);
+  if (p2.brain) p2.brain.tick(p1);
+  p1.update(p2); p2.update(p1);
+  separate();
+  for (const [a, d] of [[p1, p2], [p2, p1]]){
+    if (!a.active() || a.hitDone) continue;
+    const hb = a.hitbox(), hu = d.hurtbox();
+    if (hu && overlap(hb, hu)){
+      a.hitDone = true;
+      resolveHit(a, d, a.atk, (Math.max(hb.x0, hu.x0) + Math.min(hb.x1, hu.x1)) / 2, (Math.max(hb.y0, hu.y0) + Math.min(hb.y1, hu.y1)) / 2, null);
+    }
+  }
+  const ps = game.projectiles;
+  for (const p of ps){
+    p.x += p.vx; p.t++;
+    if (p.t % 2) game.particles.push({x:p.x - p.vx * 2 + rnd(-2, 2), y:p.y + rnd(-4, 4), vx:-p.vx * .1, vy:rnd(-.3, .3), g:0, life:10, c:p.owner.pal.fx2, s:2});
+    if (p.x < -20 || p.x > W + 20) p.dead = true;
+    const o = p.owner === p1 ? p2 : p1, hu = o.hurtbox();
+    if (!p.dead && hu && overlap({x0:p.x - 7, x1:p.x + 7, y0:p.y - 7, y1:p.y + 7}, hu)){
+      p.dead = true; resolveHit(p.owner, o, PROJ, p.x, p.y, p);
+    }
+  }
+  if (ps.length === 2 && !ps[0].dead && !ps[1].dead && Math.abs(ps[0].x - ps[1].x) < 12){
+    ps[0].dead = ps[1].dead = true; sparks((ps[0].x + ps[1].x) / 2, ps[0].y, 'hit', 18); sfx('heavy');
+  }
+  game.projectiles = ps.filter(p => !p.dead);
+  updateParticles();
+  if (game.shake > 0) game.shake *= .85;
+  if (game.shake < .3) game.shake = 0;
+  if (game.flash > 0) game.flash -= .04;
+  game.texts.forEach(t => t.life--);
+  game.texts = game.texts.filter(t => t.life > 0);
+}
+function updateParticles(){
+  for (const p of game.particles){
+    p.life--;
+    if (p.star) continue;
+    p.x += p.vx; p.y += p.vy; p.vy += p.g;
+    if (p.floor && p.y > GROUND){ p.y = GROUND; p.vy *= -.3; p.vx *= .6; }
+  }
+  game.particles = game.particles.filter(p => p.life > 0);
+}
+
+/* ---------------- render ---------------- */
+function render(){
+  ctx.save();
+  if (game.shake) ctx.translate(Math.round(rnd(-game.shake, game.shake)), Math.round(rnd(-game.shake, game.shake)));
+  ctx.drawImage(bg, 0, 0);
+  drawTorches();
+  for (const f of [p1, p2]){
+    if (f.state === 'dead') continue;
+    const k = 1 - Math.min(1, (GROUND - f.y) / 150), w = Math.round(18 * k);
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(f.x - w, GROUND - 1, w * 2, 3); ctx.fillRect(f.x - w + 3, GROUND - 2, w * 2 - 6, 5);
+  }
+  const order = p1.state === 'attack' ? [p2, p1] : [p1, p2];
+  order.forEach(f => f.draw(ctx));
+  for (const p of game.projectiles){
+    const r = 7 + Math.round(Math.sin(p.t * .5)), x = Math.round(p.x), y = p.y;
+    ctx.fillStyle = p.owner.pal.fx2; ctx.fillRect(x - r, y - r + 2, r * 2, r * 2 - 4); ctx.fillRect(x - r + 2, y - r, r * 2 - 4, r * 2);
+    ctx.fillStyle = p.owner.pal.fx; ctx.fillRect(x - r + 3, y - r + 3, r * 2 - 6, r * 2 - 6);
+    ctx.fillStyle = '#fff'; ctx.fillRect(x - 2, y - 2, 4, 4);
+  }
+  for (const p of game.particles){
+    ctx.fillStyle = p.c;
+    if (p.star){ const s = p.life * 3; ctx.fillRect(Math.round(p.x - s), Math.round(p.y) - 1, s * 2, 3); ctx.fillRect(Math.round(p.x) - 1, Math.round(p.y - s), 3, s * 2); }
+    else ctx.fillRect(Math.round(p.x), Math.round(p.y), p.s, p.s);
+  }
+  ctx.restore();
+  if (game.mode !== 'demo') drawHud();
+  for (const t of game.texts){
+    const age = t.max - t.life, k = age < 8 ? 1 + (8 - age) * .12 : 1;
+    ctx.globalAlpha = Math.min(1, t.life / 15);
+    txt(t.s, t.x || W / 2, t.y, Math.round(t.size * k), t.col);
+    ctx.globalAlpha = 1;
+  }
+  if (game.flash > 0){ ctx.fillStyle = `rgba(255,255,255,${Math.max(0, game.flash)})`; ctx.fillRect(0, 0, W, H); }
+}
+function bar(x, y, w, f, rev){
+  ctx.fillStyle = '#000'; ctx.fillRect(x - 2, y - 2, w + 4, 14);
+  ctx.fillStyle = '#3a0d0d'; ctx.fillRect(x, y, w, 10);
+  const lw = Math.round(w * f.lagHp / 100), hw = Math.round(w * f.hp / 100);
+  ctx.fillStyle = '#d43a2a'; ctx.fillRect(rev ? x + w - lw : x, y, lw, 10);
+  ctx.fillStyle = f.hp > 30 ? '#36d15b' : '#ffcc33'; ctx.fillRect(rev ? x + w - hw : x, y, hw, 10);
+  ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fillRect(rev ? x + w - hw : x, y, hw, 2);
+}
+function drawHud(){
+  bar(16, 10, 186, p1, false); bar(W - 202, 10, 186, p2, true);
+  txt(p1.name, 16, 32, 8, '#fff', 'left'); txt(p2.name, W - 16, 32, 8, '#fff', 'right');
+  for (let i = 0; i < 2; i++){
+    ctx.fillStyle = '#000'; ctx.fillRect(190 - i * 12, 26, 10, 10); ctx.fillRect(W - 200 + i * 12, 26, 10, 10);
+    ctx.fillStyle = i < p1.wins ? '#ffd23f' : '#3a2a3f'; ctx.fillRect(191 - i * 12, 27, 8, 8);
+    ctx.fillStyle = i < p2.wins ? '#ffd23f' : '#3a2a3f'; ctx.fillRect(W - 199 + i * 12, 27, 8, 8);
+  }
+  txt(String(Math.max(0, game.timer)), W / 2, 18, 16, game.timer <= 10 ? '#ff4d4d' : '#fff');
+}
+
+/* ---------------- input ---------------- */
+const keys = {}, touchHold = {};
+const BIND = {
+  KeyA:[0,'left'], KeyD:[0,'right'], KeyW:[0,'up'], KeyS:[0,'down'], KeyJ:[0,'punch'], KeyK:[0,'kick'], KeyL:[0,'block'], KeyI:[0,'special'],
+  ArrowLeft:[1,'left'], ArrowRight:[1,'right'], ArrowUp:[1,'up'], ArrowDown:[1,'down'],
+  Comma:[1,'punch'], Period:[1,'kick'], Slash:[1,'block'], Semicolon:[1,'special'],
+  Numpad1:[1,'punch'], Numpad2:[1,'kick'], Numpad3:[1,'block'], Numpad5:[1,'special'],
+};
+const HOLDS = ['left', 'right', 'up', 'down', 'block'];
+function fighterFor(i){
+  if (game.mode === '1p') return p1;
+  if (game.mode === '2p') return i ? p2 : p1;
+  return null;
+}
+function readInput(){
+  for (const [f, i] of [[p1, 0], [p2, 1]]){
+    if (f.cpu) continue;
+    HOLDS.forEach(a => f.hold[a] = false);
+    for (const code in keys) if (keys[code]){ const b = BIND[code]; if (b && fighterFor(b[0]) === f) f.hold[b[1]] = true; }
+    if (f === p1) HOLDS.forEach(a => { if (touchHold[a]) f.hold[a] = true; });
+  }
+}
+addEventListener('keydown', e => {
+  initAudio();
+  if (game.phase === 'over' && (e.code === 'Enter' || e.code === 'Space')){ e.preventDefault(); begin(game.mode); return; }
+  if (e.code === 'Escape'){ toMenu(); return; }
+  if (game.mode === 'demo'){
+    if (e.code === 'Digit1' || e.code === 'Enter') begin('1p');
+    else if (e.code === 'Digit2') begin('2p');
+    return;
+  }
+  const b = BIND[e.code];
+  if (!b) return;
+  e.preventDefault(); keys[e.code] = true;
+  if (!e.repeat){ const f = fighterFor(b[0]); if (f && !f.cpu) f.press(b[1]); }
+});
+addEventListener('keyup', e => { keys[e.code] = false; });
+addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
+
+document.querySelectorAll('#touch button').forEach(btn => {
+  const act = btn.dataset.act;
+  const on = e => { e.preventDefault(); initAudio(); touchHold[act] = true; btn.classList.add('on'); if (!p1.cpu) p1.press(act); };
+  const off = e => { e.preventDefault(); touchHold[act] = false; btn.classList.remove('on'); };
+  btn.addEventListener('pointerdown', on);
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => btn.addEventListener(ev, off));
+});
+
+/* ---------------- overlays ---------------- */
+function showOverlay(id){
+  ['menu', 'over'].forEach(o => document.getElementById(o).classList.toggle('hidden', o !== id));
+  const btn = id && document.querySelector('#' + id + ' button'); if (btn) btn.focus();
+}
+function begin(mode){ initAudio(); sfx('select'); showOverlay(null); game.startMatch(mode); }
+function toMenu(){ game.startMatch('demo'); showOverlay('menu'); }
+document.querySelectorAll('#menu button').forEach(b => b.addEventListener('click', () => begin(b.dataset.mode)));
+document.getElementById('again').addEventListener('click', () => begin(game.mode));
+document.getElementById('toMenu').addEventListener('click', toMenu);
+
+function fit(){
+  const s = Math.min(innerWidth / W, innerHeight / H);
+  document.getElementById('frame').style.transform = `scale(${s})`;
+}
+addEventListener('resize', fit); fit();
+
+/* ---------------- main loop ---------------- */
+let last = performance.now(), acc = 0;
+function loop(now){
+  acc += Math.min(100, now - last); last = now;
+  while (acc >= 1000 / 60){ step(); acc -= 1000 / 60; }
+  render();
+  requestAnimationFrame(loop);
+}
+game.startMatch('demo');
+(document.fonts ? document.fonts.load('16px "Press Start 2P"').catch(() => {}) : Promise.resolve())
+  .then(() => requestAnimationFrame(loop));
+</script>
+</body>
+</html>
