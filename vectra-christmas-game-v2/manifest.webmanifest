@@ -1,0 +1,13 @@
+{
+  "name": "Misja: Święta",
+  "short_name": "Misja: Święta",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#f2f1ec",
+  "theme_color": "#f2f1ec",
+  "icons": [
+    { "src": "assets/favicon.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/favicon.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
