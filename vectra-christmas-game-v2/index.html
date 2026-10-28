@@ -31,11 +31,9 @@
   #t-right { left: calc(max(18px, env(safe-area-inset-left)) + clamp(78px, 21vmin, 116px) + 14px); }
   #t-jump { width: clamp(90px, 24vmin, 132px); height: clamp(90px, 24vmin, 132px); right: max(60px, calc(env(safe-area-inset-right) + 40px)); bottom: max(86px, calc(env(safe-area-inset-bottom) + 68px)); }
   #t-down { width: clamp(56px, 14vmin, 80px); height: clamp(56px, 14vmin, 80px); right: calc(max(60px, calc(env(safe-area-inset-right) + 40px)) + clamp(90px, 24vmin, 132px) + 36px); bottom: max(56px, calc(env(safe-area-inset-bottom) + 38px)); }
-  #t-tilt { left: 50%; top: max(10px, env(safe-area-inset-top)); transform: translateX(-50%); width: auto; height: 34px; padding: 0 16px; border-radius: 17px; font: 700 14px Poppins, Arial, sans-serif; letter-spacing: 0.08em; color: #fff0b8; z-index: 11; }
-  body.touch #t-tilt.avail { display: flex !important; }
-  #t-full { left: calc(50% + 78px); top: max(10px, env(safe-area-inset-top)); width: 34px; height: 34px; z-index: 11; }
+  #t-full { right: calc(43px * var(--hz, 1) - 14px); top: calc(74px * var(--hz, 1)); width: 28px; height: 28px; z-index: 11; }      /* (the top right, under the hearts: centred under the last one; --hz = how much the picture is scaled down on a phone) */
   body.touch #t-full.avail { display: flex !important; }
-  #t-tilt.on { transform: translateX(-50%); }
+  body.touch.intro #touch { display: none !important; }      /* (during the intro there are no game buttons; the full screen button stays) */
   #t-toast { position: fixed; left: 50%; top: 56px; transform: translateX(-50%); z-index: 30; display: none; max-width: 80vw; padding: 8px 16px; border-radius: 12px; background: rgba(8,10,28,0.85); border: 1px solid rgba(255,205,90,0.8); color: #ffe9a0; font: 600 14px Poppins, Arial, sans-serif; text-align: center; pointer-events: none; }
   #t-rotate { position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 20; display: none; align-items: center; justify-content: center; text-align: center; padding: 24px;
     background: rgba(8,10,28,0.92); color: #ffe9a0; font: 700 20px Poppins, Arial, sans-serif; line-height: 1.4; pointer-events: auto; }
@@ -50,7 +48,6 @@
   <div class="tbtn" id="t-down" data-key="s"><svg viewBox="0 0 100 100"><path d="M18 36 L50 70 L82 36"/></svg></div>
   <div class="tbtn" id="t-jump" data-key=" "><svg viewBox="0 0 100 100"><path d="M18 64 L50 30 L82 64"/></svg></div>
 </div>
-<div class="tbtn" id="t-tilt" style="display:none">TILT</div>
 <div class="tbtn" id="t-full" style="display:none"><svg viewBox="0 0 100 100"><path d="M14 38 L14 14 L38 14 M62 14 L86 14 L86 38 M86 62 L86 86 L62 86 M38 86 L14 86 L14 62"/></svg></div>
 <div id="t-toast"></div>
 <div id="t-rotate"><div>&#8635;<br>OBRÓĆ TELEFON POZIOMO</div></div>
@@ -66,6 +63,7 @@ function resize() {
   viewZoom = TOUCH_SCREEN ? Math.max(0.35, Math.min(1, innerHeight / MOBILE_VIEW_H)) : 1;
   W = canvas.width = Math.round(innerWidth / viewZoom);
   H = canvas.height = Math.round(innerHeight / viewZoom);
+  document.documentElement.style.setProperty('--hz', viewZoom);      // (the full screen button sits under the hearts, which are drawn in the scaled picture)
   canvas.style.width = innerWidth + 'px'; canvas.style.height = innerHeight + 'px';      // (the canvas is bigger than the window on a phone and is scaled down)
 }
 resize();
@@ -130,46 +128,6 @@ const UNIT = 46; // px per world unit
   if (!canFS && !standalone && /iPhone|iPod/.test(navigator.userAgent)) {
     try { if (!localStorage.getItem('fsHintShown')) { localStorage.setItem('fsHintShown', '1'); setTimeout(() => { const t = document.getElementById('t-toast'); t.textContent = 'Pełny ekran: Udostępnij → Dodaj do ekranu głównego'; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 6000); }, 1500); } } catch (err) {}
   }
-
-  // ---- tilting the phone as an alternative to the buttons: the right / left edge down = run right / left, the top edge up = jump (relative to the way the phone was held when TILT was switched on)
-  const tiltBtn = document.getElementById('t-tilt'), toast = document.getElementById('t-toast');
-  if (typeof DeviceOrientationEvent === 'undefined') return;
-  tiltBtn.classList.add('avail');
-  const say = msg => { toast.textContent = msg; toast.style.display = 'block'; clearTimeout(say.t); say.t = setTimeout(() => toast.style.display = 'none', 3200); };
-  let tiltOn = false, base = null, lastEv = 0;
-  const held = { a: false, d: false, ' ': false };
-  const setKey = (k, want) => { if (held[k] === want) return; held[k] = want; window.dispatchEvent(new KeyboardEvent(want ? 'keydown' : 'keyup', { key: k, bubbles: true })); };
-  const releaseAll = () => { for (const k in held) setKey(k, false); };
-  const screenAngle = () => (screen.orientation && typeof screen.orientation.angle === 'number') ? screen.orientation.angle : (typeof window.orientation === 'number' ? window.orientation : 0);
-  const onOrient = e => {
-    if (!tiltOn || e.beta === null || e.beta === undefined) return;
-    lastEv = performance.now();
-    const b = e.beta * Math.PI / 180, g = e.gamma * Math.PI / 180;
-    const ux = -Math.sin(g) * Math.cos(b), uy = Math.sin(b);                       // where "up" is, in the phone's own axes
-    const ang = ((screenAngle() % 360) + 360) % 360;
-    const sx = ang === 90 ? -uy : ang === 270 ? uy : ang === 180 ? -ux : ux;        // ... in the axes of the screen as it is held now (sx: along the screen's right, sy: along its top)
-    const sy = ang === 90 ? ux : ang === 270 ? -ux : ang === 180 ? -uy : uy;
-    if (!base) base = { sx: sx, sy: sy };
-    const dx = sx - base.sx, dy = sy - base.sy;
-    setKey('d', held.d ? dx < -0.09 : dx < -0.17);         // the right edge down: right (the left edge down: dx > 0)
-    setKey('a', held.a ? dx > 0.09 : dx > 0.17);
-    setKey(' ', held[' '] ? dy > 0.12 : dy > 0.3);          // the top edge up: jump
-  };
-  const off = () => { tiltOn = false; base = null; releaseAll(); tiltBtn.classList.remove('on'); };
-  tiltBtn.addEventListener('pointerdown', async e => {
-    e.preventDefault();
-    if (tiltOn) { off(); say('Sterowanie przechyłem: wyłączone'); return; }
-    try {
-      if (typeof DeviceOrientationEvent.requestPermission === 'function') {           // iPhone: the permission has to be asked for in a tap
-        const r = await DeviceOrientationEvent.requestPermission();
-        if (r !== 'granted') { say('Brak zgody na czujniki ruchu'); return; }
-      }
-    } catch (err) { say('Czujniki ruchu niedostępne'); return; }
-    window.removeEventListener('deviceorientation', onOrient); window.addEventListener('deviceorientation', onOrient);
-    tiltOn = true; base = null; lastEv = 0; tiltBtn.classList.add('on');
-    say('Przechyl: prawo / lewo = bieg, do góry = skok');
-    setTimeout(() => { if (tiltOn && !lastEv) { off(); say('Czujniki wymagają połączenia HTTPS'); } }, 1600);
-  });
 })();
 const keys = {};
 // the jump has priority over the other movements: a press is remembered for JUMP_BUFFER_MS (a short tap that is over before the next frame, a press a moment before the landing,
@@ -3533,6 +3491,7 @@ const INTRO_HOLD_MS = 3200;          // how long a finished slide waits before i
 const INTRO_FADE_MS = 700;
 const INTRO_DEFAULT = true;       // false = the intro is switched off (for testing); ?intro in the address plays it anyway, ?nointro skips it
 let introActive = (INTRO_DEFAULT || (typeof location !== 'undefined' && /[?&]intro\b/.test(location.search))) && !(typeof globalThis !== 'undefined' && globalThis.__NO_INTRO) && !(typeof location !== 'undefined' && /nointro/.test(location.search));
+if (introActive && typeof document !== 'undefined' && document.body) document.body.classList.add('intro');      // (the style hides the on-screen buttons while the intro plays)
 if (introActive) musicDucked = true;      // no music of the game during the intro: the start screen with the loading bar is silent, the voice-over has its own music (introAudioStop() brings the game music back)
 // load the font before the first intro frame (the canvas does not wait for web fonts by itself); until then a fallback font is drawn
 if (typeof document !== 'undefined' && document.fonts && document.fonts.load) {
@@ -3589,6 +3548,7 @@ function introEnter(now, phase) { introPhase = phase; introPhaseT0 = now; }
 function introFinish() {              // to the game: forget the keys that were pressed during the intro
   introAudioStop();
   introActive = false;
+  if (document.body) document.body.classList.remove('intro');
   for (const k in keys) keys[k] = false;
   prevKeys = { ...keys };
 }
