@@ -31,8 +31,10 @@
   #t-right { left: calc(max(18px, env(safe-area-inset-left)) + clamp(78px, 21vmin, 116px) + 14px); }
   #t-jump { width: clamp(90px, 24vmin, 132px); height: clamp(90px, 24vmin, 132px); right: max(60px, calc(env(safe-area-inset-right) + 40px)); bottom: max(86px, calc(env(safe-area-inset-bottom) + 68px)); }
   #t-down { width: clamp(56px, 14vmin, 80px); height: clamp(56px, 14vmin, 80px); right: calc(max(60px, calc(env(safe-area-inset-right) + 40px)) + clamp(90px, 24vmin, 132px) + 36px); bottom: max(56px, calc(env(safe-area-inset-bottom) + 38px)); }
-  #t-full { right: calc(43px * var(--hz, 1) - 14px); top: calc(74px * var(--hz, 1)); width: 28px; height: 28px; z-index: 11; }      /* (the top right, under the hearts: centred under the last one; --hz = how much the picture is scaled down on a phone) */
+  #t-full { right: calc(43px * var(--hz, 1) + 2px); top: calc(74px * var(--hz, 1)); width: 28px; height: 28px; z-index: 11; }      /* (the top right, under the hearts: centred under the last one; --hz = how much the picture is scaled down on a phone) */
   body.touch #t-full.avail { display: flex !important; }
+  #t-skip { display: none; right: calc(43px * var(--hz, 1) + 2px); bottom: max(10px, env(safe-area-inset-bottom)); width: 28px; height: 28px; z-index: 11; }      /* skip the intro (a phone has no Esc): where the text "Esc: pomiń" is on a computer, as big as the full screen button */
+  body.touch.intro.skipvis #t-skip { display: flex; }
   body.touch.intro #touch { display: none !important; }      /* (during the intro there are no game buttons; the full screen button stays) */
   #t-toast { position: fixed; left: 50%; top: 56px; transform: translateX(-50%); z-index: 30; display: none; max-width: 80vw; padding: 8px 16px; border-radius: 12px; background: rgba(8,10,28,0.85); border: 1px solid rgba(255,205,90,0.8); color: #ffe9a0; font: 600 14px Poppins, Arial, sans-serif; text-align: center; pointer-events: none; }
   #t-rotate { position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 20; display: none; align-items: center; justify-content: center; text-align: center; padding: 24px;
@@ -49,6 +51,7 @@
   <div class="tbtn" id="t-jump" data-key=" "><svg viewBox="0 0 100 100"><path d="M18 64 L50 30 L82 64"/></svg></div>
 </div>
 <div class="tbtn" id="t-full" style="display:none"><svg viewBox="0 0 100 100"><path d="M14 38 L14 14 L38 14 M62 14 L86 14 L86 38 M86 62 L86 86 L62 86 M38 86 L14 86 L14 62"/></svg></div>
+<div class="tbtn" id="t-skip"><svg viewBox="0 0 100 100"><path d="M34 16 L72 50 L34 84"/></svg></div>
 <div id="t-toast"></div>
 <div id="t-rotate"><div>&#8635;<br>OBRÓĆ TELEFON POZIOMO</div></div>
 
@@ -128,6 +131,9 @@ const UNIT = 46; // px per world unit
   if (!canFS && !standalone && /iPhone|iPod/.test(navigator.userAgent)) {
     try { if (!localStorage.getItem('fsHintShown')) { localStorage.setItem('fsHintShown', '1'); setTimeout(() => { const t = document.getElementById('t-toast'); t.textContent = 'Pełny ekran: Udostępnij → Dodaj do ekranu głównego'; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 6000); }, 1500); } } catch (err) {}
   }
+  const skipBtn = document.getElementById('t-skip');      // (during the slides of the intro: skips the whole intro, like Esc)
+  skipBtn.addEventListener('pointerup', e => { e.preventDefault(); e.stopPropagation(); if (typeof introSkip === 'function') introSkip(); });
+  skipBtn.addEventListener('contextmenu', e => e.preventDefault());
 })();
 const keys = {};
 // the jump has priority over the other movements: a press is remembered for JUMP_BUFFER_MS (a short tap that is over before the next frame, a press a moment before the landing,
@@ -150,10 +156,10 @@ addEventListener('keydown', e => {
   keys[e.key.toLowerCase()] = true;
 });
 addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
-addEventListener('pointerdown', () => {          // a click / a tap: starts the sound and moves the intro on
-  ensureAudio(); startMusic();
-  if (introActive) introNext(performance.now());
-});
+addEventListener('pointerdown', () => { ensureAudio(); startMusic(); });
+// a click / a tap moves the intro on (and starts the voice-over). It is done when the finger is LIFTED: a phone does not let a page play a sound from the moment the finger touches
+// down (pointerdown), only from the moment it is lifted (pointerup / touchend / click) - with pointerdown the voice-over stayed silent on a phone
+addEventListener('pointerup', () => { if (introActive) introNext(performance.now()); });
 for (const ev of ['mousedown', 'touchstart', 'click']) addEventListener(ev, () => { ensureAudio(); startMusic(); }, { passive: true });      // (any click or tap unlocks the sound too)
 addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
 
@@ -3548,7 +3554,7 @@ function introEnter(now, phase) { introPhase = phase; introPhaseT0 = now; }
 function introFinish() {              // to the game: forget the keys that were pressed during the intro
   introAudioStop();
   introActive = false;
-  if (document.body) document.body.classList.remove('intro');
+  if (document.body) { document.body.classList.remove('intro'); document.body.classList.remove('skipvis'); }
   for (const k in keys) keys[k] = false;
   prevKeys = { ...keys };
 }
@@ -3707,7 +3713,10 @@ function introCover(img, t, pan, zoom, alpha, shakeX, shakeY) {   // the picture
   ctx.drawImage(img, ox, oy, dw, dh);
   ctx.globalAlpha = 1;
 }
+let introSkipVis = false;
 function drawIntro(now) {
+  const sv = introPhase === 'slides';
+  if (sv !== introSkipVis && document.body) { introSkipVis = sv; document.body.classList.toggle('skipvis', sv); }      // (the skip button of a phone is there only while the slides play)
   ctx.fillStyle = '#05060f'; ctx.fillRect(0, 0, W, H);
   ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
   const fontFamily = '"Poppins", "Trebuchet MS", "Segoe UI", Arial, sans-serif';
@@ -3849,7 +3858,7 @@ function drawIntro(now) {
     for (let i = 0; i < INTRO_SLIDES.length; i++) { ctx.fillStyle = i === introSlide ? '#ffd45a' : 'rgba(255,255,255,0.35)'; ctx.beginPath(); ctx.arc(W / 2 + (i - (INTRO_SLIDES.length - 1) / 2) * 22, py - 22, i === introSlide ? 6 : 4.5, 0, Math.PI * 2); ctx.fill(); }
     ctx.font = `${Math.round(fs * 0.7)}px ${fontFamily}`; ctx.textAlign = 'right'; ctx.textBaseline = 'alphabetic';
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
-    ctx.fillText('Esc: pomiń', W - 28, H - 14);
+    if (!TOUCH_SCREEN) ctx.fillText('Esc: pomiń', W - 28, H - 14);      // (a phone has the skip button instead)
     // slides move on by themselves a while after the text is done
     const nextAt = introSlide < INTRO_SLIDES.length - 1 ? INTRO_SLIDES[introSlide + 1].at : INTRO_MISSION_AT;
     if (introAudioOn && nextAt !== undefined) { if (INTRO_AUDIO.currentTime >= nextAt) { introDoneAt = 0; introNext(now, true); } }      // (with the voice-over: the next slide begins at its cue)
