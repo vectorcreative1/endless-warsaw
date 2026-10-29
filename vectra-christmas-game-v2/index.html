@@ -305,7 +305,7 @@ function justPressed(k) { return keys[k] && !prevKeys[k]; }
 
 function lerp(a, b, t) { return a + (b - a) * t; }
 
-const INTRO_V = '20261028e';            // bump this after replacing any file of the intro (pictures, sound): the browser then loads the new file instead of the one it kept
+const INTRO_V = '20261029a';            // bump this after replacing any file of the intro (pictures, sound): the browser then loads the new file instead of the one it kept
 const ALL_IMAGES = [];                  // every picture the game loads (the loading screen counts how many of them are done: `complete` is true after a load AND after a failed load)
 function loadImage(src) {
   const img = new Image();
