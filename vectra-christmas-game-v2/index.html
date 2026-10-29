@@ -168,6 +168,7 @@ let lastJumpSoundAt = -Infinity;   // the jump sound is played from the key pres
 function ensureAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   if (audioCtx.state === 'suspended') audioCtx.resume();
+  if (typeof loadYawn === 'function') loadYawn();
 }
 
 function noiseBuffer(duration) {
@@ -305,7 +306,7 @@ function justPressed(k) { return keys[k] && !prevKeys[k]; }
 
 function lerp(a, b, t) { return a + (b - a) * t; }
 
-const INTRO_V = '20261029a';            // bump this after replacing any file of the intro (pictures, sound): the browser then loads the new file instead of the one it kept
+const INTRO_V = '20261029r';            // bump this after replacing any file of the intro (pictures, sound): the browser then loads the new file instead of the one it kept
 const ALL_IMAGES = [];                  // every picture the game loads (the loading screen counts how many of them are done: `complete` is true after a load AND after a failed load)
 function loadImage(src) {
   const img = new Image();
@@ -3452,43 +3453,47 @@ let last = performance.now();
 const INTRO_TITLE = 'Włącz Święta';      // (was 'Misja: Święta')
 const INTRO_SUBTITLE = 'Wigilijna operacja ratunkowa';
 const INTRO_SLIDES = [
-  // The pictures follow the film timeline made for intro/sound.mp3: `at` = the second of the sound where the picture begins, `dur` = how long it stays (the zoom takes exactly that long: "zbliżenie").
+  // The pictures follow the film timeline made for intro/sound_new.mp3: `at` = the second of the sound where the picture begins, `dur` = how long it stays (the zoom takes exactly that long: "zbliżenie").
   // Without the sound the slides go by their own `dur`. Pictures: 52279, 52281 (the opening), story_1, story_2, 52285, zgrzyt_hand, 52282, 52283, then the old story_4 until the mission card.
-  { img: 'intro/story_0.jpg',     at: 0,     dur: 3200, text: 'Była sobie kiedyś Wigilia – cicha i ciepła jak kubek kakao', cps: 13, pan: [0.0, 0.0], zoom: [1.0, 1.3], ease: true },
-  { img: 'intro/story_0b.jpg',    at: 3.2,   dur: 2800, text: 'Była sobie kiedyś Wigilia – cicha i ciepła jak kubek kakao', continueText: true, cps: 13, pan: [0.012, 0.0], zoom: [1.0, 1.22], ease: true },
-  { img: 'intro/story_1.jpg',     at: 6.0,   dur: 6550, text: 'Dzisiek i Jutrek rozkoszowali się muzyką, która cicho grała w tle, a w całym domu pachniało pierniczkami.', pan: [-0.01, 0.0], zoom: [1.0, 1.2], ease: true },
-  { img: 'intro/story_2.jpg',     at: 12.55, dur: 6550, text: 'Dookoła wszystko wirowało! W telewizji leciały świąteczne filmy, telefony dzwoniły raz po raz', pan: [0.012, 0.0], zoom: [1.0, 1.2], ease: true },
-  { img: 'intro/story_5.jpg',     at: 19.1,  dur: 6200, text: 'A na ekranach laptopów rozświetlały się twarze bliskich – nawet tych bardzo, bardzo dalekich.', pan: [-0.01, 0.0], zoom: [1.0, 1.2], ease: true },
-  { img: 'intro/zgrzyt_hand.jpg', at: 25.3,  dur: 5000, text: 'Lecz w ciemnym kącie, między splątanymi kablami, ktoś nie spał.', pan: [0.0, 0.0], zoom: [1.0, 1.1], ease: true, glitch: true, glitchAt: 0 },
-  { img: 'intro/story_6.jpg',     at: 30.3,  dur: 5700, sfx: 'unpleasant', shake: [32.9, 35.0],      // shake / shakes: the picture shakes up and down (weakly) with the laugh of the voice-over (from, to: seconds of the sound; `shakes` = a list of such windows)
-    text: 'Nazywał się… Zgrzyt. Zgrzyt nie znosił Świąt.', continueText: true, pan: [0.01, 0.0], zoom: [1.0, 1.16], ease: true },
-  { img: 'intro/story_7.jpg',     at: 36.0,  dur: 7300, text: 'A najbardziej nie znosił tego, że dzięki technologii ludzie mogą być razem – nawet wtedy, gdy są daleko od siebie.', pan: [0.0, -0.01], zoom: [1.0, 1.12], ease: true, glitch: true, glitchAt: 0, powerdown: true, powerAt: 0, powerFlickerOnly: true },      // (the ominous effect: a glitch and a flickering dark)
-  // the last picture (the desk: the phone, the TV, the laptop): the camera travels over it as the voice-over names the things. cam = keys [audio second, centre x, centre y (0..1 of the picture), zoom
-  // (1 = the whole picture)]; between two keys the camera glides, two keys with the same place are a pause. the picture comes in with the words "I postanowił to zmienić" and the camera approaches Zgrzyt (the red frame) -> the phone -> the TV (zoomed right up to its edge) -> the laptop -> back to the whole picture.
-  { img: 'intro/story_8.jpg',     at: 43.3,  text: 'I postanowił to zmienić. Najpierw zagłuszył zasięg w telefonach… Potem zalał telewizor szumem… A na koniec odciął internet… i wszystko… się zawiesiło. A Święta… zostały wyłączone.', powerdown: true, powerAt: 16.0, powerMax: 0.35, shakes: [[44.6, 45.8], [55.4, 57.0]], glitches: [47.1, 50.35, 53.0], cam: [      // glitches: a short glitch the moment the camera has come up to the phone, to the TV and to the laptop (and at the laptop it pulls back at once)
-      [43.3, 0.62, 0.40, 1.4],    [45.8, 0.717, 0.266, 2.27],
-      [47.2, 0.15, 0.62, 1.9],    [48.8, 0.15, 0.62, 1.9],
-      [50.0, 0.88, 0.57, 2.3],    [51.2, 0.88, 0.57, 2.3],
-      [52.5, 0.62, 0.64, 2.1],    [53.6, 0.62, 0.64, 2.1],
-      [56.5, 0.5, 0.5, 1.0] ] },
+  { img: 'intro/story_0.jpg',     at: 0,     dur: 3000, text: 'Była sobie kiedyś Wigilia – ciepła jak kubek kakao', cps: 13, pan: [0.0, 0.0], zoom: [1.0, 1.3], ease: true },
+  { img: 'intro/story_0b.jpg',    at: 3.0,   dur: 3000, text: 'Była sobie kiedyś Wigilia – ciepła jak kubek kakao', continueText: true, cps: 13, pan: [0.012, 0.0], zoom: [1.0, 1.22], ease: true },
+  { img: 'intro/story_1.jpg',     at: 6.0,   dur: 6700, text: 'Dzisiek i Jutrek rozkoszowali się muzyką, która cicho grała w tle, a w całym domu pachniało pierniczkami.', pan: [-0.01, 0.0], zoom: [1.0, 1.2], ease: true },
+  { img: 'intro/story_2.jpg',     at: 12.7,  dur: 6700, sparkles: [12.9, 99], text: 'Dookoła wszystko wirowało! W telewizji leciały świąteczne filmy, telefony dzwoniły raz po raz', pan: [0.012, 0.0], zoom: [1.0, 1.2], ease: true },
+  { img: 'intro/story_5.jpg',     at: 19.4,  dur: 6200, sparkles: [0, 25.4], text: 'A na ekranach laptopów rozświetlały się twarze bliskich – nawet tych bardzo, bardzo dalekich.', pan: [-0.01, 0.0], zoom: [1.0, 1.2], ease: true },
+  { img: 'intro/zgrzyt_hand.jpg', at: 25.6,  dur: 6000, text: 'Lecz w ciemnym kącie, między splątanymi kablami, ktoś nie spał.', pan: [0.0, 0.0], zoom: [1.0, 1.1], ease: true, glitch: true, glitchAt: 0 },
+  { img: 'intro/story_6.jpg',     at: 31.6,  dur: 3800, sfx: 'unpleasant', shake: [32.9, 34.9],      // shake / shakes: the picture shakes up and down (weakly) with the villain's lines ("Nuda nie znosiła Świąt", 32.86-34.92 in the recording; from, to: seconds of the sound; `shakes` = a list of such windows)
+    text: 'Nuda. Nuda nie znosiła Świąt.', continueText: true, pan: [0.01, 0.0], zoom: [1.0, 1.16], ease: true },
+  { img: 'intro/story_7.jpg',     at: 35.4,  dur: 7800, text: 'A najbardziej nie znosiła tego, że ludzie zawsze chcą się razem śmiać i bawić – nawet wtedy, gdy są daleko od siebie.', pan: [0.0, -0.01], zoom: [1.0, 1.12], ease: true, glitch: true, glitchAt: 0, powerdown: true, powerAt: 0, powerFlickerOnly: true },      // (the ominous effect: a glitch and a flickering dark)
+  // the last pictures: the desk (story_3: the phone, the TV, the laptop, Nuda with her Nudogenerator), then - only at the very end - the close-up of the Nudogenerator (generator.jpg). On the desk the camera travels
+  // as the voice-over names the things. cam = keys [audio second, centre x, centre y (0..1 of the picture), zoom (1 = the whole picture)]; between two keys the camera glides, two keys with the same place are a pause.
+  // "I postanowiła to zmienić" (the whole desk, then the camera comes up to Nuda, not too close) -> her laugh (intro/laught.mp3 at laughAt, the picture shakes with it) -> "Zbudowała Nudogenerator" (it stays on her, from the word "Nudogenerator" the glitch waves spread from the middle of the screen) -> the phone -> the TV (zoomed right up to its edge) -> the laptop
+  // -> "Nudogenerator ziewał na cały dom" (the close-up of the Nudogenerator until the end; it goes dark with the last words)
+  { img: 'intro/story_3.jpg',     at: 43.2,  text: 'I postanowiła to zmienić. Zbudowała Nudogenerator – maszynę, która zaraża nudą. Najpierw telefony zamilkły… Potem telewizory zgasły… A wideorozmowy? Nikt już nie miał na nie ochoty.', laughAt: 44.7, shakes: [[44.8, 46.0]], waves: [46.1, 49.8], glitches: [50.5, 51.9, 54.4, 55.5], cam: [      // glitches: a short glitch the moment the camera has come up to the phone, with the "trzask!", with the "pstryk!" of the TV and at the laptop
+      [43.2, 0.5, 0.5, 1.0],       [45.2, 0.69, 0.29, 2.3],    [49.6, 0.69, 0.29, 2.5],
+      [50.4, 0.11, 0.59, 1.9],    [52.1, 0.11, 0.59, 1.9],
+      [52.8, 0.88, 0.55, 2.3],    [54.7, 0.88, 0.55, 2.3],
+      [55.4, 0.645, 0.60, 2.2],   [58.5, 0.645, 0.60, 2.2] ] },
+  { img: 'intro/generator.jpg',   at: 58.6,  dur: 7700, waves: [60.0, 61.1], text: 'Nudogenerator ziewał na cały dom… i nikomu… nie chciało się już nic. A Święta… zostały wyłączone.', pan: [0.0, 0.0], zoom: [1.0, 1.25], ease: true, powerdown: true, powerAt: 5.2, powerMax: 0.35 },
 ];
 // the text panels of the voice-over (independent of the pictures: a text goes on over several pictures); the typing takes four fifths of the time until the next one
 const INTRO_TEXTS = [
-  { at: 0,    text: 'Była sobie kiedyś Wigilia – cicha i ciepła jak kubek kakao' },
+  { at: 0,    text: 'Była sobie kiedyś Wigilia – ciepła jak kubek kakao' },
   { at: 6.1,  text: 'Dzisiek i Jutrek rozkoszowali się muzyką, która cicho grała w tle, a w całym domu pachniało pierniczkami.' },
   { at: 13.0, text: 'Dookoła wszystko wirowało! W telewizji leciały świąteczne filmy, telefony dzwoniły raz po raz' },
-  { at: 19.1, text: 'A na ekranach laptopów rozświetlały się twarze bliskich – nawet tych bardzo, bardzo dalekich.' },
-  { at: 25.1, text: 'Lecz w ciemnym kącie, między splątanymi kablami, ktoś nie spał.' },
-  { at: 30.3, text: 'Nazywał się… Zgrzyt. Zgrzyt nie znosił Świąt.' },
-  { at: 36.0, text: 'A najbardziej nie znosił tego, że dzięki technologii ludzie mogą być razem – nawet wtedy, gdy są daleko od siebie.' },
-  { at: 43.3, text: 'I postanowił to zmienić.' },
-  { at: 45.4, text: 'Najpierw zagłuszył zasięg w telefonach…' },          // (with the camera: the phone 47.2, the TV 49.4, the laptop 51.8)
-  { at: 49.0, text: 'Potem zalał telewizor szumem…' },
-  { at: 51.4, text: 'A na koniec odciął internet…' },
-  { at: 53.5, text: 'i wszystko… się zawiesiło.' },
-  { at: 57.0, text: 'A Święta… zostały wyłączone.' },
+  { at: 19.4, text: 'A na ekranach laptopów rozświetlały się twarze bliskich – nawet tych bardzo, bardzo dalekich.' },
+  { at: 25.7, text: 'Lecz w ciemnym kącie, między splątanymi kablami, ktoś nie spał.' },
+  { at: 31.7, text: 'Nuda. Nuda nie znosiła Świąt.' },
+  { at: 35.3, text: 'A najbardziej nie znosiła tego, że ludzie zawsze chcą się razem śmiać i bawić – nawet wtedy, gdy są daleko od siebie.' },
+  { at: 43.2, text: 'I postanowiła to zmienić.' },
+  { at: 45.3, text: 'Zbudowała Nudogenerator – maszynę, która zaraża nudą.' },
+  { at: 50.0, text: 'Najpierw telefony zamilkły…' },          // (with the camera: the phone 50.4, the TV 52.8, the laptop 55.4; the "trzask!" is at 51.9, the "pstryk!" at 54.4)
+  { at: 52.15, text: 'Potem telewizory zgasły…' },
+  { at: 54.6, text: 'A wideorozmowy? Nikt już nie miał na nie ochoty.' },
+  { at: 58.5, text: 'Nudogenerator ziewał na cały dom…' },
+  { at: 60.9, text: 'i nikomu… nie chciało się już nic.' },
+  { at: 63.8, text: 'A Święta… zostały wyłączone.' },
 ];
-const INTRO_MISSION_AT = 61.0;        // the second of the sound where the last picture (the title card, without a button) appears; the last words of the voice-over are said over it
+const INTRO_MISSION_AT = 66.3;        // the second of the sound where the last picture (the title card, without a button) appears; the last words of the voice-over are said over it
 const INTRO_MISSION = 'Przywróć zasięg!';
 const INTRO_SLIDE_IMGS = INTRO_SLIDES.map(sl => loadImage(sl.img));
 const INTRO_PAD_X = 72;              // px: the inside padding of the text panel on the left and on the right (was 28): the text field is narrower
@@ -3507,8 +3512,8 @@ if (typeof document !== 'undefined' && document.fonts && document.fonts.load) {
 let introPhase = 'title';            // 'title' | 'slides' | 'mission' | 'out'
 let introSlide = 0, introSlideT0 = 0, introPrev = -1, introPrevT = 0, introPhaseT0 = 0, introTypeDone = false, introDoneAt = 0;
 let introFadeOutT0 = 0;
-// ---- the voice-over (intro/sound.mp3): loaded together with the pictures, started by the tap on the title screen, stopped when the intro ends
-const INTRO_AUDIO = (typeof Audio === 'function') ? new Audio('intro/sound.mp3?v=' + INTRO_V) : null;
+// ---- the voice-over (intro/sound_new.mp3): loaded together with the pictures, started by the tap on the title screen, stopped when the intro ends
+const INTRO_AUDIO = (typeof Audio === 'function') ? new Audio('intro/sound_new.mp3?v=' + INTRO_V) : null;
 let introAudioReady = !INTRO_AUDIO, introAudioOn = false;
 if (INTRO_AUDIO) {
   INTRO_AUDIO.preload = 'auto';
@@ -3520,7 +3525,7 @@ function introAudioStart() {
   try { INTRO_AUDIO.currentTime = 0; const pr = INTRO_AUDIO.play(); introAudioOn = true; if (pr && pr.catch) pr.catch(() => { introAudioOn = false; }); } catch (e) { introAudioOn = false; }
   if (introAudioOn) { musicDucked = true; if (musicGain && audioCtx) musicGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05); }      // (the music of the game is silent while the voice-over plays: the recording has its own)
 }
-function introAudioStop() {
+function introAudioStop() { enemyLaughStop();
   if (INTRO_AUDIO) { try { INTRO_AUDIO.pause(); } catch (e) {} }
   introAudioOn = false;
   musicDucked = false;
@@ -3573,7 +3578,7 @@ function introNext(now, force) {
     const typed = (now - introTextT0) / 1000 * introCps(sl);
     if (!force && typed < sl.text.length) { introTextT0 = now - sl.text.length / introCps(sl) * 1000 - 1; return; }      // the first press: finish the typing (a slide that ends by its own time just goes on)
     if (introSlide < INTRO_SLIDES.length - 1) {
-      introPrev = introSlide; introPrevT = now; introSlide++; introSlideT0 = now; introTypeDone = false; introDoneAt = 0; introSfx(introSlide); introCueSfx(INTRO_SLIDES[introSlide].sfx); INTRO_SLIDES[introSlide].glitchFired = {};
+      introPrev = introSlide; introPrevT = now; introSlide++; introSlideT0 = now; introTypeDone = false; introDoneAt = 0; introSfx(introSlide); introCueSfx(INTRO_SLIDES[introSlide].sfx); INTRO_SLIDES[introSlide].glitchFired = {}; INTRO_SLIDES[introSlide].laughFired = false;
       if (!INTRO_SLIDES[introSlide].continueText) { introTextT0 = now; introLastTyped = 0; }
     } else introEnter(now, 'mission');
     return;
@@ -3685,12 +3690,65 @@ function introKey(e, now) {
   if (e.key === 'Escape') { introSkip(); return; }
   if (e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowRight') introNext(now);
 }
-function introGlitchFx(k) {                    // strips of the picture shifted sideways and a flash of colour (k: 1 = full, 0 = gone)
+function introGlitchFx(k, neutral) {          // strips of the picture shifted sideways and a flash of colour (k: 1 = full, 0 = gone; neutral: a pale bar instead of the pink / cyan one)
+  const src = introSnapNow();
   for (let i = 0; i < 6; i++) {
     const sy = Math.random() * H, sh = 8 + Math.random() * 46, dx = (Math.random() - 0.5) * 110 * k;
-    ctx.drawImage(canvas, 0, sy, W, sh, dx, sy, W, sh);
+    ctx.drawImage(src, 0, sy, W, sh, dx, sy, W, sh);
   }
-  ctx.save(); ctx.globalAlpha = 0.22 * k; ctx.fillStyle = Math.random() < 0.5 ? '#ff2a6d' : '#2ad4ff'; ctx.fillRect(0, Math.random() * H, W, 4 + Math.random() * 8); ctx.restore();
+  ctx.save(); ctx.globalAlpha = 0.22 * k; ctx.fillStyle = neutral ? '#dfe8ff' : (Math.random() < 0.5 ? '#ff2a6d' : '#2ad4ff'); ctx.fillRect(0, Math.random() * H, W, 4 + Math.random() * 8); ctx.restore();
+}
+// the waves of the Nudogenerator over a picture (a slide's `waves: [from, to]` = seconds of the sound): soft pale rings spreading from the middle of the screen, almost without colour (only a faint cyan / magenta fringe),
+// broken into flickering dashes; where a ring passes, short strips of the picture are pushed sideways along its edge, and a glitch of shifted strips comes with the start of every pulse. A new pulse every 0.8 s from `from` until `to`
+// (two slides can share the same window: the pulses then go on without a jump)
+let introWaveSnap = null;
+function introSnapNow() {                       // a copy of what is on the canvas now: the strips of a glitch are cut from it (the canvas drawn onto itself again and again freezes the animation)
+  if (!introWaveSnap) introWaveSnap = document.createElement('canvas');
+  if (introWaveSnap.width !== canvas.width) introWaveSnap.width = canvas.width;
+  if (introWaveSnap.height !== canvas.height) introWaveSnap.height = canvas.height;
+  introWaveSnap.getContext('2d').drawImage(canvas, 0, 0);
+  return introWaveSnap;
+}
+function drawIntroWaves(ta, from, to) {
+  const PERIOD = 0.8, LIFE = 1.6, n1 = Math.floor((ta - from) / PERIOD);
+  if (n1 < 0 || ta > to + LIFE + 0.3) return;
+  let snap = null;                                                        // (the strips are cut from ONE copy of the picture made once per frame: drawing the canvas onto itself again and again made the animation freeze)
+  const getSnap = () => snap || (snap = introSnapNow());
+  const cx = W / 2, cy = H / 2, fq = Math.floor(ta * 16);                // (the pattern of the glitch changes 16 times a second)
+  let ri = 0;
+  const rnd = () => { const x = Math.sin(fq * 12.9898 + (ri++) * 78.233) * 43758.5453; return x - Math.floor(x); };
+  ctx.save();
+  for (let n = Math.max(0, Math.floor((ta - from - LIFE - 0.3) / PERIOD)); n <= n1; n++) {
+    const t0 = from + n * PERIOD; if (t0 >= to) break;
+    const tp = ta - t0;
+    for (let k = 0; k < 2; k++) {                                         // two rings per pulse, one after another
+      const u = (tp - k * 0.16) / LIFE;
+      if (u <= 0 || u >= 1) continue;
+      const r = u * Math.max(W, H) * 1.05 + (rnd() - 0.5) * 4, A = (1 - u) * 0.55, hw = 26 + 34 * u;
+      const gr = ctx.createRadialGradient(cx, cy, Math.max(0, r - hw), cx, cy, r + hw);      // the soft band: no hard edge
+      gr.addColorStop(0, 'rgba(205,222,255,0)'); gr.addColorStop(0.5, `rgba(215,230,255,${A * 0.3})`); gr.addColorStop(1, 'rgba(205,222,255,0)');
+      ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
+      const dash = []; for (let j = 0; j < 6; j++) dash.push(14 + rnd() * 110, 8 + rnd() * 90);
+      ctx.setLineDash(dash); ctx.lineDashOffset = rnd() * 400; ctx.lineWidth = 2.2 * (1 - u) + 1;
+      ctx.strokeStyle = `rgba(80,230,255,${A * 0.22})`; ctx.beginPath(); ctx.arc(cx - 2, cy, r, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = `rgba(255,90,200,${A * 0.18})`; ctx.beginPath(); ctx.arc(cx + 2, cy, r, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = `rgba(235,242,255,${A * 0.75})`; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]);
+      for (let j = 0; j < 3; j++) {                                       // strips of the picture pushed sideways where the ring is
+        const y = Math.max(0, Math.min(H - 20, cy + (rnd() - 0.5) * H * 0.95)), dy = y - cy, h = 4 + rnd() * 14, w = 90 + rnd() * 90, dxs = (rnd() - 0.5) * 30 * (1 - u);
+        if (Math.abs(dy) >= r) continue;
+        const half = Math.sqrt(r * r - dy * dy);
+        for (const side of [-1, 1]) {
+          const sx = cx + side * half; if (sx < 0 || sx > W) continue;
+          const x0 = Math.max(0, Math.min(W - w, sx - w / 2));
+          ctx.drawImage(getSnap(), x0, y, w, h, x0 + dxs, y, w, h);
+        }
+      }
+    }
+  }
+  ctx.restore();
+  const tpl = ta - (from + n1 * PERIOD);
+  if (from + n1 * PERIOD < to && tpl >= 0 && tpl < 0.28) introGlitchFx(1 - tpl / 0.28, true);
 }
 function introCamDraw(img, cam, ta, alpha, shakeX, shakeY) {       // the camera over one picture: the place and the zoom at the audio second ta (smooth between the keys)
   let k = 0;
@@ -3714,6 +3772,32 @@ function introCover(img, t, pan, zoom, alpha, shakeX, shakeY) {   // the picture
   ctx.globalAlpha = 1;
 }
 let introSkipVis = false;
+// golden dust circling over a picture (a slide's `sparkles: [from, to]` = seconds of the sound): glowing specks on tilted elliptical orbits around the middle of the screen, a Christmas magic
+const INTRO_DUST = (() => { const a = []; let sd = 7; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647; for (let i = 0; i < 90; i++) a.push({ r: 0.1 + rnd() * 0.42, w: (0.35 + rnd() * 0.8) * (rnd() < 0.15 ? -0.6 : 1), ph: rnd() * 6.283, sz: 1.2 + rnd() * 2.8, tw: 2 + rnd() * 4, tp: rnd() * 6.283, tilt: (rnd() - 0.5) * 0.9, br: 0.4 + rnd() * 0.6 }); return a; })();
+let introDustSprite = null;
+function drawIntroDust(ta, env) {
+  if (!introDustSprite) {
+    try {
+      const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+      gr.addColorStop(0, 'rgba(255,244,200,1)'); gr.addColorStop(0.22, 'rgba(255,214,110,0.6)'); gr.addColorStop(1, 'rgba(255,170,40,0)');
+      g.fillStyle = gr; g.fillRect(0, 0, 64, 64); introDustSprite = c;
+    } catch (e) { introDustSprite = false; }
+  }
+  if (!introDustSprite) return;
+  const cx = W / 2, cy = H * 0.5, k = H / 800;
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (const d of INTRO_DUST) {
+    const ex = d.r * W, ey = d.r * H * 0.85, cs = Math.cos(d.tilt), sn = Math.sin(d.tilt);
+    const th = d.ph + d.w * ta * 0.9, bx = Math.cos(th) * ex, by = Math.sin(th) * ey;
+    const x = cx + bx * cs - by * sn, y = cy + bx * sn + by * cs;
+    const a = env * d.br * (0.35 + 0.65 * (0.5 + 0.5 * Math.sin(ta * d.tw + d.tp)));
+    const sz = d.sz * 7 * k;
+    ctx.globalAlpha = a; ctx.drawImage(introDustSprite, x - sz / 2, y - sz / 2, sz, sz);
+    const th2 = th - d.w * 0.07, cx2 = Math.cos(th2) * ex, cy2 = Math.sin(th2) * ey;      // (a short tail behind the speck)
+    ctx.globalAlpha = a * 0.5; ctx.drawImage(introDustSprite, cx + cx2 * cs - cy2 * sn - sz * 0.3, cy + cx2 * sn + cy2 * cs - sz * 0.3, sz * 0.6, sz * 0.6);
+  }
+  ctx.restore();
+}
 function drawIntro(now) {
   const sv = introPhase === 'slides';
   if (sv !== introSkipVis && document.body) { introSkipVis = sv; document.body.classList.toggle('skipvis', sv); }      // (the skip button of a phone is there only while the slides play)
@@ -3773,7 +3857,8 @@ function drawIntro(now) {
     // the previous slide stays underneath while the new one fades in
     if (introPrev >= 0 && fade < 1 && INTRO_SLIDE_IMGS[introPrev].state.loaded) {
       const ps = INTRO_SLIDES[introPrev];
-      introCover(INTRO_SLIDE_IMGS[introPrev].img, Math.min(1, (introSlideT0 - 0) / 1e9 + 1), ps.pan, ps.zoom, 1);
+      if (ps.cam) introCamDraw(INTRO_SLIDE_IMGS[introPrev].img, ps.cam, introAudioOn ? INTRO_AUDIO.currentTime : ps.at + (now - introPrevT) / 1000, 1);      // (a slide with a camera: it stays where the camera has stopped)
+      else introCover(INTRO_SLIDE_IMGS[introPrev].img, Math.min(1, (introSlideT0 - 0) / 1e9 + 1), ps.pan, ps.zoom, 1);
     }
     let shx = 0, shy = 0;
     const gT = tIn - (sl.glitchAt || 0);                                       // (the glitch of Zgrzyt comes at the moment of the slide where he is named)
@@ -3793,10 +3878,10 @@ function drawIntro(now) {
     }
     // glitch: shifted strips and static
     if (sl.glitch && gT >= 0 && gT < 1.0 && imCur.state.loaded) {
-      const k = Math.max(0, 1 - gT);
+      const k = Math.max(0, 1 - gT), src = introSnapNow();
       for (let i = 0; i < 7; i++) {
         const sy = Math.random() * H, sh = 6 + Math.random() * 40, dx = (Math.random() - 0.5) * 90 * k;
-        ctx.drawImage(canvas, 0, sy, W, sh, dx, sy, W, sh);
+        ctx.drawImage(src, 0, sy, W, sh, dx, sy, W, sh);
       }
       ctx.save(); ctx.globalAlpha = 0.25 * k; ctx.fillStyle = Math.random() < 0.5 ? '#ff2a6d' : '#2ad4ff'; ctx.fillRect(0, Math.random() * H, W, 3 + Math.random() * 6); ctx.restore();
     }
@@ -3808,6 +3893,15 @@ function drawIntro(now) {
         const u = (ta - g) / 0.4;
         if (u >= 0 && u < 1) { introGlitchFx(1 - u); }      // (the picture only: no sound with it)
       }
+    }
+    // a laugh at a given second of the sound (the recording itself has none): intro/laught.mp3, once each time the slide is shown
+    if (sl.laughAt !== undefined && introAudioOn && !sl.laughFired && INTRO_AUDIO.currentTime >= sl.laughAt && INTRO_AUDIO.currentTime < sl.laughAt + 1.0) { sl.laughFired = true; playEnemyLaugh(0); }
+    // the waves of the Nudogenerator
+    if (sl.waves) drawIntroWaves(introAudioOn ? INTRO_AUDIO.currentTime : sl.at + tIn, sl.waves[0], sl.waves[1]);
+    // golden dust circling over the picture
+    if (sl.sparkles) {
+      const ta = introAudioOn ? INTRO_AUDIO.currentTime : sl.at + tIn, env = Math.max(0, Math.min(1, (ta - sl.sparkles[0]) / 0.7, (sl.sparkles[1] - ta) / 0.9));
+      if (env > 0) drawIntroDust(ta, env);
     }
     // power-down: the picture dims with a few flickers, scan lines
     if (sl.powerdown) {
@@ -3908,6 +4002,24 @@ function finalMakeOffscreen() {
   } catch (e) { finalOff = false; }
   return finalOff;
 }
+// the yawn of the Nudogenerator (intro/ziew.mp3, 3.4 s, the yawn itself is 0.35-2.3 s): it goes with the buzz of every pulse, but never over itself (one yawn at a time: it comes on every second pulse, the nearer the louder).
+// It is decoded into a buffer (the Web Audio way: it plays from the game's own clock, also on a phone, without a tap)
+let yawnBuf = null, yawnLoading = false, yawnUntil = 0;
+function loadYawn() {
+  if (yawnBuf || yawnLoading || !audioCtx || typeof fetch !== 'function') return;
+  yawnLoading = true;
+  fetch('intro/ziew.mp3?v=' + INTRO_V).then(r => r.arrayBuffer()).then(b => audioCtx.decodeAudioData(b, buf => { yawnBuf = buf; }, () => {})).catch(() => {});
+}
+function finalYawn(vol) {
+  if (!audioCtx) return;
+  if (!yawnBuf) { loadYawn(); return; }
+  const t0 = audioCtx.currentTime;
+  if (t0 < yawnUntil) return;
+  yawnUntil = t0 + 2.4;
+  const s = audioCtx.createBufferSource(), g = audioCtx.createGain();
+  s.buffer = yawnBuf; g.gain.value = 0.9 + 1.0 * vol;          // (the recording is quiet: its peak is 0.17)
+  s.connect(g).connect(audioCtx.destination); s.start(t0);
+}
 function finalSoundPulse(vol) {            // the jammer's zap: a buzzing sweep and a burst of static
   if (!audioCtx || vol <= 0.01) return;
   const t0 = audioCtx.currentTime;
@@ -3922,6 +4034,7 @@ function finalSoundPulse(vol) {            // the jammer's zap: a buzzing sweep 
   for (let k = 0; k < 8; k++) ng.gain.setValueAtTime(k % 2 ? 0.01 : 0.13 * vol, t0 + 0.02 + k * 0.045);
   ng.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.42);
   n.connect(nf).connect(ng).connect(audioCtx.destination); n.start(t0); n.stop(t0 + 0.42);
+  finalYawn(vol);
 }
 function finalSoundExplosion() {
   if (!audioCtx) return;
@@ -4197,16 +4310,16 @@ function drawLevelEnd(now) {
     ctx.font = `800 ${Math.round(Math.min(W * 0.048, H * 0.085))}px ${font}`;
     ctx.lineWidth = Math.round(H * 0.01); ctx.strokeStyle = 'rgba(40,20,0,0.7)';
     const grad = ctx.createLinearGradient(0, gy - H * 0.05, 0, gy + H * 0.05); grad.addColorStop(0, '#fff3b0'); grad.addColorStop(1, '#f0a82a');
-    const t1 = 'Łączność mobilna przywrócona!';
+    const t1 = 'Nudogenerator wyłączony!';
     ctx.strokeText(t1, W / 2, gy); ctx.fillStyle = grad; ctx.fillText(t1, W / 2, gy);
     ctx.globalAlpha = a * Math.min(1, Math.max(0, (tc - 1.2) / 0.8));
     ctx.font = `600 ${Math.round(Math.min(W * 0.022, H * 0.038))}px ${font}`; ctx.fillStyle = '#e8f4ff';
-    ctx.fillText('Telefon znów łapie zasięg. Ale w domu wciąż nie działa telewizja...', W / 2, gy + H * 0.1);
-    ctx.fillText('Czas ją naprawić!', W / 2, gy + H * 0.1 + H * 0.055);
+    ctx.fillText('Gratulacje! Ale problem nie jest rozwiązany – Nuda znów napsociła.', W / 2, gy + H * 0.1);
+    ctx.fillText('Tylko ty możesz uratować Święta!', W / 2, gy + H * 0.1 + H * 0.055);
     if (tc > 3.2) {
       ctx.globalAlpha = 0.55 + 0.45 * Math.abs(Math.sin(now / 1000 * 2.2));
       ctx.font = `700 ${Math.round(Math.min(W * 0.022, H * 0.038))}px ${font}`; ctx.fillStyle = '#ffd45a';
-      ctx.fillText('Spacja: przejdź do poziomu 2, naprawmy telewizję', W / 2, H * 0.84);
+      ctx.fillText('Spacja: dalej, do poziomu 2', W / 2, H * 0.84);
     }
     ctx.globalAlpha = 1;
   } else {
@@ -4232,8 +4345,8 @@ const HINT_SHOW_MS = 2800;           // how long a hint stays on the screen (ms)
 const HINT_CENTER_Y = 0.2;           // the middle of a hint as a part of the window's height (0.5 = the very middle; the old place at the top was about 0.12); a hint can have its own `centerY`
 const HINT_WALL_PAD = 150;           // px: the hero cannot run further left than this from the hint icon (the left end of the playing field)
 const HINTS = [
-  { x: START_AT_FINAL ? FINAL_START_X - 420 : START_HINT_X, y: START_AT_FINAL ? HINT_HEIGHT : 480, text: 'ZNAJDŹ ŹRÓDŁO ZAKŁÓCEŃ', taken: false, phase: 0.7, shownAt: -1, burst: -1 },      // at the start, left of where the hero appears
-  { x: FINAL_PLUG_X - 795, y: 600, text: 'ZNALAZŁEŚ ŹRÓDŁO ZAKŁÓCEŃ. WYŁĄCZ JE!', taken: false, phase: 2.1, shownAt: -1, burst: -1 },   // near the jammer: you have found it - switch it off
+  { x: START_AT_FINAL ? FINAL_START_X - 420 : START_HINT_X, y: START_AT_FINAL ? HINT_HEIGHT : 480, text: 'ZNAJDŹ NUDOGENERATOR', taken: false, phase: 0.7, shownAt: -1, burst: -1 },      // at the start, left of where the hero appears
+  { x: FINAL_PLUG_X - 795, y: 600, text: 'ZNALAZŁEŚ NUDOGENERATOR. WYŁĄCZ GO!', taken: false, phase: 2.1, shownAt: -1, burst: -1 },   // near the jammer: you have found it - switch it off
   { x: FINAL_EDGE_X + 300, y: 480, text: 'NA PEWNO COŚ WYMYŚLISZ. WIERZĘ W CIEBIE! 🔥', icon: HINT_ICON_IDEA, iconBB: [0, 0, 149, 208], taken: false, phase: 3.4, shownAt: -1, burst: -1 },   // beyond the cliff, high up: one has to jump off the table to take it
   { x: JUTREK.x - Math.round(270 * 0.6 * JUTREK.k) - 25, y: JUTREK.footH + Math.round(490 * 0.6 * JUTREK.k) + 85, text: 'BĘDĄ CI POTRZEBNE WSZYSTKIE MONETY.\nNIE POMIJAJ ŻADNEJ!', centerY: 0.48, taken: false, phase: 4.2, shownAt: -1, burst: -1 },      // Jutrek (standing on the tall books) points at it: how many coins the piggy bank will need
 ];
