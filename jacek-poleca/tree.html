@@ -7,168 +7,133 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --yellow: #F3B702;
-  --navy:   #0D1B4B;
-  --red:    #6b0a1a;
-  --white:  #fff;
-  --gray:   #f4f4f6;
-  --line:   #ddd;
-}
 body {
   font-family: 'Poppins', sans-serif;
-  background: #f0ede8;
+  background: #f5f3ef;
   color: #111;
-  padding: 40px 20px 80px;
+  padding: 40px 24px 80px;
+  max-width: 900px;
+  margin: 0 auto;
 }
-h1 {
-  font-size: 22px; font-weight: 800;
-  color: var(--red);
-  margin-bottom: 4px;
-}
-.subtitle {
-  font-size: 13px; color: #666;
-  margin-bottom: 32px;
-}
+h1 { font-size: 20px; font-weight: 800; color: #6b0a1a; margin-bottom: 4px; }
+.subtitle { font-size: 12px; color: #888; margin-bottom: 36px; }
 
-/* ── TREE LAYOUT ── */
-.tree { display: flex; flex-direction: column; gap: 48px; }
-
-.section { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.07); }
-.section-title {
-  font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-  color: #999; margin-bottom: 16px;
-}
-
-/* question node */
-.q-node {
-  background: var(--navy);
-  color: white;
-  border-radius: 12px;
-  padding: 12px 16px;
-  font-size: 13px; font-weight: 600;
+/* ── CATEGORY BLOCK ── */
+.cat { margin-bottom: 48px; }
+.cat-title {
+  font-size: 13px; font-weight: 800; letter-spacing: .08em;
+  text-transform: uppercase; color: #fff;
+  background: #0D1B4B;
   display: inline-block;
-  margin-bottom: 12px;
+  padding: 5px 14px; border-radius: 100px;
+  margin-bottom: 20px;
 }
 
-/* branch row */
-.branch { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 8px; }
-.branch-item { flex: 1 1 160px; }
+/* ── PATH ROW ── */
+.path { display: flex; align-items: center; flex-wrap: wrap; gap: 0; margin-bottom: 14px; }
 
-/* choice chip */
-.choice {
-  background: var(--gray);
+/* breadcrumb steps */
+.step {
+  display: flex; align-items: center;
+}
+.step-bubble {
+  background: #fff;
+  border: 1.5px solid #ddd;
   border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 12px; font-weight: 600;
+  padding: 6px 11px;
+  font-size: 11px; font-weight: 600;
+  white-space: nowrap;
+  color: #333;
+}
+.step-arrow {
+  color: #ccc; font-size: 14px; padding: 0 4px;
+  flex-shrink: 0;
+}
+
+/* result pill */
+.result {
   display: flex; align-items: center; gap: 6px;
-  margin-bottom: 8px;
-  cursor: default;
+  background: #F3B702;
+  border-radius: 8px;
+  padding: 6px 11px;
+  font-size: 11px; font-weight: 700;
+  white-space: nowrap;
+  text-decoration: none; color: #111;
+  transition: background .12s;
 }
-.choice .ic { font-size: 16px; }
+.result:hover { background: #e0a800; }
+.result .ic { font-size: 14px; }
 
-/* arrow */
-.arrow {
-  text-align: center; font-size: 18px; color: #bbb; margin: 2px 0 4px;
+.alt-row {
+  display: flex; align-items: center; gap: 0;
+  margin-bottom: 6px; padding-left: 20px;
 }
-
-/* result card */
-.result-card {
-  border-radius: 10px;
-  overflow: hidden;
-  border: 2px solid var(--yellow);
-  background: white;
-  font-size: 12px;
+.alt-line {
+  width: 16px; height: 20px;
+  border-left: 1.5px dashed #ccc;
+  border-bottom: 1.5px dashed #ccc;
+  margin-right: 6px;
+  flex-shrink: 0;
 }
-.result-card.alt {
-  border-color: #ddd;
-  opacity: .85;
+.result.alt {
+  background: #f0ede8;
+  border: 1.5px dashed #ccc;
+  color: #555;
+  font-weight: 600;
 }
-.result-poster {
-  width: 100%; aspect-ratio: 2/3;
-  object-fit: cover;
-  display: block;
-  background: #eee;
-}
-.result-poster-fallback {
-  width: 100%; aspect-ratio: 2/3;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 36px; background: #f4f4f4;
-}
-.result-body { padding: 10px; }
-.result-title { font-weight: 800; font-size: 13px; line-height: 1.2; margin-bottom: 2px; }
-.result-orig { font-size: 10px; color: #888; margin-bottom: 6px; }
-.result-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 6px; }
-.result-tag {
-  background: var(--yellow); border-radius: 100px;
-  padding: 2px 7px; font-size: 9px; font-weight: 700;
-}
-.result-card.alt .result-tag { background: #eee; color: #555; }
-.result-badge {
-  display: inline-block;
-  background: var(--navy); color: white;
-  border-radius: 100px; padding: 2px 8px;
-  font-size: 9px; font-weight: 700;
-}
-.result-desc { font-size: 11px; color: #333; margin-bottom: 6px; line-height: 1.4; }
-
-.label-primary {
-  font-size: 9px; font-weight: 700; color: var(--red); letter-spacing: .05em;
-  text-transform: uppercase; margin-bottom: 4px;
-}
-.label-alt {
-  font-size: 9px; font-weight: 700; color: #aaa; letter-spacing: .05em;
-  text-transform: uppercase; margin-bottom: 4px;
+.result.alt:hover { background: #e8e4df; }
+.alt-label {
+  font-size: 9px; color: #aaa; font-weight: 600;
+  letter-spacing: .05em; margin-right: 4px;
+  white-space: nowrap;
 }
 
-.path-label {
-  font-size: 10px; color: #888; font-weight: 600; margin: 6px 0 4px;
-}
+.block { margin-bottom: 20px; }
+.divider { border: none; border-top: 1px solid #e8e4e0; margin: 16px 0; }
 </style>
 </head>
 <body>
 
 <h1>🎬 Jacek poleca – drzewo decyzyjne</h1>
-<p class="subtitle">Wszystkie ścieżki i rekomendacje do akceptacji. Każda pozycja ma wariant główny i alternatywę ("już to widziałem/am").</p>
+<p class="subtitle">Wszystkie ścieżki i rekomendacje. Żółte = główna rekomendacja · Szare = alternatywa po "już to widziałem/am"<br>
+<strong style="color:#6b0a1a">✏️ Nazwy filmów można edytować bezpośrednio — kliknij i wpisz swój wybór.</strong></p>
 
-<div class="tree" id="tree"></div>
+<div id="root"></div>
 
 <script>
-const TMDB_KEY = '8265bd1679663a7ea12ac168da84d2e8';
-
 const SECTIONS = [
   {
     title: "🎬 Film",
     paths: [
       {
-        choices: ["Film", "Napięcie i thriller", "Psychologia i twist"],
-        result:  { emoji:"🔪", imdbId:"tt2267998", title:"Zaginiona dziewczyna", orig:"Gone Girl · Fincher · 2014", tags:["Thriller","Psychologiczny","Twist"], badge:"VOD Netflix", desc:"Mężczyzna podejrzany o mord własnej żony." },
-        alt:     { emoji:"🕶️", imdbId:"tt1375666", title:"Incepcja", orig:"Inception · Nolan · 2010", tags:["Thriller","Sci-Fi","Mind-bend"], badge:"VOD Netflix", desc:"Złodziej wszczepający idee w ludzkie sny." }
+        steps: ["Film", "Napięcie i thriller", "Psychologia i twist"],
+        result: { ic:"🔪", title:"Zaginiona dziewczyna", url:"https://www.imdb.com/title/tt2267998/" },
+        alt:    { ic:"🕶️", title:"Incepcja", url:"https://www.imdb.com/title/tt1375666/" }
       },
       {
-        choices: ["Film", "Napięcie i thriller", "Akcja, szybko, głośno"],
-        result:  { emoji:"💥", imdbId:"tt8936646", title:"Extraction", orig:"Extraction · Hargrave · 2020", tags:["Akcja","Thriller","Intensywny"], badge:"VOD Netflix", desc:"Chris Hemsworth jako najemnik." },
-        alt:     { emoji:"🔫", imdbId:"tt6723592", title:"Tenet", orig:"Tenet · Nolan · 2020", tags:["Akcja","Sci-Fi","Widowiskowy"], badge:"VOD HBO Max", desc:"Szpieg operujący odwróconym czasem." }
+        steps: ["Film", "Napięcie i thriller", "Akcja, szybko, głośno"],
+        result: { ic:"💥", title:"Extraction", url:"https://www.imdb.com/title/tt8936646/" },
+        alt:    { ic:"🔫", title:"Tenet", url:"https://www.imdb.com/title/tt6723592/" }
       },
       {
-        choices: ["Film", "Komedia / Romantyczna komedia"],
-        result:  { emoji:"💕", imdbId:"tt3104988", title:"Szalone, bogate Azjatki", orig:"Crazy Rich Asians · 2018", tags:["Romans","Komedia","Feel-good"], badge:"VOD HBO Max", desc:"Singapurska elita i miłość." },
-        alt:     { emoji:"💐", imdbId:"tt10954600", title:"To All the Boys: zawsze i na zawsze", orig:"2021 · Netflix", tags:["Romans","Komedia","Feel-good"], badge:"VOD Netflix", desc:"Lara Jean i Peter kończą szkołę." }
+        steps: ["Film", "Komedia – romantyczna"],
+        result: { ic:"💕", title:"Szalone, bogate Azjatki", url:"https://www.imdb.com/title/tt3104988/" },
+        alt:    { ic:"💐", title:"To All the Boys: zawsze i na zawsze", url:"https://www.imdb.com/title/tt10954600/" }
       },
       {
-        choices: ["Film", "Komedia / Czarny humor"],
-        result:  { emoji:"🏠", imdbId:"tt6751668", title:"Parasite", orig:"Parasite · Bong Joon-ho · 2019", tags:["Czarna komedia","Dramat","Oscar"], badge:"VOD HBO Max", desc:"Biedna rodzina infiltruje bogaty dom." },
-        alt:     { emoji:"🎬", imdbId:"tt3783958", title:"La La Land", orig:"La La Land · Chazelle · 2016", tags:["Musical","Dramat","Oscar"], badge:"VOD Netflix", desc:"Marzycielka i jazzman w LA." }
+        steps: ["Film", "Komedia – czarny humor / absurd"],
+        result: { ic:"🏠", title:"Parasite", url:"https://www.imdb.com/title/tt6751668/" },
+        alt:    { ic:"🎬", title:"La La Land", url:"https://www.imdb.com/title/tt3783958/" }
       },
       {
-        choices: ["Film", "Coś, o czym będę myśleć", "Oparta na faktach"],
-        result:  { emoji:"💣", imdbId:"tt15398776", title:"Oppenheimer", orig:"Nolan · 2023", tags:["Biograficzny","Historyczny","Oscar"], badge:"VOD Apple TV+", desc:"Ojciec bomby atomowej." },
-        alt:     { emoji:"🚀", imdbId:"tt0816692", title:"Interstellar", orig:"Nolan · 2014", tags:["Sci-Fi","Epicki","Emocjonalny"], badge:"VOD Netflix", desc:"Ojciec wyrusza w kosmos." }
+        steps: ["Film", "Coś, o czym będę myśleć", "Oparta na faktach"],
+        result: { ic:"💣", title:"Oppenheimer", url:"https://www.imdb.com/title/tt15398776/" },
+        alt:    { ic:"🚀", title:"Interstellar", url:"https://www.imdb.com/title/tt0816692/" }
       },
       {
-        choices: ["Film", "Coś, o czym będę myśleć", "Kino artystyczne"],
-        result:  { emoji:"🤠", imdbId:"tt10293406", title:"Psie pazury", orig:"The Power of the Dog · Campion · 2021", tags:["Dramat","Kino autorskie","Oscar"], badge:"VOD Netflix", desc:"Ranczo i toksyczna masculinność." },
-        alt:     { emoji:"🎭", imdbId:"tt1375666", title:"Zielona księga", orig:"Green Book · 2018", tags:["Dramat","Komedia","Oscar"], badge:"VOD Netflix", desc:"Czarny pianista i biały ochroniarz." }
+        steps: ["Film", "Coś, o czym będę myśleć", "Kino artystyczne"],
+        result: { ic:"🤠", title:"Psie pazury", url:"https://www.imdb.com/title/tt10293406/" },
+        alt:    { ic:"🎭", title:"Zielona księga", url:"https://www.imdb.com/title/tt1353056/" }
       },
     ]
   },
@@ -176,29 +141,29 @@ const SECTIONS = [
     title: "📺 Serial",
     paths: [
       {
-        choices: ["Serial", "Maraton", "Napięcie i suspens"],
-        result:  { emoji:"👔", imdbId:"tt7660850", title:"Sukcesja", orig:"Succession · HBO · 4 sezony", tags:["Dramat","Thriller","Prestiżowy"], badge:"VOD HBO Max", desc:"Rodzina medialna walczy o schedę." },
-        alt:     { emoji:"🏦", imdbId:"tt3032476", title:"Better Call Saul", orig:"AMC · 6 sezonów", tags:["Dramat","Thriller","Prestiżowy"], badge:"VOD Netflix", desc:"Jak Jimmy McGill stał się Saulem." }
+        steps: ["Serial", "Maraton", "Napięcie i suspens"],
+        result: { ic:"👔", title:"Sukcesja", url:"https://www.imdb.com/title/tt7660850/" },
+        alt:    { ic:"🏦", title:"Better Call Saul", url:"https://www.imdb.com/title/tt3032476/" }
       },
       {
-        choices: ["Serial", "Maraton", "Sci-fi / fantasy"],
-        result:  { emoji:"🧠", imdbId:"tt11280740", title:"Severance", orig:"Apple TV+ · od 2022", tags:["Sci-Fi","Thriller","Tajemnica"], badge:"VOD Apple TV+", desc:"Rozdzielone wspomnienia pracowników." },
-        alt:     { emoji:"🌀", imdbId:"tt5753856", title:"Dark", orig:"Netflix · 3 sezony", tags:["Sci-Fi","Thriller","Mind-bend"], badge:"VOD Netflix", desc:"Podróże w czasie i tajemnica rodziny." }
+        steps: ["Serial", "Maraton", "Sci-fi / fantasy"],
+        result: { ic:"🧠", title:"Severance", url:"https://www.imdb.com/title/tt11280740/" },
+        alt:    { ic:"🌀", title:"Dark", url:"https://www.imdb.com/title/tt5753856/" }
       },
       {
-        choices: ["Serial", "Maraton", "Dramat obyczajowy"],
-        result:  { emoji:"🌺", imdbId:"tt13406094", title:"The White Lotus", orig:"HBO · od 2021", tags:["Dramat","Satyra","Prestiżowy"], badge:"VOD HBO Max", desc:"Luksusowy hotel i sekrety." },
-        alt:     { emoji:"🔍", imdbId:"tt8134470", title:"The Undoing", orig:"HBO · 2020", tags:["Thriller","Dramat","Mini-serial"], badge:"VOD HBO Max", desc:"Morderstwo, które wywraca życie. Nicole Kidman." }
+        steps: ["Serial", "Maraton", "Dramat obyczajowy"],
+        result: { ic:"🌺", title:"The White Lotus", url:"https://www.imdb.com/title/tt13406094/" },
+        alt:    { ic:"🔍", title:"The Undoing", url:"https://www.imdb.com/title/tt8134470/" }
       },
       {
-        choices: ["Serial", "Odcinek wieczór", "Komedia"],
-        result:  { emoji:"⚽", imdbId:"tt10986410", title:"Ted Lasso", orig:"Apple TV+ · od 2020", tags:["Komedia","Sportowy","Feel-good"], badge:"VOD Apple TV+", desc:"Amerykański trener w angielskim klubie." },
-        alt:     { emoji:"🌻", imdbId:"tt8579674", title:"Schitt's Creek", orig:"CBC · 6 sezonów", tags:["Komedia","Feel-good","Emmy"], badge:"VOD Netflix", desc:"Bogata rodzina traci majątek." }
+        steps: ["Serial", "Odcinek wieczór", "Komedia"],
+        result: { ic:"⚽", title:"Ted Lasso", url:"https://www.imdb.com/title/tt10986410/" },
+        alt:    { ic:"🌻", title:"Schitt's Creek", url:"https://www.imdb.com/title/tt8579674/" }
       },
       {
-        choices: ["Serial", "Odcinek wieczór", "Ciepły, obyczajowy"],
-        result:  { emoji:"🗼", imdbId:"tt8962124", title:"Emily w Paryżu", orig:"Netflix · od 2020", tags:["Romans","Komedia","Lekki"], badge:"VOD Netflix", desc:"Amerykanka w paryskiej agencji." },
-        alt:     { emoji:"👗", imdbId:"tt5687612", title:"Ginny i Georgia", orig:"Netflix · od 2021", tags:["Dramat","Komedia","Romans"], badge:"VOD Netflix", desc:"Matka i córka, małe miasteczko, sekrety." }
+        steps: ["Serial", "Odcinek wieczór", "Ciepły, obyczajowy"],
+        result: { ic:"🗼", title:"Emily w Paryżu", url:"https://www.imdb.com/title/tt8962124/" },
+        alt:    { ic:"👗", title:"Ginny i Georgia", url:"https://www.imdb.com/title/tt5687612/" }
       },
     ]
   },
@@ -206,19 +171,19 @@ const SECTIONS = [
     title: "🎙️ Program / Show",
     paths: [
       {
-        choices: ["Program", "Stand-up / kabaret"],
-        result:  { emoji:"🎤", imdbId:"tt14544192", title:"Bo Burnham: Inside", orig:"Netflix · 2021", tags:["Stand-up","Muzyczny","Wyjątkowy"], badge:"VOD Netflix", desc:"Show nagrany w izolacji. Zabawny i wzruszający." },
-        alt:     { emoji:"😂", imdbId:"tt6986718", title:"Nanette", orig:"Hannah Gadsby · Netflix · 2018", tags:["Stand-up","Osobisty","Przełomowy"], badge:"VOD Netflix", desc:"Show, który zmienił definicję stand-upu." }
+        steps: ["Program", "Stand-up / kabaret"],
+        result: { ic:"🎤", title:"Bo Burnham: Inside", url:"https://www.imdb.com/title/tt14544192/" },
+        alt:    { ic:"😂", title:"Hannah Gadsby: Nanette", url:"https://www.imdb.com/title/tt6986718/" }
       },
       {
-        choices: ["Program", "Teleturniej / talent show"],
-        result:  { emoji:"🎭", imdbId:"tt1353056", title:"RuPaul's Drag Race", orig:"od 2009 · Netflix", tags:["Talent show","Rozrywka","Kolorowy"], badge:"VOD Netflix", desc:"Słynny konkurs dragowy świata." },
-        alt:     { emoji:"🏆", imdbId:"tt0759364", title:"America's Got Talent", orig:"od 2006", tags:["Talent show","Rozrywka","Emocjonujący"], badge:"VOD Netflix", desc:"Najbardziej różnorodny talent show." }
+        steps: ["Program", "Teleturniej / talent show"],
+        result: { ic:"🎭", title:"RuPaul's Drag Race", url:"https://www.imdb.com/title/tt1353056/" },
+        alt:    { ic:"🏆", title:"America's Got Talent", url:"https://www.imdb.com/title/tt0759364/" }
       },
       {
-        choices: ["Program", "Lifestyle / kulinaria"],
-        result:  { emoji:"🍳", imdbId:"tt4295140", title:"Chef's Table", orig:"Netflix · od 2015", tags:["Kulinarny","Dokument","Inspirujący"], badge:"VOD Netflix", desc:"Portrety najlepszych szefów kuchni." },
-        alt:     { emoji:"🌮", imdbId:"tt7907916", title:"Ugly Delicious", orig:"Netflix · od 2018", tags:["Kulinarny","Podróże","Ciekawy"], badge:"VOD Netflix", desc:"David Chang bada kulturę jedzenia." }
+        steps: ["Program", "Lifestyle / kulinaria"],
+        result: { ic:"🍳", title:"Chef's Table", url:"https://www.imdb.com/title/tt4295140/" },
+        alt:    { ic:"🌮", title:"Ugly Delicious", url:"https://www.imdb.com/title/tt7907916/" }
       },
     ]
   },
@@ -226,114 +191,95 @@ const SECTIONS = [
     title: "🎞️ Dokument",
     paths: [
       {
-        choices: ["Dokument", "Kryminał / true crime"],
-        result:  { emoji:"🔍", imdbId:"tt5189670", title:"Making a Murderer", orig:"Netflix · 2015", tags:["True crime","Dokument","Wstrząsający"], badge:"VOD Netflix", desc:"Historia Stevena Avery'ego." },
-        alt:     { emoji:"🩸", imdbId:"tt3270538", title:"The Jinx", orig:"HBO · 2015", tags:["True crime","Dokument","Szokujący"], badge:"VOD HBO Max", desc:"Miliarder i trzy podejrzane zgony." }
+        steps: ["Dokument", "Kryminał / true crime"],
+        result: { ic:"🔍", title:"Making a Murderer", url:"https://www.imdb.com/title/tt5189670/" },
+        alt:    { ic:"🩸", title:"The Jinx", url:"https://www.imdb.com/title/tt3270538/" }
       },
       {
-        choices: ["Dokument", "Przyroda i natura"],
-        result:  { emoji:"🌍", imdbId:"tt9253866", title:"Nasz Planet", orig:"Our Planet · Netflix · 2019", tags:["Przyrodniczy","Dokument","Spektakularny"], badge:"VOD Netflix", desc:"David Attenborough. Najpiękniejszy dokument przyrodniczy." },
-        alt:     { emoji:"🐋", imdbId:"tt9813792", title:"Nasz Ocean", orig:"Our Ocean · Netflix · 2023", tags:["Przyrodniczy","Dokument","Spektakularny"], badge:"VOD Netflix", desc:"Głębiny morskie jak nigdy dotąd." }
+        steps: ["Dokument", "Przyroda i natura"],
+        result: { ic:"🌍", title:"Nasz Planet (Our Planet)", url:"https://www.imdb.com/title/tt9253866/" },
+        alt:    { ic:"🐋", title:"Nasz Ocean (Our Ocean)", url:"https://www.imdb.com/title/tt9813792/" }
       },
       {
-        choices: ["Dokument", "Społeczny / polityczny"],
-        result:  { emoji:"🌐", imdbId:"tt11464826", title:"Dylemat społeczny", orig:"The Social Dilemma · Netflix · 2020", tags:["Dokument","Społeczny","Niepokojący"], badge:"VOD Netflix", desc:"Twórcy Facebooka o uzależnieniu." },
-        alt:     { emoji:"🧬", imdbId:"tt2375605", title:"The Act of Killing", orig:"2012", tags:["Dokument","Historyczny","Przełomowy"], badge:"VOD Netflix", desc:"Indonezyjscy kaci odtwarzają zbrodnie." }
+        steps: ["Dokument", "Społeczny / polityczny"],
+        result: { ic:"🌐", title:"Dylemat społeczny", url:"https://www.imdb.com/title/tt11464826/" },
+        alt:    { ic:"🧬", title:"The Act of Killing", url:"https://www.imdb.com/title/tt2375605/" }
       },
     ]
   }
 ];
 
-async function fetchPoster(imdbId) {
-  try {
-    const r = await fetch(`https://api.themoviedb.org/3/find/${imdbId}?api_key=${TMDB_KEY}&external_source=imdb_id`);
-    const d = await r.json();
-    const item = d.movie_results?.[0] || d.tv_results?.[0];
-    return item?.poster_path ? `https://image.tmdb.org/t/p/w300${item.poster_path}` : null;
-  } catch { return null; }
-}
-
-function makeCard(r, isPrimary) {
-  const wrap = document.createElement('div');
-  const label = document.createElement('div');
-  label.className = isPrimary ? 'label-primary' : 'label-alt';
-  label.textContent = isPrimary ? '★ główna rekomendacja' : '↩ alternatywa ("już widziałem")';
-  wrap.appendChild(label);
-
-  const card = document.createElement('div');
-  card.className = 'result-card' + (isPrimary ? '' : ' alt');
-
-  const posterArea = document.createElement('div');
-  posterArea.className = 'result-poster-fallback';
-  posterArea.textContent = r.emoji;
-  card.appendChild(posterArea);
-
-  const body = document.createElement('div');
-  body.className = 'result-body';
-  body.innerHTML = `
-    <div class="result-title">${r.title}</div>
-    <div class="result-orig">${r.orig}</div>
-    <div class="result-tags">${r.tags.map(t=>`<span class="result-tag">${t}</span>`).join('')}</div>
-    <div class="result-desc">${r.desc}</div>
-    <span class="result-badge">${r.badge}</span>
-  `;
-  card.appendChild(body);
-  wrap.appendChild(card);
-
-  fetchPoster(r.imdbId).then(url => {
-    if (url) {
-      const img = document.createElement('img');
-      img.className = 'result-poster';
-      img.src = url; img.alt = r.title;
-      posterArea.className = '';
-      posterArea.innerHTML = '';
-      posterArea.appendChild(img);
-    }
-  });
-
-  return wrap;
-}
-
-const tree = document.getElementById('tree');
+const root = document.getElementById('root');
 
 SECTIONS.forEach(section => {
-  const sec = document.createElement('div');
-  sec.className = 'section';
+  const cat = document.createElement('div');
+  cat.className = 'cat';
 
   const title = document.createElement('div');
-  title.className = 'section-title';
+  title.className = 'cat-title';
   title.textContent = section.title;
-  sec.appendChild(title);
+  cat.appendChild(title);
 
   section.paths.forEach((path, i) => {
-    if (i > 0) {
-      const divider = document.createElement('hr');
-      divider.style.cssText = 'border:none;border-top:1px solid #eee;margin:20px 0';
-      sec.appendChild(divider);
+    const block = document.createElement('div');
+    block.className = 'block';
+
+    // main path row
+    const pathRow = document.createElement('div');
+    pathRow.className = 'path';
+
+    path.steps.forEach((step, si) => {
+      const stepEl = document.createElement('div');
+      stepEl.className = 'step';
+      const bubble = document.createElement('div');
+      bubble.className = 'step-bubble';
+      bubble.textContent = step;
+      stepEl.appendChild(bubble);
+      pathRow.appendChild(stepEl);
+
+      const arrow = document.createElement('span');
+      arrow.className = 'step-arrow';
+      arrow.textContent = '→';
+      pathRow.appendChild(arrow);
+    });
+
+    const resultLink = document.createElement('a');
+    resultLink.className = 'result';
+    resultLink.href = path.result.url;
+    resultLink.target = '_blank';
+    resultLink.innerHTML = `<span class="ic">${path.result.ic}</span> <span contenteditable="true" onclick="event.preventDefault()" style="outline:none;min-width:40px;display:inline-block">${path.result.title}</span>`;
+    pathRow.appendChild(resultLink);
+
+    block.appendChild(pathRow);
+
+    // alt row
+    const altRow = document.createElement('div');
+    altRow.className = 'alt-row';
+    const altLine = document.createElement('div');
+    altLine.className = 'alt-line';
+    altRow.appendChild(altLine);
+    const altLabel = document.createElement('span');
+    altLabel.className = 'alt-label';
+    altLabel.textContent = 'już widziałem →';
+    altRow.appendChild(altLabel);
+    const altLink = document.createElement('a');
+    altLink.className = 'result alt';
+    altLink.href = path.alt.url;
+    altLink.target = '_blank';
+    altLink.innerHTML = `<span class="ic">${path.alt.ic}</span> <span contenteditable="true" onclick="event.preventDefault()" style="outline:none;min-width:40px;display:inline-block">${path.alt.title}</span>`;
+    altRow.appendChild(altLink);
+    block.appendChild(altRow);
+
+    if (i < section.paths.length - 1) {
+      const div = document.createElement('hr');
+      div.className = 'divider';
+      block.appendChild(div);
     }
 
-    // path label
-    const pathLabel = document.createElement('div');
-    pathLabel.className = 'path-label';
-    pathLabel.textContent = '→ ' + path.choices.join(' → ');
-    sec.appendChild(pathLabel);
-
-    // cards row
-    const row = document.createElement('div');
-    row.style.cssText = 'display:flex;gap:12px;flex-wrap:wrap;';
-
-    const primary = makeCard(path.result, true);
-    primary.style.flex = '1 1 140px';
-    row.appendChild(primary);
-
-    const altCard = makeCard(path.alt, false);
-    altCard.style.flex = '1 1 140px';
-    row.appendChild(altCard);
-
-    sec.appendChild(row);
+    cat.appendChild(block);
   });
 
-  tree.appendChild(sec);
+  root.appendChild(cat);
 });
 </script>
 </body>
