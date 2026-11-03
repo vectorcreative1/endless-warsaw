@@ -511,35 +511,56 @@ const TREE = {
   film_mood: {
     msgs: ["dobry wybór! a w jakim jesteś dziś nastroju?"],
     choices: [
-      { ic:"🔪", text:"Napięcie i thriller",       next:"film_thriller" },
-      { ic:"🚀", text:"Sci-Fi",                    next:"r_film_scifi" },
-      { ic:"😂", text:"Komedia, chcę się śmiać",   next:"film_comedy" },
-      { ic:"❤️", text:"Coś lekkiego i ciepłego",   next:"r_crazy_rich" },
-      { ic:"🧠", text:"Coś, o czym będę myśleć",   next:"film_drama" },
+      { ic:"🔪", text:"Thriller / akcja",          next:"film_thriller" },
+      { ic:"😂", text:"Komedia",                   next:"film_comedy" },
+      { ic:"🧠", text:"Dramat",                    next:"film_drama" },
+      { ic:"🚀", text:"Sci-Fi / fantasy",          next:"film_scifi" },
+      { ic:"🎨", text:"Animacja",                  next:"r_film_animation" },
     ]
   },
 
   film_thriller: {
-    msgs: ["thriller to mój ulubiony gatunek 😈 wolisz coś bardziej psychologicznego, czy czystą akcję?"],
+    msgs: ["thriller czy akcja – lubię to 😈 co bardziej?"],
     choices: [
-      { ic:"🧩", text:"Psychologia i twist",       next:"r_gone_girl" },
+      { ic:"🧩", text:"Psychologiczny i twist",    next:"r_gone_girl" },
       { ic:"💥", text:"Akcja, szybko, głośno",     next:"r_extraction" },
+      { ic:"🕵️", text:"Szpiegowski / kryminalny", next:"r_film_spy" },
     ]
   },
 
   film_comedy: {
-    msgs: ["rozumiem – śmiech to zdrowie 😄 romantycznie i lekko, czy czarny humor?"],
+    msgs: ["komedia – dobry wybór 😄 jaki klimat?"],
     choices: [
       { ic:"💕", text:"Romantyczna komedia",       next:"r_crazy_rich" },
       { ic:"🖤", text:"Czarny humor / absurd",     next:"r_parasite" },
+      { ic:"👨‍👩‍👧", text:"Familijny / feel-good",   next:"r_film_family" },
     ]
   },
 
   film_drama: {
-    msgs: ["dobry gust 🎭 historia oparta na faktach, czy kino bardziej autorskie?"],
+    msgs: ["dramat – co Cię bardziej kręci?"],
     choices: [
-      { ic:"📖", text:"Oparta na faktach",         next:"r_oppenheimer" },
-      { ic:"🎞️", text:"Kino artystyczne",          next:"r_power_of_dog" },
+      { ic:"📖", text:"Oparty na faktach / biopic", next:"film_biopic" },
+      { ic:"🎞️", text:"Kino artystyczne",           next:"r_power_of_dog" },
+      { ic:"💔", text:"Romans / melodramat",         next:"r_film_romance" },
+      { ic:"⚔️", text:"Historyczny / wojenny",       next:"r_film_war" },
+    ]
+  },
+
+  film_biopic: {
+    msgs: ["biograficzny – prawdziwe życie bywa bardziej dramatyczne niż fikcja 🎭"],
+    choices: [
+      { ic:"🔬", text:"Nauka / historia świata",   next:"r_oppenheimer" },
+      { ic:"🎵", text:"Muzyk / artysta",           next:"r_film_music_biopic" },
+    ]
+  },
+
+  film_scifi: {
+    msgs: ["sci-fi i fantasy – w którą stronę?"],
+    choices: [
+      { ic:"🪐", text:"Kosmiczny / epicki",        next:"r_film_scifi" },
+      { ic:"🤖", text:"Dystopia / bliższa przyszłość", next:"r_film_dystopia" },
+      { ic:"🧙", text:"Fantasy / magia",           next:"r_film_fantasy" },
     ]
   },
 
@@ -553,11 +574,13 @@ const TREE = {
   },
 
   serial_genre: {
-    msgs: ["co bardziej – klimat mroczny, dramatyczny, czy coś innego?"],
+    msgs: ["co bardziej – jaki klimat?"],
     choices: [
-      { ic:"🌑", text:"Mroczny – thriller / horror",  next:"serial_dark" },
+      { ic:"🌑", text:"Thriller / horror / detektyw", next:"serial_dark" },
       { ic:"🌌", text:"Sci-Fi / fantasy",             next:"r_severance" },
       { ic:"🎭", text:"Dramat obyczajowy",            next:"r_white_lotus" },
+      { ic:"💔", text:"Romans / dramat romantyczny",  next:"r_serial_romance" },
+      { ic:"📜", text:"Historyczny",                  next:"r_serial_history" },
     ]
   },
 
@@ -593,6 +616,10 @@ const TREE = {
       { ic:"🕵️", text:"Kryminał / true crime",     next:"r_making_murderer" },
       { ic:"🌍", text:"Przyroda i natura",          next:"r_our_planet" },
       { ic:"🧠", text:"Społeczny / polityczny",     next:"r_social_doc" },
+      { ic:"⚽",  text:"Sportowy",                  next:"r_doc_sport" },
+      { ic:"📜",  text:"Historyczny",               next:"r_doc_history" },
+      { ic:"🔬",  text:"Nauka / technologia",       next:"r_doc_science" },
+      { ic:"🎵",  text:"Muzyczny",                  next:"r_doc_music" },
     ]
   },
 
@@ -602,6 +629,10 @@ const TREE = {
       { ic:"😂", text:"Stand-up / kabaret",         next:"r_standup" },
       { ic:"🎮", text:"Teleturniej / talent show",  next:"r_talent" },
       { ic:"🍳", text:"Lifestyle / kulinaria",      next:"r_lifestyle" },
+      { ic:"📺", text:"Reality show",               next:"r_reality" },
+      { ic:"🎙️", text:"Talk show / rozmowy",       next:"r_talkshow" },
+      { ic:"✈️", text:"Podróże i przygody",         next:"r_show_travel" },
+      { ic:"🚗", text:"Motoryzacja",                next:"r_show_moto" },
     ]
   },
 
@@ -953,14 +984,354 @@ const TREE = {
       channel:"Netflix", badge:"VOD Netflix"
     }
   },
+
+  // ── NEW FILM NODES ────────────────────────────
+  r_film_spy: {
+    msgs: ["szpiegostwo i kryminał w jednym – mam coś dla ciebie 🕵️"],
+    result: {
+      emoji:"🕶️", imdbId:"tt4074694",
+      title:"Kingsman: Tajne służby", orig:"Kingsman · Matthew Vaughn · 2014",
+      tags:["Szpiegowski","Akcja","Stylowy"],
+      desc:"Młody chłopak zostaje werbowany do tajnej organizacji szpiegowskiej. Stylowe, dowcipne i pełne akcji.",
+      channel:"Disney+", badge:"VOD Disney+"
+    },
+    alt: {
+      emoji:"🔫", imdbId:"tt2084970",
+      title:"Imitation Game", orig:"The Imitation Game · 2014",
+      tags:["Kryminał","Historyczny","Biograficzny"],
+      desc:"Alan Turing łamie szyfr Enigmy. Napięcie i intryga – bez jednego wystrzału.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+
+  r_film_family: {
+    msgs: ["ciepłe i rodzinne – idealne na taki wieczór 👨‍👩‍👧"],
+    result: {
+      emoji:"🎪", imdbId:"tt3501632",
+      title:"Największy showman", orig:"The Greatest Showman · 2017",
+      tags:["Musical","Familijny","Feel-good"],
+      desc:"P.T. Barnum buduje cyrk marzeń. Muzycznie, kolorowo i wzruszająco.",
+      channel:"Disney+", badge:"VOD Disney+"
+    },
+    alt: {
+      emoji:"🦁", imdbId:"tt3783958",
+      title:"La La Land", orig:"La La Land · Chazelle · 2016",
+      tags:["Musical","Romans","Feel-good"],
+      desc:"Marzycielka i jazzman w Los Angeles. Bajkowy klimat, piękna muzyka.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+
+  r_film_romance: {
+    msgs: ["romans – serce pełne uczuć 💔"],
+    result: {
+      emoji:"💌", imdbId:"tt1454468",
+      title:"Grawitacja", orig:"Gravity · Alfonso Cuarón · 2013",
+      tags:["Sci-Fi","Dramat","Emocjonalny"],
+      desc:"Astronautka dryfuje sama w kosmosie. Intensywne, piękne i do szpiku kości ludzkie.",
+      channel:"HBO Max", badge:"VOD HBO Max"
+    },
+    alt: {
+      emoji:"💐", imdbId:"tt1431045",
+      title:"Deadpool", orig:"Deadpool · Tim Miller · 2016",
+      tags:["Akcja","Komedia","Absurd"],
+      desc:"Superbohater z ciętym językiem i czarnym humorem. Uwaga: dużo krwi i śmiechu.",
+      channel:"Disney+", badge:"VOD Disney+"
+    }
+  },
+
+  r_film_war: {
+    msgs: ["historyczny i wojenny – to moc kina w najczystszej formie ⚔️"],
+    result: {
+      emoji:"🪖", imdbId:"tt12160706",
+      title:"Na Zachodzie bez zmian", orig:"All Quiet on the Western Front · 2022",
+      tags:["Wojenny","Dramat","Oscar"],
+      desc:"I wojna światowa oczami młodego żołnierza. Brutalny, piękny i wstrząsający. Oscar 2023.",
+      channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"🎖️", imdbId:"tt0110413",
+      title:"Leon zawodowiec", orig:"Léon: The Professional · Luc Besson · 1994",
+      tags:["Akcja","Thriller","Klasyk"],
+      desc:"Płatny zabójca ochrania małą dziewczynkę. Klasyk kina akcji z Jeanem Renem.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+
+  r_film_music_biopic: {
+    msgs: ["muzyczny biopic – gwarancja świetnej ścieżki dźwiękowej 🎵"],
+    result: {
+      emoji:"🎸", imdbId:"tt8291806",
+      title:"Bohemian Rhapsody", orig:"Bohemian Rhapsody · 2018",
+      tags:["Biograficzny","Muzyczny","Queen"],
+      desc:"Historia Freddie'ego Mercury'ego i Queen. Koncert Live Aid jest absolutną kulminacją.",
+      channel:"Disney+", badge:"VOD Disney+"
+    },
+    alt: {
+      emoji:"🎤", imdbId:"tt7131622",
+      title:"Narodziny gwiazdy", orig:"A Star Is Born · Bradley Cooper · 2018",
+      tags:["Muzyczny","Romans","Dramat"],
+      desc:"Słabnąca gwiazda i wschodzący talent. Lady Gaga i Cooper – chemia ekranowa na maksa.",
+      channel:"HBO Max", badge:"VOD HBO Max"
+    }
+  },
+
+  r_film_dystopia: {
+    msgs: ["dystopia i bliższa przyszłość – to moje klimaty 🤖"],
+    result: {
+      emoji:"🤖", imdbId:"tt0133093",
+      title:"Matrix", orig:"Matrix · Wachowski · 1999",
+      tags:["Sci-Fi","Akcja","Kultowy"],
+      desc:"Czy rzeczywistość jest prawdziwa? Klasyk kina sci-fi, który zmienił wszystko.",
+      channel:"HBO Max", badge:"VOD HBO Max"
+    },
+    alt: {
+      emoji:"🧬", imdbId:"tt1392190",
+      title:"Mad Max: Na drodze gniewu", orig:"Mad Max: Fury Road · Miller · 2015",
+      tags:["Sci-Fi","Akcja","Widowiskowy"],
+      desc:"Postapokaliptyczna pustynia i pogoń bez końca. Najlepsza sekwencja akcji w historii kina.",
+      channel:"HBO Max", badge:"VOD HBO Max"
+    }
+  },
+
+  r_film_fantasy: {
+    msgs: ["fantasy i magia – uciekamy od rzeczywistości 🧙"],
+    result: {
+      emoji:"🧙", imdbId:"tt0120737",
+      title:"Władca Pierścieni: Drużyna Pierścienia", orig:"LOTR: Fellowship · Peter Jackson · 2001",
+      tags:["Fantasy","Epicki","Klasyk"],
+      desc:"Hobit rusza w podróż, żeby zniszczyć Jeden Pierścień. Absolutny klasyk gatunku.",
+      channel:"HBO Max", badge:"VOD HBO Max"
+    },
+    alt: {
+      emoji:"🦁", imdbId:"tt0369610",
+      title:"Jurassic World", orig:"Jurassic World · Trevorrow · 2015",
+      tags:["Przygodowy","Sci-Fi","Widowiskowy"],
+      desc:"Park z dinozaurami znów otwarty – i znów coś idzie nie tak. Rozrywka na pełnych obrotach.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+
+  r_film_animation: {
+    msgs: ["animacja – nie tylko dla dzieci 🎨"],
+    result: {
+      emoji:"🌊", imdbId:"tt0317219",
+      title:"Gdzie jest Nemo", orig:"Finding Nemo · Pixar · 2003",
+      tags:["Animacja","Familijny","Feel-good"],
+      desc:"Ojciec wyrusza przez ocean by znaleźć syna. Pixar w absolutnej formie – wzruszające dla każdego.",
+      channel:"Disney+", badge:"VOD Disney+"
+    },
+    alt: {
+      emoji:"🤠", imdbId:"tt0435761",
+      title:"Toy Story 3", orig:"Toy Story 3 · Pixar · 2010",
+      tags:["Animacja","Dramat","Wzruszający"],
+      desc:"Andy dorasta – co stanie się z zabawkami? Oficjalnie animacja, nieoficjalnie film, który dorosłych płacze.",
+      channel:"Disney+", badge:"VOD Disney+"
+    }
+  },
+
+  // ── NEW SERIAL NODES ──────────────────────────
+  r_serial_romance: {
+    msgs: ["romans serialowy – uczucia, dramaty i łzy 💔"],
+    result: {
+      emoji:"🌹", imdbId:"tt0437741",
+      title:"Greys Anatomy", orig:"Grey's Anatomy · ABC · od 2005",
+      tags:["Romans","Dramat medyczny","Długi"],
+      desc:"Chirurdzy, miłości i codzienne dramaty w szpitalu. Wciągający serial, przy którym nie widzisz jak leci czas.",
+      channel:"Disney+", badge:"VOD Disney+"
+    },
+    alt: {
+      emoji:"💌", imdbId:"tt5753856",
+      title:"Normal People", orig:"Normal People · Hulu · 2020",
+      tags:["Romans","Dramat","Intymny"],
+      desc:"Miłość dwojga studentów – skomplikowana, intensywna i bardzo prawdziwa.",
+      channel:"HBO Max", badge:"VOD HBO Max"
+    }
+  },
+
+  r_serial_history: {
+    msgs: ["historyczny serial – lubię takie opowieści 📜"],
+    result: {
+      emoji:"👑", imdbId:"tt4786824",
+      title:"The Crown", orig:"The Crown · Netflix · 6 sezonów",
+      tags:["Historyczny","Dramat","Prestiżowy"],
+      desc:"Historia rodziny królewskiej od lat 40. Najdroższa produkcja Netflix. Wciągające jak plotka.",
+      channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"⚔️", imdbId:"tt0944947",
+      title:"Gra o tron", orig:"Game of Thrones · HBO · 8 sezonów",
+      tags:["Fantasy","Historyczny","Epicki"],
+      desc:"Walka o żelazny tron. Zdrady, smoki i bitwy – pierwsze sezony to szczyt serialowej telewizji.",
+      channel:"HBO Max", badge:"VOD HBO Max"
+    }
+  },
+
+  // ── NEW DOC NODES ─────────────────────────────
+  r_doc_sport: {
+    msgs: ["sport w dokumencie – bardziej emocjonujący niż mecz 🏆"],
+    result: {
+      emoji:"⛹️", imdbId:"tt8420184",
+      title:"Ostatni taniec", orig:"The Last Dance · Netflix · 2020",
+      tags:["Sportowy","Dokument","Michael Jordan"],
+      desc:"Michael Jordan i Chicago Bulls zdobywają szóste mistrzostwo. Nawet bez wiedzy o koszykówce – genialne.",
+      channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"🥊", imdbId:"tt8673368",
+      title:"Senna", orig:"Senna · 2010",
+      tags:["Sportowy","Dokument","Emocjonalny"],
+      desc:"Życie i śmierć Ayrtona Senny – legendy Formuły 1. Jeden z najlepszych dokumentów sportowych.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+
+  r_doc_history: {
+    msgs: ["historia w dokumencie – prawda bywa bardziej szokująca niż fikcja 📜"],
+    result: {
+      emoji:"🌍", imdbId:"tt1322327",
+      title:"Homo Sapiens", orig:"Sapiens: A Brief History of Humankind",
+      tags:["Historyczny","Dokument","Edukacyjny"],
+      desc:"Historia całej naszej cywilizacji w przystępnej formie. Zmienia perspektywę na wszystko.",
+      channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"🏛️", imdbId:"tt0454876",
+      title:"Wild Wild Country", orig:"Wild Wild Country · Netflix · 2018",
+      tags:["Historyczny","Dokument","Szokujący"],
+      desc:"Sekta religijna przejmuje miasto w Oregonie. Brzmi nieprawdopodobnie – bo jest nieprawdopodobne.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+
+  // ── NEW SHOW NODES ────────────────────────────
+  r_reality: {
+    msgs: ["reality show – czasem guilty pleasure to najlepsze lekarstwo 📺"],
+    result: {
+      emoji:"💍", imdbId:"tt7693480",
+      title:"Love Is Blind", orig:"Love Is Blind · Netflix · od 2020",
+      tags:["Reality","Romans","Kontrowersyjny"],
+      desc:"Singielsi zakochują się nie widząc się. Eksperyment, który trudno oderwać się od ekranu.",
+      channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"🏝️", imdbId:"tt0363307",
+      title:"Survivor", orig:"Survivor · CBS · od 2000",
+      tags:["Reality","Przetrwanie","Klasyk"],
+      desc:"Klasyk gatunku. Wyspy, intrygi i eliminacje. Pierwszy i wciąż najlepszy reality survival.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+
+  r_talkshow: {
+    msgs: ["talk show i rozmowy – lubię coś z treścią 🎙️"],
+    result: {
+      emoji:"🎙️", imdbId:"tt1628084",
+      title:"My Next Guest Needs No Introduction", orig:"David Letterman · Netflix · od 2018",
+      tags:["Talk show","Wywiady","Prestiżowy"],
+      desc:"David Letterman rozmawia z największymi postaciami świata. Długo, głęboko i naprawdę ciekawie.",
+      channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"🌎", imdbId:"tt5538412",
+      title:"The Me You Can't See", orig:"The Me You Can't See · Apple TV+ · 2021",
+      tags:["Dokument","Zdrowie psychiczne","Szczery"],
+      desc:"Oprah i Prince Harry o zdrowiu psychicznym. Szczery, poruszający, bez tanich łez.",
+      channel:"Apple TV+", badge:"VOD Apple TV+"
+    }
+  },
+
+  r_doc_science: {
+    msgs: ["nauka i tech – najciekawsze rzeczy dzieją się poza ekranem 🔬"],
+    result: {
+      emoji:"🧬", imdbId:"tt9253866",
+      title:"Our Universe", orig:"Our Universe · Netflix · 2022",
+      tags:["Nauka","Przyroda","Spektakularny"],
+      desc:"Morgan Freeman oprowadza po kosmosie i naturze. Zdjęcia i muzyka na poziomie kinowym.",
+      channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"💡", imdbId:"tt9770150",
+      title:"High Score", orig:"High Score · Netflix · 2020",
+      tags:["Technologia","Gry","Historia"],
+      desc:"Historia gier wideo – jak geeks z garażu stworzyli przemysł wart miliardy. Nerd-joy w czystej postaci.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+
+  r_doc_music: {
+    msgs: ["muzyczny dokument – czasem historia piosenki mówi więcej niż sama piosenka 🎵"],
+    result: {
+      emoji:"🎸", imdbId:"tt8579674",
+      title:"Get Back", orig:"The Beatles: Get Back · Disney+ · 2021",
+      tags:["Muzyczny","Dokument","Legendarny"],
+      desc:"Peter Jackson oddaje 60 godzin sesji nagraniowej Beatlesów. Oglądasz, jak rodzą się arcydzieła.",
+      channel:"Disney+", badge:"VOD Disney+"
+    },
+    alt: {
+      emoji:"🎤", imdbId:"tt5697826",
+      title:"Amy", orig:"Amy · Asif Kapadia · 2015",
+      tags:["Muzyczny","Dokument","Poruszający"],
+      desc:"Portret Amy Winehouse – talentu, który spłonął za szybko. Jeden z najpiękniejszych i najtrudniejszych dokumentów.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+
+  r_show_travel: {
+    msgs: ["podróże – oglądasz świat z kanapy i wcale nie jest źle ✈️"],
+    result: {
+      emoji:"🌮", imdbId:"tt1553639",
+      title:"Parts Unknown", orig:"Anthony Bourdain: Parts Unknown · CNN · 2013–2018",
+      tags:["Podróże","Kulinaria","Autentyczny"],
+      desc:"Bourdain jedzie tam gdzie nikt inny – jedzenie jako klucz do kultury. Każdy odcinek to małe arcydzieło.",
+      channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"🗺️", imdbId:"tt5710978",
+      title:"Dark Tourist", orig:"Dark Tourist · Netflix · 2018",
+      tags:["Podróże","Mroczny","Oryginalny"],
+      desc:"Dziennikarz odwiedza najbardziej niebezpieczne i kontrowersyjne miejsca świata. Nieoczekiwanie wciągające.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+
+  r_show_moto: {
+    msgs: ["motoryzacja – prędkość, metal i pasja 🚗"],
+    result: {
+      emoji:"🏎️", imdbId:"tt4154796",
+      title:"Formula 1: Drive to Survive", orig:"Formula 1: Drive to Survive · Netflix · od 2019",
+      tags:["Motoryzacja","Sport","Dramat"],
+      desc:"Kulisy sezonu F1 – kłótnie, polityka i wyścigi. Nawet nie musisz znać sportu żeby być wciągniętym.",
+      channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"🔧", imdbId:"tt0118375",
+      title:"The Grand Tour", orig:"The Grand Tour · Amazon Prime · od 2016",
+      tags:["Motoryzacja","Komedia","Rozrywka"],
+      desc:"Clarkson, Hammond i May testują samochody na całym świecie. Głupkowaty, piękny i niepoprawny.",
+      channel:"Amazon Prime", badge:"VOD Prime Video"
+    }
+  },
 };
 
 const SURPRISE = [
   "r_gone_girl","r_succession","r_parasite","r_oppenheimer",
-  "r_ted_lasso","r_crazy_rich","r_severance","r_white_lotus"
+  "r_ted_lasso","r_crazy_rich","r_severance","r_white_lotus",
+  "r_film_scifi","r_serial_history","r_doc_sport","r_film_war"
 ];
 
 // ── POSTER FETCH ───────────────────────────────
+// ── TREE OVERRIDES FROM EDITOR (tree.html) ────
+try {
+  const ov = JSON.parse(localStorage.getItem('jacek_tree_overrides') || '{}');
+  Object.entries(ov).forEach(([key, val]) => {
+    if (TREE[key]) {
+      if (val.result) Object.assign(TREE[key].result, val.result);
+      if (val.alt)    Object.assign(TREE[key].alt,    val.alt);
+    }
+  });
+} catch(e) {}
+
 const TMDB_KEY = '8265bd1679663a7ea12ac168da84d2e8';
 async function fetchPoster(imdbId) {
   try {

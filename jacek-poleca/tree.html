@@ -11,23 +11,45 @@ body {
   font-family: 'Poppins', sans-serif;
   background: #f5f3ef;
   color: #111;
-  padding: 36px 24px 80px;
+  padding: 36px 24px 100px;
   max-width: 960px;
   margin: 0 auto;
 }
 h1 { font-size: 20px; font-weight: 800; color: #6b0a1a; margin-bottom: 4px; }
-.note { font-size: 11px; color: #888; margin-bottom: 32px; line-height: 1.6; }
-.note strong { color: #6b0a1a; }
+.note { font-size: 11px; color: #888; margin-bottom: 20px; line-height: 1.7; }
+
+/* sticky update bar */
+.update-bar {
+  position: sticky; top: 0; z-index: 100;
+  background: #0D1B4B;
+  color: white;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px;
+  border-radius: 10px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.15);
+}
+.update-bar span { font-size: 12px; font-weight: 600; opacity: .8; }
+.update-bar .changes { font-size: 11px; color: #F3B702; }
+.btn-update {
+  background: #F3B702; color: #111;
+  border: none; border-radius: 100px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px; font-weight: 800;
+  padding: 8px 20px; cursor: pointer;
+  transition: background .12s, transform .1s;
+}
+.btn-update:hover { background: #e0a800; }
+.btn-update:active { transform: scale(.97); }
+.btn-update.saved { background: #2ecc71; color: white; }
 
 /* category heading */
 .cat-title {
   font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
   color: #fff; background: #0D1B4B;
   display: inline-block; padding: 4px 14px; border-radius: 100px;
-  margin: 32px 0 12px;
+  margin: 28px 0 10px;
 }
-
-/* table */
 table { width: 100%; border-collapse: collapse; }
 thead th {
   font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
@@ -36,57 +58,59 @@ thead th {
 tr.main-row td { background: #fff; border-bottom: 1px solid #f0ece7; }
 tr.alt-row td  { background: #faf9f7; border-bottom: 1px solid #ece8e2; }
 tr.spacer td   { height: 6px; background: transparent; }
-td { padding: 10px; vertical-align: middle; }
+td { padding: 9px 10px; vertical-align: middle; }
 
-/* path */
 .path { font-size: 11px; color: #555; line-height: 1.5; }
-.path span { color: #bbb; margin: 0 3px; }
+.path b { color: #111; }
+.path .sep { color: #ccc; margin: 0 3px; }
 
-/* type badge */
 .badge-main { background: #F3B702; color: #111; font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 100px; white-space: nowrap; }
-.badge-alt  { background: #eee;     color: #777; font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 100px; white-space: nowrap; }
+.badge-alt  { background: #eee; color: #777; font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 100px; white-space: nowrap; }
 
-/* editable title */
 .title-field {
   font-size: 12px; font-weight: 700;
-  border: none; outline: none;
-  background: transparent;
-  width: 100%;
-  cursor: text;
-  border-bottom: 1px dashed transparent;
-  padding: 2px 0;
-  transition: border-color .15s;
+  border: none; outline: none; background: transparent;
+  width: 100%; cursor: text;
+  border-bottom: 1.5px dashed transparent;
+  padding: 2px 0; transition: border-color .15s;
 }
 .title-field:focus, .title-field:hover { border-bottom-color: #F3B702; }
-.title-field.searching { color: #aaa; font-style: italic; }
 
-/* url field */
 .url-wrap { display: flex; align-items: center; gap: 6px; }
 .url-field {
   font-size: 10px; color: #888;
   border: none; outline: none; background: transparent;
-  width: 100%; border-bottom: 1px dashed transparent;
-  padding: 2px 0; cursor: text;
-  transition: border-color .15s;
+  width: 100%; border-bottom: 1.5px dashed transparent;
+  padding: 2px 0; cursor: text; transition: border-color .15s;
 }
 .url-field:focus, .url-field:hover { border-bottom-color: #ccc; color: #333; }
-.url-field.searching { color: #aaa; font-style: italic; }
-.open-link { font-size: 14px; text-decoration: none; opacity: .4; transition: opacity .15s; flex-shrink: 0; }
+.url-field.loading { color: #bbb; font-style: italic; }
+.open-link { font-size: 13px; text-decoration: none; opacity: .35; transition: opacity .15s; flex-shrink: 0; }
 .open-link:hover { opacity: 1; }
 
-/* poster */
-.poster-wrap { width: 44px; height: 66px; flex-shrink: 0; border-radius: 4px; overflow: hidden; background: #eee; position: relative; }
+.poster-wrap { width: 40px; height: 60px; flex-shrink: 0; border-radius: 4px; overflow: hidden; background: #eee; position: relative; }
 .poster-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.poster-spinner { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #bbb; }
+.poster-empty { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #bbb; }
+
+/* changed row highlight */
+tr.changed td { background: #fffbee !important; }
 </style>
 </head>
 <body>
 
 <h1>Jacek poleca – drzewo decyzyjne</h1>
 <p class="note">
-  <strong>Jak to działa:</strong> Kliknij nazwę filmu – możesz ją zmienić. Kliknij URL – możesz wkleić inny link.<br>
-  Po wpisaniu nazwy lub URL strona automatycznie szuka plakatu i uzupełnia brakujące dane.
+  Kliknij tytuł lub link – możesz je zmienić. Po wpisaniu tytułu (bez linku) strona sama znajdzie film.<br>
+  Kliknij <strong style="color:#0D1B4B">Aktualizuj stronę główną</strong> żeby zapisać zmiany – pojawią się od razu po odświeżeniu głównej strony.
 </p>
+
+<div class="update-bar">
+  <div>
+    <div style="font-size:13px;font-weight:800">Zmiany w rekomendacjach</div>
+    <div class="changes" id="changes-count">brak zmian</div>
+  </div>
+  <button class="btn-update" onclick="saveChanges()">Aktualizuj stronę główną</button>
+</div>
 
 <div id="root"></div>
 
@@ -94,115 +118,146 @@ td { padding: 10px; vertical-align: middle; }
 const TMDB_KEY = '8265bd1679663a7ea12ac168da84d2e8';
 
 const DATA = [
-  {
-    cat: "Film",
-    rows: [
-      { path:["Film","Napięcie i thriller","Psychologia i twist"],  main:{title:"Zaginiona dziewczyna", url:"https://www.imdb.com/title/tt2267998/"}, alt:{title:"Incepcja", url:"https://www.imdb.com/title/tt1375666/"} },
-      { path:["Film","Napięcie i thriller","Akcja, szybko, głośno"], main:{title:"Extraction", url:"https://www.imdb.com/title/tt8936646/"}, alt:{title:"Tenet", url:"https://www.imdb.com/title/tt6723592/"} },
-      { path:["Film","Sci-Fi"],                                      main:{title:"Diuna", url:"https://www.imdb.com/title/tt1160419/"}, alt:{title:"Nowy początek (Arrival)", url:"https://www.imdb.com/title/tt2543164/"} },
-      { path:["Film","Komedia – romantyczna"],                       main:{title:"Szalone, bogate Azjatki", url:"https://www.imdb.com/title/tt3104988/"}, alt:{title:"To All the Boys: zawsze i na zawsze", url:"https://www.imdb.com/title/tt10954600/"} },
-      { path:["Film","Komedia – czarny humor"],                      main:{title:"Parasite", url:"https://www.imdb.com/title/tt6751668/"}, alt:{title:"La La Land", url:"https://www.imdb.com/title/tt3783958/"} },
-      { path:["Film","Coś, o czym będę myśleć","Oparta na faktach"], main:{title:"Oppenheimer", url:"https://www.imdb.com/title/tt15398776/"}, alt:{title:"Interstellar", url:"https://www.imdb.com/title/tt0816692/"} },
-      { path:["Film","Coś, o czym będę myśleć","Kino artystyczne"],  main:{title:"Psie pazury", url:"https://www.imdb.com/title/tt10293406/"}, alt:{title:"Zielona księga", url:"https://www.imdb.com/title/tt1353056/"} },
-    ]
-  },
-  {
-    cat: "Serial",
-    rows: [
-      { path:["Serial","Maraton","Mroczny","Thriller / suspens"],  main:{title:"Sukcesja", url:"https://www.imdb.com/title/tt7660850/"}, alt:{title:"Better Call Saul", url:"https://www.imdb.com/title/tt3032476/"} },
-      { path:["Serial","Maraton","Mroczny","Horror"],               main:{title:"Nawiedzony dom na wzgórzu", url:"https://www.imdb.com/title/tt6763664/"}, alt:{title:"Midnight Mass", url:"https://www.imdb.com/title/tt10574558/"} },
-      { path:["Serial","Maraton","Mroczny","Kryminał / detektyw"],  main:{title:"True Detective (sezon 1)", url:"https://www.imdb.com/title/tt2356777/"}, alt:{title:"Mindhunter", url:"https://www.imdb.com/title/tt5290382/"} },
-      { path:["Serial","Maraton","Sci-Fi / fantasy"],               main:{title:"Severance", url:"https://www.imdb.com/title/tt11280740/"}, alt:{title:"Dark", url:"https://www.imdb.com/title/tt5753856/"} },
-      { path:["Serial","Maraton","Dramat obyczajowy"],              main:{title:"The White Lotus", url:"https://www.imdb.com/title/tt13406094/"}, alt:{title:"The Undoing", url:"https://www.imdb.com/title/tt8134470/"} },
-      { path:["Serial","Odcinek wieczór","Komedia"],                 main:{title:"Ted Lasso", url:"https://www.imdb.com/title/tt10986410/"}, alt:{title:"Schitt's Creek", url:"https://www.imdb.com/title/tt8579674/"} },
-      { path:["Serial","Odcinek wieczór","Ciepły, obyczajowy"],     main:{title:"Emily w Paryżu", url:"https://www.imdb.com/title/tt8962124/"}, alt:{title:"Ginny i Georgia", url:"https://www.imdb.com/title/tt5687612/"} },
-    ]
-  },
-  {
-    cat: "Program / Show",
-    rows: [
-      { path:["Program","Stand-up / kabaret"],       main:{title:"Bo Burnham: Inside", url:"https://www.imdb.com/title/tt14544192/"}, alt:{title:"Hannah Gadsby: Nanette", url:"https://www.imdb.com/title/tt6986718/"} },
-      { path:["Program","Teleturniej / talent show"], main:{title:"RuPaul's Drag Race", url:"https://www.imdb.com/title/tt1353056/"}, alt:{title:"America's Got Talent", url:"https://www.imdb.com/title/tt0759364/"} },
-      { path:["Program","Lifestyle / kulinaria"],    main:{title:"Chef's Table", url:"https://www.imdb.com/title/tt4295140/"}, alt:{title:"Ugly Delicious", url:"https://www.imdb.com/title/tt7907916/"} },
-    ]
-  },
-  {
-    cat: "Dokument",
-    rows: [
-      { path:["Dokument","Kryminał / true crime"],   main:{title:"Making a Murderer", url:"https://www.imdb.com/title/tt5189670/"}, alt:{title:"The Jinx", url:"https://www.imdb.com/title/tt3270538/"} },
-      { path:["Dokument","Przyroda i natura"],        main:{title:"Nasz Planet (Our Planet)", url:"https://www.imdb.com/title/tt9253866/"}, alt:{title:"Nasz Ocean (Our Ocean)", url:"https://www.imdb.com/title/tt9813792/"} },
-      { path:["Dokument","Społeczny / polityczny"],   main:{title:"Dylemat społeczny", url:"https://www.imdb.com/title/tt11464826/"}, alt:{title:"The Act of Killing", url:"https://www.imdb.com/title/tt2375605/"} },
-    ]
-  }
+  { cat:"Film", rows: [
+    { key:"r_gone_girl",    path:["Film","Thriller","Psychologiczny i twist"],       main:{title:"Zaginiona dziewczyna",                url:"https://www.imdb.com/title/tt2267998/"}, alt:{title:"Incepcja",                         url:"https://www.imdb.com/title/tt1375666/"} },
+    { key:"r_extraction",   path:["Film","Thriller","Akcja, szybko, głośno"],        main:{title:"Extraction",                          url:"https://www.imdb.com/title/tt8936646/"}, alt:{title:"Tenet",                              url:"https://www.imdb.com/title/tt6723592/"} },
+    { key:"r_film_spy",     path:["Film","Thriller","Szpiegowski / kryminalny"],     main:{title:"Kingsman: Tajne służby",               url:"https://www.imdb.com/title/tt4074694/"}, alt:{title:"Imitation Game",                    url:"https://www.imdb.com/title/tt2084970/"} },
+    { key:"r_film_scifi",   path:["Film","Sci-Fi","Kosmiczny / epicki"],             main:{title:"Diuna",                               url:"https://www.imdb.com/title/tt1160419/"}, alt:{title:"Nowy początek (Arrival)",            url:"https://www.imdb.com/title/tt2543164/"} },
+    { key:"r_film_dystopia",path:["Film","Sci-Fi","Dystopia / bliższa przyszłość"], main:{title:"Matrix",                              url:"https://www.imdb.com/title/tt0133093/"}, alt:{title:"Mad Max: Na drodze gniewu",          url:"https://www.imdb.com/title/tt1392190/"} },
+    { key:"r_film_fantasy", path:["Film","Sci-Fi","Fantasy / magia"],                main:{title:"Władca Pierścieni: Drużyna Pierścienia",url:"https://www.imdb.com/title/tt0120737/"}, alt:{title:"Jurassic World",                  url:"https://www.imdb.com/title/tt0369610/"} },
+    { key:"r_crazy_rich",   path:["Film","Komedia","Romantyczna komedia"],           main:{title:"Szalone, bogate Azjatki",             url:"https://www.imdb.com/title/tt3104988/"}, alt:{title:"To All the Boys: zawsze i na zawsze",url:"https://www.imdb.com/title/tt10954600/"} },
+    { key:"r_parasite",     path:["Film","Komedia","Czarny humor / absurd"],         main:{title:"Parasite",                            url:"https://www.imdb.com/title/tt6751668/"}, alt:{title:"La La Land",                        url:"https://www.imdb.com/title/tt3783958/"} },
+    { key:"r_film_family",  path:["Film","Komedia","Familijny / feel-good"],         main:{title:"Największy showman",                  url:"https://www.imdb.com/title/tt3501632/"}, alt:{title:"La La Land",                        url:"https://www.imdb.com/title/tt3783958/"} },
+    { key:"r_oppenheimer",  path:["Film","Dramat","Oparty na faktach","Nauka / historia"], main:{title:"Oppenheimer",                   url:"https://www.imdb.com/title/tt15398776/"}, alt:{title:"Interstellar",                    url:"https://www.imdb.com/title/tt0816692/"} },
+    { key:"r_film_music_biopic",path:["Film","Dramat","Oparty na faktach","Muzyk / artysta"], main:{title:"Bohemian Rhapsody",           url:"https://www.imdb.com/title/tt8291806/"}, alt:{title:"Narodziny gwiazdy",               url:"https://www.imdb.com/title/tt7131622/"} },
+    { key:"r_power_of_dog", path:["Film","Dramat","Kino artystyczne"],               main:{title:"Psie pazury",                         url:"https://www.imdb.com/title/tt10293406/"}, alt:{title:"Zielona księga",                  url:"https://www.imdb.com/title/tt1353056/"} },
+    { key:"r_film_romance", path:["Film","Dramat","Romans / melodramat"],            main:{title:"Grawitacja",                          url:"https://www.imdb.com/title/tt1454468/"}, alt:{title:"Deadpool",                          url:"https://www.imdb.com/title/tt1431045/"} },
+    { key:"r_film_war",     path:["Film","Dramat","Historyczny / wojenny"],          main:{title:"Na Zachodzie bez zmian",              url:"https://www.imdb.com/title/tt12160706/"}, alt:{title:"Leon zawodowiec",                 url:"https://www.imdb.com/title/tt0110413/"} },
+    { key:"r_film_animation",path:["Film","Animacja"],                               main:{title:"Gdzie jest Nemo",                     url:"https://www.imdb.com/title/tt0317219/"}, alt:{title:"Toy Story 3",                       url:"https://www.imdb.com/title/tt0435761/"} },
+  ]},
+  { cat:"Serial", rows: [
+    { key:"r_succession",       path:["Serial","Maraton","Mroczny","Thriller / suspens"],  main:{title:"Sukcesja",                    url:"https://www.imdb.com/title/tt7660850/"}, alt:{title:"Better Call Saul",                  url:"https://www.imdb.com/title/tt3032476/"} },
+    { key:"r_serial_horror",    path:["Serial","Maraton","Mroczny","Horror"],               main:{title:"Nawiedzony dom na wzgórzu",   url:"https://www.imdb.com/title/tt6763664/"}, alt:{title:"Midnight Mass",                     url:"https://www.imdb.com/title/tt10574558/"} },
+    { key:"r_serial_detective", path:["Serial","Maraton","Mroczny","Kryminał / detektyw"],  main:{title:"True Detective (sezon 1)",    url:"https://www.imdb.com/title/tt2356777/"}, alt:{title:"Mindhunter",                        url:"https://www.imdb.com/title/tt5290382/"} },
+    { key:"r_severance",        path:["Serial","Maraton","Sci-Fi / fantasy"],               main:{title:"Severance",                   url:"https://www.imdb.com/title/tt11280740/"}, alt:{title:"Dark",                             url:"https://www.imdb.com/title/tt5753856/"} },
+    { key:"r_white_lotus",      path:["Serial","Maraton","Dramat obyczajowy"],              main:{title:"The White Lotus",             url:"https://www.imdb.com/title/tt13406094/"}, alt:{title:"The Undoing",                      url:"https://www.imdb.com/title/tt8134470/"} },
+    { key:"r_serial_romance",   path:["Serial","Maraton","Romans / dramat romantyczny"],    main:{title:"Grey's Anatomy",              url:"https://www.imdb.com/title/tt0437741/"}, alt:{title:"Normal People",                     url:"https://www.imdb.com/title/tt5753856/"} },
+    { key:"r_serial_history",   path:["Serial","Maraton","Historyczny"],                    main:{title:"The Crown",                   url:"https://www.imdb.com/title/tt4786824/"}, alt:{title:"Gra o tron",                        url:"https://www.imdb.com/title/tt0944947/"} },
+    { key:"r_ted_lasso",        path:["Serial","Odcinek wieczór","Komedia"],                main:{title:"Ted Lasso",                   url:"https://www.imdb.com/title/tt10986410/"}, alt:{title:"Schitt's Creek",                   url:"https://www.imdb.com/title/tt8579674/"} },
+    { key:"r_emily_paris",      path:["Serial","Odcinek wieczór","Ciepły, obyczajowy"],     main:{title:"Emily w Paryżu",              url:"https://www.imdb.com/title/tt8962124/"}, alt:{title:"Ginny i Georgia",                   url:"https://www.imdb.com/title/tt5687612/"} },
+  ]},
+  { cat:"Program / Show", rows: [
+    { key:"r_standup",      path:["Program","Stand-up / kabaret"],        main:{title:"Bo Burnham: Inside",         url:"https://www.imdb.com/title/tt14544192/"}, alt:{title:"Hannah Gadsby: Nanette",          url:"https://www.imdb.com/title/tt6986718/"} },
+    { key:"r_talent",       path:["Program","Teleturniej / talent show"], main:{title:"RuPaul's Drag Race",         url:"https://www.imdb.com/title/tt1353056/"}, alt:{title:"America's Got Talent",             url:"https://www.imdb.com/title/tt0759364/"} },
+    { key:"r_lifestyle",    path:["Program","Lifestyle / kulinaria"],     main:{title:"Chef's Table",               url:"https://www.imdb.com/title/tt4295140/"}, alt:{title:"Ugly Delicious",                   url:"https://www.imdb.com/title/tt7907916/"} },
+    { key:"r_reality",      path:["Program","Reality show"],              main:{title:"Love Is Blind",              url:"https://www.imdb.com/title/tt7693480/"}, alt:{title:"Survivor",                         url:"https://www.imdb.com/title/tt0363307/"} },
+    { key:"r_talkshow",     path:["Program","Talk show / rozmowy"],       main:{title:"My Next Guest Needs No Introduction", url:"https://www.imdb.com/title/tt1628084/"}, alt:{title:"The Me You Can't See", url:"https://www.imdb.com/title/tt5538412/"} },
+    { key:"r_show_travel",  path:["Program","Podróże i przygody"],        main:{title:"Parts Unknown",              url:"https://www.imdb.com/title/tt1553639/"}, alt:{title:"Dark Tourist",                     url:"https://www.imdb.com/title/tt5710978/"} },
+    { key:"r_show_moto",    path:["Program","Motoryzacja"],                main:{title:"Formula 1: Drive to Survive",url:"https://www.imdb.com/title/tt4154796/"}, alt:{title:"The Grand Tour",                   url:"https://www.imdb.com/title/tt0118375/"} },
+  ]},
+  { cat:"Dokument", rows: [
+    { key:"r_making_murderer", path:["Dokument","Kryminał / true crime"],  main:{title:"Making a Murderer",  url:"https://www.imdb.com/title/tt5189670/"}, alt:{title:"The Jinx",                    url:"https://www.imdb.com/title/tt3270538/"} },
+    { key:"r_our_planet",      path:["Dokument","Przyroda i natura"],       main:{title:"Nasz Planet",        url:"https://www.imdb.com/title/tt9253866/"}, alt:{title:"Nasz Ocean",                  url:"https://www.imdb.com/title/tt9813792/"} },
+    { key:"r_social_doc",      path:["Dokument","Społeczny / polityczny"],  main:{title:"Dylemat społeczny",  url:"https://www.imdb.com/title/tt11464826/"}, alt:{title:"The Act of Killing",         url:"https://www.imdb.com/title/tt2375605/"} },
+    { key:"r_doc_sport",       path:["Dokument","Sportowy"],                main:{title:"Ostatni taniec",     url:"https://www.imdb.com/title/tt8420184/"}, alt:{title:"Senna",                       url:"https://www.imdb.com/title/tt8673368/"} },
+    { key:"r_doc_history",     path:["Dokument","Historyczny"],             main:{title:"Wild Wild Country",  url:"https://www.imdb.com/title/tt0454876/"}, alt:{title:"Homo Sapiens",                url:"https://www.imdb.com/title/tt1322327/"} },
+    { key:"r_doc_science",     path:["Dokument","Nauka / technologia"],     main:{title:"Our Universe",       url:"https://www.imdb.com/title/tt9253866/"}, alt:{title:"High Score",                  url:"https://www.imdb.com/title/tt9770150/"} },
+    { key:"r_doc_music",       path:["Dokument","Muzyczny"],                main:{title:"Get Back",           url:"https://www.imdb.com/title/tt8579674/"}, alt:{title:"Amy",                         url:"https://www.imdb.com/title/tt5697826/"} },
+  ]},
 ];
 
-// Extract IMDB ID from URL
-function imdbIdFromUrl(url) {
-  const m = url && url.match(/title\/(tt\d+)/);
-  return m ? m[1] : null;
+// Track changes vs. defaults
+const defaults = {}; // key → {main:{title,url}, alt:{title,url}}
+const current  = {}; // same structure, updated on edit
+DATA.forEach(sec => sec.rows.forEach(row => {
+  defaults[row.key] = { main:{...row.main}, alt:{...row.alt} };
+  current[row.key]  = { main:{...row.main}, alt:{...row.alt} };
+}));
+
+function countChanges() {
+  let n = 0;
+  Object.keys(defaults).forEach(k => {
+    ['main','alt'].forEach(t => {
+      if (current[k][t].title !== defaults[k][t].title || current[k][t].url !== defaults[k][t].url) n++;
+    });
+  });
+  return n;
 }
 
-// Fetch poster URL from TMDB using IMDB ID
-async function posterFromImdb(imdbId) {
+function updateChangesBadge() {
+  const n = countChanges();
+  const el = document.getElementById('changes-count');
+  el.textContent = n === 0 ? 'brak zmian' : `${n} zmian${n === 1 ? 'a' : n < 5 ? 'y' : ''} – kliknij Aktualizuj`;
+}
+
+function saveChanges() {
+  const overrides = {};
+  Object.keys(defaults).forEach(k => {
+    const entry = {};
+    ['main','alt'].forEach(t => {
+      if (current[k][t].title !== defaults[k][t].title || current[k][t].url !== defaults[k][t].url) {
+        entry[t] = { title: current[k][t].title, url: current[k][t].url };
+      }
+    });
+    if (Object.keys(entry).length) overrides[k] = entry;
+  });
+  localStorage.setItem('jacek_tree_overrides', JSON.stringify(overrides));
+  const btn = document.querySelector('.btn-update');
+  btn.textContent = 'Zapisano!';
+  btn.classList.add('saved');
+  setTimeout(() => { btn.textContent = 'Aktualizuj stronę główną'; btn.classList.remove('saved'); }, 2000);
+}
+
+// TMDB helpers
+function imdbId(url) { const m = url && url.match(/title\/(tt\d+)/); return m ? m[1] : null; }
+
+async function fetchPoster(url) {
+  const id = imdbId(url);
+  if (!id) return null;
   try {
-    const r = await fetch(`https://api.themoviedb.org/3/find/${imdbId}?api_key=${TMDB_KEY}&external_source=imdb_id`);
+    const r = await fetch(`https://api.themoviedb.org/3/find/${id}?api_key=${TMDB_KEY}&external_source=imdb_id`);
     const d = await r.json();
     const item = d.movie_results?.[0] || d.tv_results?.[0];
     return item?.poster_path ? `https://image.tmdb.org/t/p/w154${item.poster_path}` : null;
   } catch { return null; }
 }
 
-// Search TMDB by title → return {posterUrl, imdbUrl}
-async function searchByTitle(title) {
+async function searchTitle(title) {
+  const q = encodeURIComponent(title);
   try {
-    const q = encodeURIComponent(title);
     const [mv, tv] = await Promise.all([
       fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_KEY}&query=${q}`).then(r=>r.json()),
-      fetch(`https://api.themoviedb.org/3/search/tv?api_key=${TMDB_KEY}&query=${q}`).then(r=>r.json())
+      fetch(`https://api.themoviedb.org/3/search/tv?api_key=${TMDB_KEY}&query=${q}`).then(r=>r.json()),
     ]);
-    // pick best result with a poster
-    const allResults = [
-      ...(mv.results||[]).map(x=>({...x, type:'movie'})),
-      ...(tv.results||[]).map(x=>({...x, type:'tv'}))
-    ].filter(x => x.poster_path);
-    if (!allResults.length) return null;
-    const best = allResults[0];
-    // get imdb id
+    const all = [...(mv.results||[]).map(x=>({...x,type:'movie'})), ...(tv.results||[]).map(x=>({...x,type:'tv'}))].filter(x=>x.poster_path);
+    if (!all.length) return null;
+    const best = all[0];
     const ext = await fetch(`https://api.themoviedb.org/3/${best.type}/${best.id}/external_ids?api_key=${TMDB_KEY}`).then(r=>r.json());
-    return {
-      posterUrl: `https://image.tmdb.org/t/p/w154${best.poster_path}`,
-      imdbUrl: ext.imdb_id ? `https://www.imdb.com/title/${ext.imdb_id}/` : null
-    };
+    return { posterUrl: `https://image.tmdb.org/t/p/w154${best.poster_path}`, imdbUrl: ext.imdb_id ? `https://www.imdb.com/title/${ext.imdb_id}/` : null };
   } catch { return null; }
 }
 
-// Build poster cell
-function makePosterCell(posterWrap, url) {
-  posterWrap.innerHTML = '<div class="poster-spinner">...</div>';
-  const imdbId = imdbIdFromUrl(url);
-  if (!imdbId) return;
-  posterFromImdb(imdbId).then(posterUrl => {
-    if (posterUrl) {
-      const img = document.createElement('img');
-      img.src = posterUrl;
-      posterWrap.innerHTML = '';
-      posterWrap.appendChild(img);
-    } else {
-      posterWrap.innerHTML = '<div class="poster-spinner">—</div>';
-    }
+function setPoster(wrap, url) {
+  wrap.innerHTML = '<div class="poster-empty">...</div>';
+  fetchPoster(url).then(p => {
+    if (p) { const img=document.createElement('img'); img.src=p; wrap.innerHTML=''; wrap.appendChild(img); }
+    else wrap.innerHTML = '<div class="poster-empty">—</div>';
   });
 }
 
-// Build a result row (main or alt)
-function makeRow(rowData, isMain, pathSteps) {
+function makeRow(rowData, isMain, key, path) {
   const tr = document.createElement('tr');
   tr.className = isMain ? 'main-row' : 'alt-row';
+  tr.dataset.key = key;
+  tr.dataset.type = isMain ? 'main' : 'alt';
 
-  // path cell
+  const type = isMain ? 'main' : 'alt';
+
+  // path
   const pathTd = document.createElement('td');
   if (isMain) {
     pathTd.className = 'path';
-    pathTd.innerHTML = pathSteps.map((s,i) => i === 0 ? `<strong>${s}</strong>` : `<span>›</span>${s}`).join('');
+    pathTd.innerHTML = path.map((s,i) => i===0 ? `<b>${s}</b>` : `<span class="sep">›</span>${s}`).join('');
   }
   tr.appendChild(pathTd);
 
@@ -214,90 +269,88 @@ function makeRow(rowData, isMain, pathSteps) {
   badgeTd.appendChild(badge);
   tr.appendChild(badgeTd);
 
-  // poster
-  const posterTd = document.createElement('td');
-  const posterWrap = document.createElement('div');
-  posterWrap.className = 'poster-wrap';
-  posterTd.appendChild(posterWrap);
-  tr.appendChild(posterTd);
-
   // title
   const titleTd = document.createElement('td');
-  const titleField = document.createElement('input');
-  titleField.className = 'title-field';
-  titleField.type = 'text';
-  titleField.value = rowData.title;
-  titleTd.appendChild(titleField);
+  const titleInput = document.createElement('input');
+  titleInput.className = 'title-field';
+  titleInput.type = 'text';
+  titleInput.value = rowData.title;
+  titleTd.appendChild(titleInput);
   tr.appendChild(titleTd);
 
   // url
   const urlTd = document.createElement('td');
   const urlWrap = document.createElement('div');
   urlWrap.className = 'url-wrap';
-  const urlField = document.createElement('input');
-  urlField.className = 'url-field';
-  urlField.type = 'text';
-  urlField.value = rowData.url || '';
-  urlField.placeholder = 'wklej link lub zostaw puste';
-  const openLink = document.createElement('a');
-  openLink.className = 'open-link';
-  openLink.textContent = '↗';
-  openLink.target = '_blank';
-  openLink.href = rowData.url || '#';
-  urlWrap.appendChild(urlField);
-  urlWrap.appendChild(openLink);
+  const urlInput = document.createElement('input');
+  urlInput.className = 'url-field';
+  urlInput.type = 'text';
+  urlInput.value = rowData.url;
+  urlInput.placeholder = 'wklej link lub zostaw puste';
+  const link = document.createElement('a');
+  link.className = 'open-link';
+  link.textContent = '↗';
+  link.target = '_blank';
+  link.href = rowData.url;
+  urlWrap.appendChild(urlInput);
+  urlWrap.appendChild(link);
   urlTd.appendChild(urlWrap);
   tr.appendChild(urlTd);
 
-  // initial poster load
-  makePosterCell(posterWrap, rowData.url);
+  // poster
+  const posterTd = document.createElement('td');
+  const wrap = document.createElement('div');
+  wrap.className = 'poster-wrap';
+  posterTd.appendChild(wrap);
+  tr.appendChild(posterTd);
+  setPoster(wrap, rowData.url);
 
-  // when URL changes → update poster + open link
-  urlField.addEventListener('change', () => {
-    const url = urlField.value.trim();
-    openLink.href = url || '#';
-    makePosterCell(posterWrap, url);
-    // if title empty, try to fill from TMDB
-    if (!titleField.value.trim() && url) {
-      titleField.value = '';
-      titleField.placeholder = 'szukam...';
-      const id = imdbIdFromUrl(url);
+  function markChanged() {
+    const isChanged = current[key][type].title !== defaults[key][type].title || current[key][type].url !== defaults[key][type].url;
+    tr.classList.toggle('changed', isChanged);
+    updateChangesBadge();
+  }
+
+  // url change
+  urlInput.addEventListener('change', () => {
+    const url = urlInput.value.trim();
+    link.href = url || '#';
+    current[key][type].url = url;
+    setPoster(wrap, url);
+    if (!titleInput.value.trim() && url) {
+      const id = imdbId(url);
       if (id) {
         fetch(`https://api.themoviedb.org/3/find/${id}?api_key=${TMDB_KEY}&external_source=imdb_id`)
           .then(r=>r.json()).then(d => {
             const item = d.movie_results?.[0] || d.tv_results?.[0];
-            if (item) titleField.value = item.title || item.name || '';
-            titleField.placeholder = 'wpisz tytuł';
+            if (item) { titleInput.value = item.title||item.name||''; current[key][type].title = titleInput.value; markChanged(); }
           });
       }
     }
+    markChanged();
   });
 
-  // when title changes and URL empty → search TMDB
-  let searchTimer;
-  titleField.addEventListener('input', () => {
-    clearTimeout(searchTimer);
-    const title = titleField.value.trim();
-    if (!title || urlField.value.trim()) return;
-    searchTimer = setTimeout(async () => {
-      urlField.className = 'url-field searching';
-      urlField.value = 'szukam...';
-      const result = await searchByTitle(title);
-      if (result) {
-        urlField.value = result.imdbUrl || '';
-        urlField.className = 'url-field';
-        openLink.href = result.imdbUrl || '#';
-        // show poster
-        const img = document.createElement('img');
-        img.src = result.posterUrl;
-        posterWrap.innerHTML = '';
-        posterWrap.appendChild(img);
-      } else {
-        urlField.value = '';
-        urlField.className = 'url-field';
-        urlField.placeholder = 'nie znaleziono – wklej ręcznie';
-      }
-    }, 800);
+  // title change → search
+  let timer;
+  titleInput.addEventListener('input', () => {
+    current[key][type].title = titleInput.value;
+    markChanged();
+    clearTimeout(timer);
+    if (!titleInput.value.trim() || urlInput.value.trim()) return;
+    timer = setTimeout(async () => {
+      urlInput.className = 'url-field loading';
+      urlInput.value = 'szukam...';
+      const res = await searchTitle(titleInput.value);
+      if (res) {
+        urlInput.value = res.imdbUrl || '';
+        current[key][type].url = urlInput.value;
+        link.href = urlInput.value || '#';
+        const img = document.createElement('img'); img.src = res.posterUrl;
+        wrap.innerHTML = ''; wrap.appendChild(img);
+      } else { urlInput.value = ''; current[key][type].url = ''; }
+      urlInput.className = 'url-field';
+      markChanged();
+    }, 900);
   });
 
   return tr;
@@ -313,14 +366,13 @@ DATA.forEach(section => {
 
   const table = document.createElement('table');
   const thead = document.createElement('thead');
-  thead.innerHTML = '<tr><th style="width:30%">Ścieżka</th><th style="width:80px"></th><th style="width:54px">Plakat</th><th>Tytuł</th><th>Link</th></tr>';
+  thead.innerHTML = '<tr><th style="width:28%">Ścieżka</th><th style="width:80px"></th><th>Tytuł</th><th>Link IMDB</th><th style="width:50px">Plakat</th></tr>';
   table.appendChild(thead);
-
   const tbody = document.createElement('tbody');
 
   section.rows.forEach((row, i) => {
-    tbody.appendChild(makeRow(row.main, true, row.path));
-    tbody.appendChild(makeRow(row.alt, false, row.path));
+    tbody.appendChild(makeRow(row.main, true,  row.key, row.path));
+    tbody.appendChild(makeRow(row.alt,  false, row.key, row.path));
     if (i < section.rows.length - 1) {
       const spacer = document.createElement('tr');
       spacer.className = 'spacer';
