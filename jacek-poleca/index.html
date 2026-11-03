@@ -596,10 +596,14 @@ const TREE = {
   },
 
   serial_light: {
-    msgs: ["lekkie seriale są niedoceniane 😊 komedia czy coś ciepłego i rodzinnego?"],
+    msgs: ["lekkie seriale są niedoceniane 😊 jaki nastrój?"],
     choices: [
-      { ic:"😄", text:"Komedia, śmiech gwarantowany", next:"r_ted_lasso" },
-      { ic:"🌷", text:"Ciepły, obyczajowy",           next:"r_emily_paris" },
+      { ic:"😄", text:"Komedia, śmiech gwarantowany",   next:"r_ted_lasso" },
+      { ic:"🌷", text:"Ciepły, obyczajowy",              next:"r_emily_paris" },
+      { ic:"🧒", text:"Coming-of-age / młodzieżowy",     next:"r_serial_ya" },
+      { ic:"🔪", text:"Kryminalny z humorem",            next:"r_serial_crimedy" },
+      { ic:"✨", text:"Fantasy / przygodowy",            next:"r_serial_fantasy_light" },
+      { ic:"💼", text:"Zawodowy / workplace",            next:"r_serial_workplace" },
     ]
   },
 
@@ -879,6 +883,78 @@ const TREE = {
       title:"Ginny i Georgia", orig:"Ginny & Georgia · Netflix · od 2021",
       tags:["Dramat","Komedia","Romans"],
       desc:"Matka i córka, małe miasteczko, wielkie sekrety. Lekkie, ale z charakterem.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+
+  r_serial_ya: {
+    msgs: ["coming-of-age – bo każdy ma w sobie trochę nastolatka 🧒"],
+    result: {
+      emoji:"🏫", imdbId:"tt4959006",
+      title:"Sex Education", orig:"Sex Education · Netflix · od 2019",
+      tags:["Coming-of-age","Komedia","Ciepły"],
+      desc:"Syn seksuologa zostaje nieformalnym doradcą szkolnym. Śmieszne, mądre i zaskakująco wzruszające.",
+      channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"🎒", imdbId:"tt7538574",
+      title:"Stranger Things", orig:"Stranger Things · Netflix · od 2016",
+      tags:["Coming-of-age","Sci-Fi","Nostalgia"],
+      desc:"Lata 80., mała miasteczko, tajemnicze zniknięcie. Klasyk, który wciągnie całą rodzinę.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+
+  r_serial_crimedy: {
+    msgs: ["kryminał z humorem – najlepsza kombinacja 🔪"],
+    result: {
+      emoji:"🩸", imdbId:"tt7137906",
+      title:"Barry", orig:"Barry · HBO · 2018–2023",
+      tags:["Czarny humor","Kryminał","Oryginalny"],
+      desc:"Płatny zabójca próbuje zostać aktorem. Absurdalny, brutalny i uzależniający jak nic innego.",
+      channel:"HBO Max", badge:"VOD HBO Max"
+    },
+    alt: {
+      emoji:"💀", imdbId:"tt1844624",
+      title:"American Horror Story", orig:"Only Murders in the Building · Hulu · od 2021",
+      tags:["Komedia","Kryminał","Lekkostrawny"],
+      desc:"Trzech sąsiadów prowadzi podcast o morderstwie we własnym budynku. Dowcipne i wciągające.",
+      channel:"Disney+", badge:"VOD Disney+"
+    }
+  },
+
+  r_serial_fantasy_light: {
+    msgs: ["fantasy bez ciężaru – magia i dobra zabawa ✨"],
+    result: {
+      emoji:"🧙", imdbId:"tt2306299",
+      title:"The Good Place", orig:"The Good Place · NBC · 2016–2020",
+      tags:["Fantasy","Komedia","Filozoficzny"],
+      desc:"Kobieta trafia do raju przez pomyłkę. Serial o etyce i duszy, który gwarantuje śmiech na każdym odcinku.",
+      channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"🏰", imdbId:"tt4532368",
+      title:"Shadow and Bone", orig:"Shadow and Bone · Netflix · od 2021",
+      tags:["Fantasy","Przygoda","Romantyczny"],
+      desc:"Mroczne imperium, młoda żołnierka z magiczną mocą. Wizualnie zachwycający i pochłaniający.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+
+  r_serial_workplace: {
+    msgs: ["seriale zawodowe – bo praca może być zabawna 💼"],
+    result: {
+      emoji:"🏥", imdbId:"tt0285331",
+      title:"Scrubs", orig:"Scrubs · NBC · 2001–2010",
+      tags:["Workplace","Komedia","Klasyk"],
+      desc:"Lekarze, pielęgniarki i Doktorze Cox. Jeden z najlepszych sitcomów wszech czasów – śmiech i wzruszenie.",
+      channel:"Amazon Prime", badge:"VOD Prime Video"
+    },
+    alt: {
+      emoji:"📋", imdbId:"tt0386676",
+      title:"The Office", orig:"The Office (US) · NBC · 2005–2013",
+      tags:["Workplace","Mockument","Kultowy"],
+      desc:"Biuro firmy papierniczej w Scranton. Michael Scott, Jim i Dwight – kultowa obsada w kultowych sytuacjach.",
       channel:"Netflix", badge:"VOD Netflix"
     }
   },
