@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Jacek poleca – Vectra Screen Club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --yellow: #F3B702;
+  --navy:   #0D1B4B;
+  --black:  #0A0A0A;
+  --white:  #FFFFFF;
+  --bubble-j: #FFFFFF;
+  --bubble-u: #0D1B4B;
+}
+
+html {
+  min-height: 100%;
+  background: #6b0a1a url('bg_jacek.jpg') center center/cover no-repeat fixed;
+}
+body {
+  min-height: 100dvh;
+  font-family: 'Poppins', sans-serif;
+  background: transparent;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 32px 12% 32px 16px;
+  overflow-y: auto;
+}
+
+/* when shrinking — keep Jacek anchored left */
+@media (max-width: 1100px) {
+  html { background-position: left center; }
+}
+
+/* mobile — no hero, just red bg */
+@media (max-width: 640px) {
+  html { background-image: none; }
+  body { justify-content: center; padding: 32px 16px; }
+}
+
+/* ── APP SHELL ───────────────────────────────── */
+#app {
+  width: 440px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── CHAT WRAP ───────────────────────────────── */
+#chat-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.av {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--yellow);
+}
+.av img { width: 100%; height: 100%; object-fit: cover; }
+
+.head-info { flex: 1; min-width: 0; }
+.head-name  { font-size: 15px; font-weight: 700; color: var(--black); }
+.head-sub   { font-size: 11px; color: #22a85a; font-weight: 600; }
+
+.head-badge {
+  background: var(--yellow);
+  color: var(--black);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+/* ── INTRO ───────────────────────────────────── */
+#intro-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  width: 100%;
+}
+
+#intro-area {
+  width: 100%;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+
+.intro-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  animation: floatIn .5s .1s cubic-bezier(.34,1.4,.64,1) both;
+}
+
+.intro-av-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
+.intro-av {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+.intro-av img { width: 100%; height: 100%; object-fit: cover; }
+
+.intro-av-name {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--white);
+  text-align: center;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+}
+
+.intro-bubble {
+  background: var(--white);
+  color: var(--black);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.5;
+  padding: 18px 24px;
+  border-radius: 22px;
+  border-top-left-radius: 4px;
+  text-align: left;
+  box-shadow: 0 4px 24px rgba(0,0,0,.12);
+}
+
+@keyframes floatIn {
+  from { opacity: 0; transform: translateY(-14px) scale(.93); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── MESSAGES ────────────────────────────────── */
+#msgs {
+  padding: 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: visible;
+  scroll-behavior: smooth;
+
+}
+
+/* Jacek row: avatar + bubble */
+.msg-j {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  animation: msgInLeft .38s cubic-bezier(.34,1.5,.64,1) both;
+}
+.msg-j-av {
+  width: 38px; height: 38px;
+  border-radius: 50%; overflow: hidden; flex-shrink: 0;
+  margin-top: 2px;
+}
+.msg-j-av img { width:100%; height:100%; object-fit:cover; }
+
+/* user bubble right */
+.msg-u {
+  display: flex;
+  justify-content: flex-end;
+  animation: msgInRight .32s cubic-bezier(.34,1.5,.64,1) both;
+}
+
+/* entrance animations */
+.msg-j { animation: msgInLeft .38s cubic-bezier(.34,1.5,.64,1) both; }
+.msg-u { animation: msgInRight .32s cubic-bezier(.34,1.5,.64,1) both; }
+
+@keyframes msgInLeft {
+  from { opacity: 0; transform: translateX(-22px) scale(.9) rotate(-1.5deg); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes msgInRight {
+  from { opacity: 0; transform: translateX(22px) scale(.9) rotate(1.5deg); }
+  to   { opacity: 1; transform: none; }
+}
+
+.bubble {
+  max-width: 82%;
+  padding: 18px 24px;
+  border-radius: 22px;
+  font-size: 17px;
+  line-height: 1.5;
+  font-weight: 700;
+}
+
+.msg-j .bubble, .msg-j > .bubble {
+  background: var(--bubble-j);
+  color: var(--black);
+  border-top-left-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.09);
+}
+
+.msg-u .bubble, .msg-u > .bubble {
+  background: var(--bubble-u);
+  color: var(--white);
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.15);
+}
+
+.bubble strong { font-weight: 800; }
+
+/* typing */
+.typing {
+  display: inline-flex; gap: 5px; align-items: center;
+  background: var(--bubble-j);
+  border-radius: 18px; border-bottom-left-radius: 4px;
+  padding: 13px 18px;
+  box-shadow: 0 1px 6px rgba(0,0,0,.07);
+  animation: slideInLeft .25s ease both;
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; background: #bbb; animation: bounce 1.1s infinite ease-in-out; }
+.dot:nth-child(2) { animation-delay: .18s; }
+.dot:nth-child(3) { animation-delay: .36s; }
+@keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
+
+/* result card */
+.result-card {
+  background: var(--white);
+  border-radius: 16px;
+  overflow: hidden;
+  max-width: 88%;
+  box-shadow: 0 4px 20px rgba(0,0,0,.13);
+  animation: cardIn .5s cubic-bezier(.34,1.4,.64,1) both;
+}
+@keyframes cardIn {
+  from { opacity:0; transform: translateY(20px) scale(.88) rotateX(8deg); }
+  to   { opacity:1; transform: none; }
+}
+.rc-poster {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 16px 16px 0 0;
+}
+.rc-poster-fallback {
+  width: 100%; height: 130px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 60px;
+  background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
+}
+.rc-body   { padding: 14px 16px 16px; }
+.rc-title  { font-size: 18px; font-weight: 900; line-height:1.2; margin-bottom:3px; }
+.rc-orig   { font-size: 12px; color:#999; margin-bottom:10px; }
+.rc-tags   { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:11px; }
+.rc-tag    { background:var(--yellow); color:var(--black); font-size:10px; font-weight:800; padding:3px 9px; border-radius:100px; }
+.rc-desc   { font-size:13px; line-height:1.6; color:#333; margin-bottom:13px; }
+.rc-where  { font-size:12px; font-weight:700; color:#666; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.rc-where-badge { background:var(--navy); color:var(--white); padding:3px 10px; border-radius:100px; font-size:11px; font-weight:700; }
+
+/* ── CHOICES ─────────────────────────────────── */
+#choices {
+  padding: 14px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+/* intro choices — buttons float on yellow */
+#intro-choices {
+  padding: 20px 0 0 78px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+  animation: floatIn .5s .3s cubic-bezier(.34,1.3,.64,1) both;
+}
+
+.ch {
+  background: var(--navy);
+  border: none;
+  border-radius: 20px;
+  border-bottom-right-radius: 4px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  padding: 14px 28px;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  color: var(--white);
+  transition: background .14s, transform .12s, box-shadow .12s;
+  box-shadow: 0 2px 10px rgba(13,27,75,.25);
+  animation: choiceIn .35s cubic-bezier(.34,1.5,.64,1) both;
+}
+.ch:nth-child(1) { animation-delay: .0s; }
+.ch:nth-child(2) { animation-delay: .06s; }
+.ch:nth-child(3) { animation-delay: .12s; }
+.ch:nth-child(4) { animation-delay: .18s; }
+@keyframes choiceIn {
+  from { opacity:0; transform: translateY(12px) scale(.94); }
+  to   { opacity:1; transform: none; }
+}
+@keyframes choiceFlyOut {
+  from { opacity:1; transform: translateX(0) scale(1); }
+  to   { opacity:0; transform: translateX(80px) scale(.88); }
+}
+.ch.flying { animation: choiceFlyOut .22s cubic-bezier(.4,0,1,1) both; pointer-events:none; }
+.ch:hover  { background: #1a2d6e; transform: translateY(-1px); box-shadow: 0 5px 16px rgba(13,27,75,.35); }
+.ch:active { transform: scale(.97); }
+.ch-ic     { font-size: 18px; flex-shrink:0; }
+
+/* intro big buttons — identical to .ch */
+.ch-big {
+  background: var(--navy);
+  border: none;
+  border-radius: 20px;
+  border-bottom-right-radius: 4px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  padding: 14px 28px;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  color: var(--white);
+  transition: background .14s, transform .12s, box-shadow .12s;
+  box-shadow: 0 2px 10px rgba(13,27,75,.25);
+}
+.ch-big:hover  { background: #1a2d6e; transform: translateY(-1px); box-shadow: 0 5px 16px rgba(13,27,75,.35); }
+.ch-big:active { transform: scale(.97); }
+
+/* flying clone for intro button → chat bubble transition */
+.btn-fly-clone {
+  position: fixed;
+  pointer-events: none;
+  z-index: 999;
+  background: var(--navy);
+  border-radius: 20px;
+  border-bottom-right-radius: 4px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  padding: 14px 28px;
+  color: var(--white);
+  display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 2px 10px rgba(13,27,75,.25);
+  white-space: nowrap;
+  -webkit-font-smoothing: antialiased;
+  transition: left .38s cubic-bezier(.4,0,.2,1),
+              top .38s cubic-bezier(.4,0,.2,1),
+              opacity .15s .3s ease;
+}
+
+/* ── RESTART ─────────────────────────────────── */
+#restart {
+  display: none;
+  padding: 14px 0 0 78px;
+}
+#restart button {
+  width: 100%;
+  background: var(--yellow);
+  border: none; border-radius: 100px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px; font-weight: 800;
+  padding: 15px;
+  cursor: pointer;
+  transition: background .12s, transform .1s;
+  margin-bottom: 10px;
+}
+#restart button:hover  { background: #d9a202; }
+#restart button:active { transform: scale(.98); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- INTRO STATE -->
+  <div id="intro-wrap">
+    <div id="intro-area">
+      <div class="intro-row">
+        <div class="intro-av-wrap">
+          <div class="intro-av"><img src="jacek-avatar.webp" alt="Jacek Cygan"></div>
+          <div class="intro-av-name">Jacek<br>Cygan</div>
+        </div>
+        <div class="intro-bubble">Cześć 👋 tu Jacek Cygan!<br>Planujesz coś obejrzeć dziś wieczór?<br>Pomogę Ci wybrać.</div>
+      </div>
+    </div>
+    <div id="intro-choices"></div>
+  </div>
+
+  <!-- CHAT STATE (hidden until started) -->
+  <div id="chat-wrap" style="display:none;">
+    <div id="msgs"></div>
+    <div id="choices"></div>
+    <div id="restart"><button onclick="restartChat()">🔄 Jeszcze raz od początku</button></div>
+  </div>
+</div>
+
+<script>
+// ── DECISION TREE ──────────────────────────────
+const TREE = {
+
+  start: {
+    msgs: ["zacznijmy od podstaw – czego szukasz?"],
+    choices: [
+      { ic:"🎬", text:"Film",            next:"film_mood" },
+      { ic:"📺", text:"Serial",          next:"serial_mood" },
+      { ic:"🎙️", text:"Program",   next:"show_type" },
+      { ic:"🎞️", text:"Dokument",  next:"doc_type" },
+    ]
+  },
+
+  // ── FILM ──────────────────────────────────────
+  film_mood: {
+    msgs: ["dobry wybór! a w jakim jesteś dziś nastroju?"],
+    choices: [
+      { ic:"🔪", text:"Napięcie i thriller",       next:"film_thriller" },
+      { ic:"😂", text:"Komedia, chcę się śmiać",   next:"film_comedy" },
+      { ic:"❤️", text:"Coś lekkiego i ciepłego",   next:"r_crazy_rich" },
+      { ic:"🧠", text:"Coś, o czym będę myśleć",   next:"film_drama" },
+    ]
+  },
+
+  film_thriller: {
+    msgs: ["thriller to mój ulubiony gatunek 😈 wolisz coś bardziej psychologicznego, czy czystą akcję?"],
+    choices: [
+      { ic:"🧩", text:"Psychologia i twist",       next:"r_gone_girl" },
+      { ic:"💥", text:"Akcja, szybko, głośno",     next:"r_extraction" },
+    ]
+  },
+
+  film_comedy: {
+    msgs: ["rozumiem – śmiech to zdrowie 😄 romantycznie i lekko, czy czarny humor?"],
+    choices: [
+      { ic:"💕", text:"Romantyczna komedia",       next:"r_crazy_rich" },
+      { ic:"🖤", text:"Czarny humor / absurd",     next:"r_parasite" },
+    ]
+  },
+
+  film_drama: {
+    msgs: ["dobry gust 🎭 historia oparta na faktach, czy kino bardziej autorskie?"],
+    choices: [
+      { ic:"📖", text:"Oparta na faktach",         next:"r_oppenheimer" },
+      { ic:"🎞️", text:"Kino artystyczne",          next:"r_power_of_dog" },
+    ]
+  },
+
+  // ── SERIAL ────────────────────────────────────
+  serial_mood: {
+    msgs: ["serial to dobra decyzja 📺 masz czas na maraton czy wolisz coś krótszego?"],
+    choices: [
+      { ic:"🏃", text:"Maraton – wciągający do końca",  next:"serial_genre" },
+      { ic:"☕", text:"Odcinek wieczór – lekki serial",  next:"serial_light" },
+    ]
+  },
+
+  serial_genre: {
+    msgs: ["co bardziej – napięcie, dramat, czy sci-fi?"],
+    choices: [
+      { ic:"😰", text:"Napięcie i suspens",         next:"r_succession" },
+      { ic:"🌌", text:"Sci-fi / fantasy",           next:"r_severance" },
+      { ic:"🎭", text:"Dramat obyczajowy",          next:"r_white_lotus" },
+    ]
+  },
+
+  serial_light: {
+    msgs: ["lekkie seriale są niedoceniane 😊 komedia czy coś ciepłego i rodzinnego?"],
+    choices: [
+      { ic:"😄", text:"Komedia, śmiech gwarantowany", next:"r_ted_lasso" },
+      { ic:"🌷", text:"Ciepły, obyczajowy",           next:"r_emily_paris" },
+    ]
+  },
+
+  // ── PROGRAM ───────────────────────────────────
+  program_type: {
+    msgs: ["dobry wybór 🎙️ szukasz programu czy dokumentu?"],
+    choices: [
+      { ic:"📽️", text:"Dokument",          next:"doc_type" },
+      { ic:"🎤", text:"Program / show",    next:"show_type" },
+    ]
+  },
+
+  doc_type: {
+    msgs: ["dokumenty mają w sobie coś magicznego 🎞️ jaki temat Cię kręci?"],
+    choices: [
+      { ic:"🕵️", text:"Kryminał / true crime",     next:"r_making_murderer" },
+      { ic:"🌍", text:"Przyroda i natura",          next:"r_our_planet" },
+      { ic:"🧠", text:"Społeczny / polityczny",     next:"r_social_doc" },
+    ]
+  },
+
+  show_type: {
+    msgs: ["show – w sam raz na relaks 😄 co bardziej?"],
+    choices: [
+      { ic:"😂", text:"Stand-up / kabaret",         next:"r_standup" },
+      { ic:"🎮", text:"Teleturniej / talent show",  next:"r_talent" },
+      { ic:"🍳", text:"Lifestyle / kulinaria",      next:"r_lifestyle" },
+    ]
+  },
+
+  // ── RESULTS – FILMY ──────────────────────────
+  r_gone_girl: {
+    msgs: ["mam to – idealny na dziś wieczór 🔥"],
+    result: {
+      emoji:"🔪", imdbId:"tt2267998",
+      title:"Zaginiona dziewczyna", orig:"Gone Girl · David Fincher · 2014",
+      tags:["Thriller","Psychologiczny","Twist"],
+      desc:"Mężczyzna podejrzany o mord własnej żony. Im dalej, tym mniej wiesz komu ufać. Fincher w szczytowej formie.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+  r_extraction: {
+    msgs: ["mam coś dla ciebie 💥 akcja na maksa"],
+    result: {
+      emoji:"💥", imdbId:"tt8936646",
+      title:"Extraction", orig:"Extraction · Sam Hargrave · 2020",
+      tags:["Akcja","Thriller","Intensywny"],
+      desc:"Chris Hemsworth jako najemnik ratujący porwane dziecko w Dhace. Scena walki – legendarna.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+  r_crazy_rich: {
+    msgs: ["to jest właśnie to! 💛 ciepło i kolorowo"],
+    result: {
+      emoji:"💕", imdbId:"tt3104988",
+      title:"Szalone, bogate Azjatki", orig:"Crazy Rich Asians · Jon M. Chu · 2018",
+      tags:["Romans","Komedia","Feel-good"],
+      desc:"Singapurska elita, odjazdowe wesele i miłość, która przekracza bariery. Kolorowe i totalnie wciągające.",
+      channel:"HBO Max", badge:"VOD HBO Max"
+    }
+  },
+  r_parasite: {
+    msgs: ["o, to masz gust! 🖤"],
+    result: {
+      emoji:"🏠", imdbId:"tt6751668",
+      title:"Parasite", orig:"Parasite · Bong Joon-ho · 2019",
+      tags:["Czarna komedia","Dramat","Oscar"],
+      desc:"Biedna rodzina infiltruje bogaty dom. Złota Palma + Oscar. Absolutne arcydzieło.",
+      channel:"HBO Max", badge:"VOD HBO Max"
+    }
+  },
+  r_oppenheimer: {
+    msgs: ["mam coś dużego dla ciebie 💣"],
+    result: {
+      emoji:"💣", imdbId:"tt15398776",
+      title:"Oppenheimer", orig:"Oppenheimer · Christopher Nolan · 2023",
+      tags:["Biograficzny","Historyczny","Oscar"],
+      desc:"Ojciec bomby atomowej i ciężar, który z tego wynika. Trzy godziny, które mijają jak chwila.",
+      channel:"Apple TV+", badge:"VOD Apple TV+"
+    }
+  },
+  r_power_of_dog: {
+    msgs: ["ha – mam coś wyjątkowego 🎞️"],
+    result: {
+      emoji:"🤠", imdbId:"tt10293406",
+      title:"Psie pazury", orig:"The Power of the Dog · Jane Campion · 2021",
+      tags:["Dramat","Kino autorskie","Oscar"],
+      desc:"Ranczo w Montanie, toksyczna masculinność i skrywane tajemnice. Benedict Cumberbatch w roli życia.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+
+  // ── RESULTS – SERIALE ─────────────────────────
+  r_succession: {
+    msgs: ["to jest właśnie to – uzależniający 😰"],
+    result: {
+      emoji:"👔", imdbId:"tt7660850",
+      title:"Sukcesja", orig:"Succession · HBO · 4 sezony",
+      tags:["Dramat","Thriller","Prestiżowy"],
+      desc:"Rodzina medialna walczy o schedę po umierającym patriarsze. Najbardziej uzależniający serial dekady.",
+      channel:"HBO Max", badge:"VOD HBO Max"
+    }
+  },
+  r_severance: {
+    msgs: ["doskonały wybór 🌌"],
+    result: {
+      emoji:"🧠", imdbId:"tt11280740",
+      title:"Severance", orig:"Severance · Apple TV+ · od 2022",
+      tags:["Sci-Fi","Thriller","Tajemnica"],
+      desc:"Pracownicy firmy mają rozdzielone wspomnienia. Jeden z najciekawszych seriali sci-fi w historii.",
+      channel:"Apple TV+", badge:"VOD Apple TV+"
+    }
+  },
+  r_white_lotus: {
+    msgs: ["idealny wybór 🌺"],
+    result: {
+      emoji:"🌺", imdbId:"tt13406094",
+      title:"The White Lotus", orig:"The White Lotus · HBO · od 2021",
+      tags:["Dramat","Satyra","Prestiżowy"],
+      desc:"Luksusowy hotel, bogaci goście i sekrety. Każdy sezon to osobna historia, każdy jest perfekcją.",
+      channel:"HBO Max", badge:"VOD HBO Max"
+    }
+  },
+  r_ted_lasso: {
+    msgs: ["ten serial zmienił moje nastawienie do poniedziałków 😄"],
+    result: {
+      emoji:"⚽", imdbId:"tt10986410",
+      title:"Ted Lasso", orig:"Ted Lasso · Apple TV+ · od 2020",
+      tags:["Komedia","Sportowy","Feel-good"],
+      desc:"Amerykański trener futbolu bierze pod skrzydła angielski klub piłkarski. Ciepły i zaskakująco wzruszający.",
+      channel:"Apple TV+", badge:"VOD Apple TV+"
+    }
+  },
+  r_emily_paris: {
+    msgs: ["lekko i przyjemnie – oto mój typ 🌷"],
+    result: {
+      emoji:"🗼", imdbId:"tt8962124",
+      title:"Emily w Paryżu", orig:"Emily in Paris · Netflix · od 2020",
+      tags:["Romans","Komedia","Lekki"],
+      desc:"Amerykanka w paryskiej agencji reklamowej. Modnie, kolorowo, beztrosko. Idealne na wyłączenie myślenia.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+
+  // ── RESULTS – PROGRAMY ────────────────────────
+  r_making_murderer: {
+    msgs: ["true crime to moja słabość 🕵️"],
+    result: {
+      emoji:"🔍", imdbId:"tt5189670",
+      title:"Making a Murderer", orig:"Making a Murderer · Netflix · 2015",
+      tags:["True crime","Dokument","Wstrząsający"],
+      desc:"Historia Stevena Avery'ego i sprawy sądowej, która podzieliła Amerykę. Obowiązkowy.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+  r_our_planet: {
+    msgs: ["przyroda nigdy nie zawodzi 🌍"],
+    result: {
+      emoji:"🌍", imdbId:"tt9253866",
+      title:"Nasz Planet", orig:"Our Planet · Netflix · 2019",
+      tags:["Przyrodniczy","Dokument","Spektakularny"],
+      desc:"David Attenborough i obrazy, od których szczęka opada. Najpiękniej sfilmowany dokument przyrodniczy w historii.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+  r_standup: {
+    msgs: ["stand-up na dobry wieczór – polecam 😂"],
+    result: {
+      emoji:"🎤", imdbId:"tt14544192",
+      title:"Bo Burnham: Inside", orig:"Bo Burnham: Inside · Netflix · 2021",
+      tags:["Stand-up","Muzyczny","Wyjątkowy"],
+      desc:"Jednoosobowy show nagrany w izolacji. Zabawny, wzruszający i niepokojący jednocześnie.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+  r_social_doc: {
+    msgs: ["to jest właśnie to – dokument, który zmienia perspektywę 🧠"],
+    result: {
+      emoji:"🌐", imdbId:"tt11464826",
+      title:"Dylemat społeczny", orig:"The Social Dilemma · Netflix · 2020",
+      tags:["Dokument","Społeczny","Niepokojący"],
+      desc:"Twórcy Facebooka i Instagrama opowiadają, jak zaprojektowali uzależnienie. Obowiązkowy.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+  r_talent: {
+    msgs: ["talent show to zawsze emocje 🎮"],
+    result: {
+      emoji:"🎭", imdbId:"tt1353056",
+      title:"RuPaul's Drag Race", orig:"RuPaul's Drag Race · od 2009",
+      tags:["Talent show","Rozrywka","Kolorowy"],
+      desc:"Najsłynniejszy konkurs dragowy świata. Kreatywność i kostiumy, które trzeba zobaczyć.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+  r_lifestyle: {
+    msgs: ["kulinaria i lifestyle – mam coś idealnego 🍳"],
+    result: {
+      emoji:"🍳", imdbId:"tt4295140",
+      title:"Chef's Table", orig:"Chef's Table · Netflix · od 2015",
+      tags:["Kulinarny","Dokument","Inspirujący"],
+      desc:"Portrety najlepszych szefów kuchni świata. Kino dokumentalne w najczystszej formie.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+};
+
+const SURPRISE = [
+  "r_gone_girl","r_succession","r_parasite","r_oppenheimer",
+  "r_ted_lasso","r_crazy_rich","r_severance","r_white_lotus"
+];
+
+// ── POSTER FETCH ───────────────────────────────
+const TMDB_KEY = '8265bd1679663a7ea12ac168da84d2e8';
+async function fetchPoster(imdbId) {
+  try {
+    const r = await fetch(`https://api.themoviedb.org/3/find/${imdbId}?api_key=${TMDB_KEY}&external_source=imdb_id`);
+    const d = await r.json();
+    const item = d.movie_results?.[0] || d.tv_results?.[0];
+    return item?.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : null;
+  } catch { return null; }
+}
+
+// ── AUDIO ──────────────────────────────────────
+let _ctx;
+function ctx() {
+  if (!_ctx) _ctx = new (window.AudioContext || window.webkitAudioContext)();
+  return _ctx;
+}
+
+function playMsg() {
+  const c = ctx();
+  const o = c.createOscillator();
+  const g = c.createGain();
+  o.connect(g); g.connect(c.destination);
+  o.type = 'sine';
+  o.frequency.setValueAtTime(880, c.currentTime);
+  o.frequency.exponentialRampToValueAtTime(1100, c.currentTime + 0.06);
+  g.gain.setValueAtTime(0.18, c.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.18);
+  o.start(c.currentTime);
+  o.stop(c.currentTime + 0.18);
+}
+
+function playChoices() {
+  const c = ctx();
+  [0, 0.07, 0.14].forEach((t, i) => {
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.type = 'sine';
+    const freq = 520 + i * 80;
+    o.frequency.setValueAtTime(freq, c.currentTime + t);
+    g.gain.setValueAtTime(0.10, c.currentTime + t);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + t + 0.14);
+    o.start(c.currentTime + t);
+    o.stop(c.currentTime + t + 0.14);
+  });
+}
+
+function playClick() {
+  const c = ctx();
+  const o = c.createOscillator();
+  const g = c.createGain();
+  o.connect(g); g.connect(c.destination);
+  o.type = 'sine';
+  o.frequency.setValueAtTime(440, c.currentTime);
+  o.frequency.exponentialRampToValueAtTime(300, c.currentTime + 0.07);
+  g.gain.setValueAtTime(0.12, c.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.1);
+  o.start(c.currentTime);
+  o.stop(c.currentTime + 0.1);
+}
+
+// ── RUNTIME ────────────────────────────────────
+const msgsEl      = document.getElementById('msgs');
+const choicesEl   = document.getElementById('choices');
+const restartEl   = document.getElementById('restart');
+const introWrap   = document.getElementById('intro-wrap');
+const chatWrap    = document.getElementById('chat-wrap');
+const introChoicesEl = document.getElementById('intro-choices');
+
+function init() {
+  // show intro, hide chat
+  introWrap.style.display = 'block';
+  chatWrap.style.display  = 'none';
+  msgsEl.innerHTML = '';
+  choicesEl.innerHTML = '';
+  restartEl.style.display = 'none';
+
+  introChoicesEl.innerHTML = '';
+
+  const b1 = document.createElement('button');
+  b1.className = 'ch-big';
+  b1.innerHTML = '👍 Dawaj!';
+  b1.onclick = () => { playClick(); startConv('start', b1); };
+
+  const b2 = document.createElement('button');
+  b2.className = 'ch-big alt';
+  b2.innerHTML = '🎲 Zaskocz mnie!';
+  b2.onclick = () => { playClick(); startConv('surprise', b2); };
+
+  introChoicesEl.appendChild(b1);
+  introChoicesEl.appendChild(b2);
+}
+
+function flyToRight(btn, onDone) {
+  const r = btn.getBoundingClientRect();
+  /* pin in place without changing size */
+  btn.style.position      = 'fixed';
+  btn.style.left          = r.left + 'px';
+  btn.style.top           = r.top  + 'px';
+  btn.style.width         = r.width  + 'px';
+  btn.style.height        = r.height + 'px';
+  btn.style.whiteSpace    = 'nowrap';
+  btn.style.overflow      = 'hidden';
+  btn.style.margin        = '0';
+  btn.style.zIndex        = '999';
+  btn.style.pointerEvents = 'none';
+  document.body.appendChild(btn);
+
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const appRect = document.getElementById('app').getBoundingClientRect();
+    const dx = (appRect.right - r.right);
+    const dy = (appRect.top + 8) - r.top;
+    btn.style.transition = 'transform .38s cubic-bezier(.4,0,.2,1), opacity .15s .30s ease';
+    btn.style.transform  = `translate(${dx}px,${dy}px)`;
+    btn.style.opacity    = '0';
+    setTimeout(() => { btn.remove(); onDone(); }, 480);
+  }));
+}
+
+function startConv(node, clickedBtn) {
+  const label = node === 'surprise' ? '🎲 Zaskocz mnie!' : '👍 Dawaj!';
+
+  /* measure BEFORE hiding intro */
+  if (clickedBtn) flyToRight(clickedBtn, () => addBubble('u', label));
+
+  /* hide intro, show chat */
+  introWrap.style.display = 'none';
+  chatWrap.style.display  = 'flex';
+
+  if (!clickedBtn) addBubble('u', label);
+
+  const delay = clickedBtn ? 520 : 100;
+  if (node === 'surprise') {
+    const pick = SURPRISE[Math.floor(Math.random()*SURPRISE.length)];
+    setTimeout(() => {
+      typeSeq(["nie pytam – po prostu wiem co lubisz 😎", "oto mój typ na dziś wieczór:"], () => showResult(TREE[pick].result));
+    }, delay);
+  } else {
+    setTimeout(() => renderNode('start'), delay);
+  }
+}
+
+function renderNode(key) {
+  const node = TREE[key];
+  if (!node) return;
+  choicesEl.innerHTML = '';
+  typeSeq(node.msgs, () => {
+    if (node.result) showResult(node.result);
+    else             showChoices(node.choices);
+  });
+}
+
+function typeSeq(msgs, done) {
+  let i = 0;
+  function next() {
+    if (i >= msgs.length) { done && done(); return; }
+    const txt = msgs[i++];
+    const tyEl = addTyping();
+    const delay = 1000 + Math.min(txt.length * 18, 1600);
+    setTimeout(() => {
+      tyEl.remove();
+      addBubble('j', txt);
+      setTimeout(next, 260);
+    }, delay);
+  }
+  next();
+}
+
+function addTyping() {
+  const el = document.createElement('div');
+  el.className = 'msg-j';
+  el.innerHTML = `
+    <div class="msg-j-av"><img src="jacek-avatar.webp" alt="Jacek"></div>
+    <div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+  msgsEl.appendChild(el);
+  scrollBot();
+  return el;
+}
+
+function addBubble(who, txt) {
+  const el = document.createElement('div');
+  el.className = `msg-${who}`;
+  const html = txt.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  if (who === 'j') {
+    el.innerHTML = `
+      <div class="msg-j-av"><img src="jacek-avatar.webp" alt="Jacek"></div>
+      <div class="bubble">${html}</div>`;
+    playMsg();
+  } else {
+    el.innerHTML = `<div class="bubble">${html}</div>`;
+  }
+  msgsEl.appendChild(el);
+  scrollBot();
+}
+
+function showChoices(choices) {
+  choices.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'ch';
+    btn.innerHTML = `<span class="ch-ic">${c.ic}</span>${c.text}`;
+    btn.onclick = () => {
+      playClick();
+      const label = c.ic + ' ' + c.text;
+
+      /* fade out other buttons, keep btn in DOM for measurement */
+      choicesEl.querySelectorAll('.ch').forEach(b => {
+        if (b !== btn) { b.style.transition='opacity .15s'; b.style.opacity='0'; }
+      });
+
+      /* flyToRight measures btn position while still in DOM, then appends to body */
+      flyToRight(btn, () => {
+        addBubble('u', label);
+        setTimeout(() => renderNode(c.next), 380);
+      });
+    };
+    choicesEl.appendChild(btn);
+  });
+  playChoices();
+  scrollBot();
+}
+
+function showResult(r) {
+  const el = document.createElement('div');
+  el.className = 'msg-j';
+  const tags = r.tags.map(t=>`<span class="rc-tag">${t}</span>`).join('');
+  const posterArea = document.createElement('div');
+  posterArea.innerHTML = `<div class="rc-poster-fallback">${r.emoji}</div>`;
+  const card = document.createElement('div');
+  card.className = 'result-card';
+  card.appendChild(posterArea);
+  const body = document.createElement('div');
+  body.className = 'rc-body';
+  body.innerHTML = `
+    <div class="rc-title">${r.title}</div>
+    <div class="rc-orig">${r.orig}</div>
+    <div class="rc-tags">${tags}</div>
+    <div class="rc-desc">${r.desc}</div>
+    <div class="rc-where">Dostępne na <span class="rc-where-badge">${r.badge}</span> w pakietach Vectra</div>`;
+  card.appendChild(body);
+  const av = document.createElement('div');
+  av.className = 'msg-j-av';
+  av.innerHTML = `<img src="jacek-avatar.webp" alt="Jacek">`;
+  el.appendChild(av);
+  el.appendChild(card);
+  msgsEl.appendChild(el);
+  scrollBot();
+
+  // async poster fetch
+  if (r.imdbId) {
+    fetchPoster(r.imdbId).then(url => {
+      if (url) {
+        const img = document.createElement('img');
+        img.className = 'rc-poster';
+        img.alt = r.title;
+        img.src = url;
+        img.onerror = () => {}; // keep fallback if broken
+        posterArea.innerHTML = '';
+        posterArea.appendChild(img);
+        scrollBot();
+      }
+    });
+  }
+
+  setTimeout(() => {
+    typeSeq(["to mój typ na ten wieczór!\n\njeśli chcesz coś innego – wróć i spróbuj jeszcze raz"], () => {
+      restartEl.style.display = 'block';
+      choicesEl.innerHTML = '';
+      scrollBot();
+    });
+  }, 350);
+}
+
+function scrollBot() {
+  setTimeout(() => msgsEl.scrollTop = msgsEl.scrollHeight, 50);
+}
+
+function restartChat() { init(); }
+
+init();
+</script>
+</body>
+</html>
