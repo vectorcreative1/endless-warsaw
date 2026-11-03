@@ -58,6 +58,12 @@ thead th {
 tr.main-row td { background: #fff; border-bottom: 1px solid #f0ece7; }
 tr.alt-row td  { background: #faf9f7; border-bottom: 1px solid #ece8e2; }
 tr.spacer td   { height: 6px; background: transparent; }
+tr.subcat-header td { background: transparent; padding: 14px 10px 6px; border: none; }
+.subcat-pill {
+  font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  color: #0D1B4B; background: #e8ecf5; border: 1.5px solid #c0cae0;
+  display: inline-block; padding: 3px 12px; border-radius: 100px;
+}
 td { padding: 9px 10px; vertical-align: middle; }
 
 .path { font-size: 11px; color: #555; line-height: 1.5; }
@@ -257,7 +263,9 @@ function makeRow(rowData, isMain, key, path) {
   const pathTd = document.createElement('td');
   if (isMain) {
     pathTd.className = 'path';
-    pathTd.innerHTML = path.map((s,i) => i===0 ? `<b>${s}</b>` : `<span class="sep">›</span>${s}`).join('');
+    // When a subcat header exists, show only path[2+]; otherwise show full path
+    const displayPath = path.length > 2 ? path.slice(2) : (path.length === 2 ? [path[1]] : path);
+    pathTd.innerHTML = displayPath.map((s,i) => i===0 ? `<b>${s}</b>` : `<span class="sep">›</span>${s}`).join('');
   }
   tr.appendChild(pathTd);
 
@@ -370,15 +378,24 @@ DATA.forEach(section => {
   table.appendChild(thead);
   const tbody = document.createElement('tbody');
 
+  let lastSubcat = null;
   section.rows.forEach((row, i) => {
+    const subcat = row.path[1] || null;
+    if (subcat && subcat !== lastSubcat) {
+      if (lastSubcat !== null) {
+        const spacer = document.createElement('tr');
+        spacer.className = 'spacer';
+        spacer.innerHTML = '<td colspan="5"></td>';
+        tbody.appendChild(spacer);
+      }
+      const subRow = document.createElement('tr');
+      subRow.className = 'subcat-header';
+      subRow.innerHTML = `<td colspan="5"><span class="subcat-pill">${subcat}</span></td>`;
+      tbody.appendChild(subRow);
+      lastSubcat = subcat;
+    }
     tbody.appendChild(makeRow(row.main, true,  row.key, row.path));
     tbody.appendChild(makeRow(row.alt,  false, row.key, row.path));
-    if (i < section.rows.length - 1) {
-      const spacer = document.createElement('tr');
-      spacer.className = 'spacer';
-      spacer.innerHTML = '<td colspan="5"></td>';
-      tbody.appendChild(spacer);
-    }
   });
 
   table.appendChild(tbody);
