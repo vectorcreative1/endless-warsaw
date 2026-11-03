@@ -21,30 +21,105 @@
 
 html {
   min-height: 100%;
-  background: #6b0a1a url('bg_jacek.jpg') center center/cover no-repeat fixed;
+  background: #6b0a1a;
+  overflow-y: auto;
+}
+#bg-hero {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+#bg-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: left center;
+  display: block;
 }
 body {
   min-height: 100dvh;
   font-family: 'Poppins', sans-serif;
   background: transparent;
+  position: relative;
+  z-index: 1;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior: none;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 32px 12% 32px 16px;
+}
+
+#app {
+  position: fixed;
+  right: 12%;
+  top: 50%;
+  transform: translateY(-50%);
+  max-height: 90dvh;
   overflow-y: auto;
+  scrollbar-width: none;
+  padding-bottom: 24px;
 }
 
-/* when shrinking — keep Jacek anchored left */
-@media (max-width: 1100px) {
-  html { background-position: left center; }
+/* when viewport too narrow — hide desktop hero, show portrait */
+#bg-mobile {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+#bg-mobile img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: filter .5s ease;
+}
+body.chat-active #bg-mobile img {
+  filter: brightness(0.25);
 }
 
-/* mobile — no hero, just red bg */
-@media (max-width: 640px) {
-  html { background-image: none; }
-  body { justify-content: center; padding: 32px 16px; }
+@media (max-width: 900px) {
+  #bg-hero   { display: none; }
+  #bg-mobile { display: block; }
+
+  /* INTRO: push to bottom of screen */
+  body {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+    padding: 0 0 120px 0;
+    background: transparent;
+    min-height: 100dvh;
+  }
+  #app {
+    position: static;
+    transform: none;
+    max-height: none;
+    overflow-y: visible;
+    padding: 0 16px 36px;
+    background: linear-gradient(to top, rgba(107,10,26,.85) 60%, transparent 100%);
+  }
+
+  /* CHAT: fill screen with semi-opaque backdrop */
+  body.chat-active {
+    justify-content: flex-start;
+    padding: 0;
+    background: rgba(107,10,26,.88);
+    height: 100dvh;
+    overflow-y: auto;
+  }
+  body.chat-active #app {
+    padding: 100px 16px 100px;
+    width: 100%;
+  }
+  body.chat-active #restart {
+    padding: 14px 0 0 0;
+    position: sticky;
+    bottom: 20px;
+    z-index: 10;
+  }
 }
 
 /* ── APP SHELL ───────────────────────────────── */
@@ -54,6 +129,8 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+#app::-webkit-scrollbar { display: none; }
 
 /* ── CHAT WRAP ───────────────────────────────── */
 #chat-wrap {
@@ -390,6 +467,8 @@ body {
 </style>
 </head>
 <body>
+<div id="bg-hero"><img src="bg_jacek.webp" alt=""></div>
+<div id="bg-mobile"><img src="mobile_full_screen.webp" alt=""></div>
 <div id="app">
 
   <!-- INTRO STATE -->
@@ -525,6 +604,13 @@ const TREE = {
       tags:["Thriller","Psychologiczny","Twist"],
       desc:"Mężczyzna podejrzany o mord własnej żony. Im dalej, tym mniej wiesz komu ufać. Fincher w szczytowej formie.",
       channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"🕶️", imdbId:"tt1375666",
+      title:"Incepcja", orig:"Inception · Christopher Nolan · 2010",
+      tags:["Thriller","Sci-Fi","Mind-bend"],
+      desc:"Złodziej wszczepający idee w ludzkie sny. Nolan na szczycie – każda scena to zagadka.",
+      channel:"Netflix", badge:"VOD Netflix"
     }
   },
   r_extraction: {
@@ -535,6 +621,13 @@ const TREE = {
       tags:["Akcja","Thriller","Intensywny"],
       desc:"Chris Hemsworth jako najemnik ratujący porwane dziecko w Dhace. Scena walki – legendarna.",
       channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"🔫", imdbId:"tt6723592",
+      title:"Tenet", orig:"Tenet · Christopher Nolan · 2020",
+      tags:["Akcja","Sci-Fi","Widowiskowy"],
+      desc:"Szpieg operujący odwróconym czasem. Nolan robi widowisko na pełnych obrotach.",
+      channel:"HBO Max", badge:"VOD HBO Max"
     }
   },
   r_crazy_rich: {
@@ -545,6 +638,13 @@ const TREE = {
       tags:["Romans","Komedia","Feel-good"],
       desc:"Singapurska elita, odjazdowe wesele i miłość, która przekracza bariery. Kolorowe i totalnie wciągające.",
       channel:"HBO Max", badge:"VOD HBO Max"
+    },
+    alt: {
+      emoji:"💐", imdbId:"tt10954600",
+      title:"To All the Boys: zawsze i na zawsze", orig:"To All the Boys: Always and Forever · 2021",
+      tags:["Romans","Komedia","Feel-good"],
+      desc:"Lara Jean i Peter kończą szkołę – i planują wspólną przyszłość. Lekkie, ciepłe, przyjemne.",
+      channel:"Netflix", badge:"VOD Netflix"
     }
   },
   r_parasite: {
@@ -555,6 +655,13 @@ const TREE = {
       tags:["Czarna komedia","Dramat","Oscar"],
       desc:"Biedna rodzina infiltruje bogaty dom. Złota Palma + Oscar. Absolutne arcydzieło.",
       channel:"HBO Max", badge:"VOD HBO Max"
+    },
+    alt: {
+      emoji:"🎬", imdbId:"tt3783958",
+      title:"La La Land", orig:"La La Land · Damien Chazelle · 2016",
+      tags:["Musical","Dramat","Oscar"],
+      desc:"Marzycielka i jazzman w Los Angeles. Wizualnie olśniewający, muzycznie genialny.",
+      channel:"Netflix", badge:"VOD Netflix"
     }
   },
   r_oppenheimer: {
@@ -565,6 +672,13 @@ const TREE = {
       tags:["Biograficzny","Historyczny","Oscar"],
       desc:"Ojciec bomby atomowej i ciężar, który z tego wynika. Trzy godziny, które mijają jak chwila.",
       channel:"Apple TV+", badge:"VOD Apple TV+"
+    },
+    alt: {
+      emoji:"🚀", imdbId:"tt0816692",
+      title:"Interstellar", orig:"Interstellar · Christopher Nolan · 2014",
+      tags:["Sci-Fi","Epicki","Emocjonalny"],
+      desc:"Ojciec wyrusza w kosmos by ocalić ludzkość. Hans Zimmer + Nolan = gwarantowane ciarki.",
+      channel:"Netflix", badge:"VOD Netflix"
     }
   },
   r_power_of_dog: {
@@ -574,6 +688,13 @@ const TREE = {
       title:"Psie pazury", orig:"The Power of the Dog · Jane Campion · 2021",
       tags:["Dramat","Kino autorskie","Oscar"],
       desc:"Ranczo w Montanie, toksyczna masculinność i skrywane tajemnice. Benedict Cumberbatch w roli życia.",
+      channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"🎭", imdbId:"tt1375666",
+      title:"Zielona księga", orig:"Green Book · Peter Farrelly · 2018",
+      tags:["Dramat","Komedia","Oscar"],
+      desc:"Czarny pianista i biały ochroniarz w drodze przez rasistowskie Południe. Ciepłe i mądre.",
       channel:"Netflix", badge:"VOD Netflix"
     }
   },
@@ -587,6 +708,13 @@ const TREE = {
       tags:["Dramat","Thriller","Prestiżowy"],
       desc:"Rodzina medialna walczy o schedę po umierającym patriarsze. Najbardziej uzależniający serial dekady.",
       channel:"HBO Max", badge:"VOD HBO Max"
+    },
+    alt: {
+      emoji:"🏦", imdbId:"tt3032476",
+      title:"Better Call Saul", orig:"Better Call Saul · AMC · 6 sezonów",
+      tags:["Dramat","Thriller","Prestiżowy"],
+      desc:"Jak prawnik Jimmy McGill stał się Saulem Goodmanem. Jeden z najlepiej napisanych seriali w historii.",
+      channel:"Netflix", badge:"VOD Netflix"
     }
   },
   r_severance: {
@@ -597,6 +725,13 @@ const TREE = {
       tags:["Sci-Fi","Thriller","Tajemnica"],
       desc:"Pracownicy firmy mają rozdzielone wspomnienia. Jeden z najciekawszych seriali sci-fi w historii.",
       channel:"Apple TV+", badge:"VOD Apple TV+"
+    },
+    alt: {
+      emoji:"🌀", imdbId:"tt5753856",
+      title:"Dark", orig:"Dark · Netflix · 3 sezony",
+      tags:["Sci-Fi","Thriller","Mind-bend"],
+      desc:"Niemiecka rodzina, podróże w czasie i tajemnica czterech pokoleń. Absolutnie wciągające.",
+      channel:"Netflix", badge:"VOD Netflix"
     }
   },
   r_white_lotus: {
@@ -606,6 +741,13 @@ const TREE = {
       title:"The White Lotus", orig:"The White Lotus · HBO · od 2021",
       tags:["Dramat","Satyra","Prestiżowy"],
       desc:"Luksusowy hotel, bogaci goście i sekrety. Każdy sezon to osobna historia, każdy jest perfekcją.",
+      channel:"HBO Max", badge:"VOD HBO Max"
+    },
+    alt: {
+      emoji:"🔍", imdbId:"tt8673368",
+      title:"The Undoing", orig:"The Undoing · HBO · 2020",
+      tags:["Thriller","Dramat","Mini-serial"],
+      desc:"Idealne życie terapeutki w Nowym Jorku – i morderstwo, które wszystko wywraca. Nicole Kidman.",
       channel:"HBO Max", badge:"VOD HBO Max"
     }
   },
@@ -617,6 +759,13 @@ const TREE = {
       tags:["Komedia","Sportowy","Feel-good"],
       desc:"Amerykański trener futbolu bierze pod skrzydła angielski klub piłkarski. Ciepły i zaskakująco wzruszający.",
       channel:"Apple TV+", badge:"VOD Apple TV+"
+    },
+    alt: {
+      emoji:"🌻", imdbId:"tt8579674",
+      title:"Schitt's Creek", orig:"Schitt's Creek · CBC · 6 sezonów",
+      tags:["Komedia","Feel-good","Nagrody Emmy"],
+      desc:"Bogata rodzina traci majątek i ląduje w małym miasteczku. Serce i humor w idealnych proporcjach.",
+      channel:"Netflix", badge:"VOD Netflix"
     }
   },
   r_emily_paris: {
@@ -626,6 +775,13 @@ const TREE = {
       title:"Emily w Paryżu", orig:"Emily in Paris · Netflix · od 2020",
       tags:["Romans","Komedia","Lekki"],
       desc:"Amerykanka w paryskiej agencji reklamowej. Modnie, kolorowo, beztrosko. Idealne na wyłączenie myślenia.",
+      channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"👗", imdbId:"tt5687612",
+      title:"Ginny i Georgia", orig:"Ginny & Georgia · Netflix · od 2021",
+      tags:["Dramat","Komedia","Romans"],
+      desc:"Matka i córka, małe miasteczko, wielkie sekrety. Lekkie, ale z charakterem.",
       channel:"Netflix", badge:"VOD Netflix"
     }
   },
@@ -639,6 +795,13 @@ const TREE = {
       tags:["True crime","Dokument","Wstrząsający"],
       desc:"Historia Stevena Avery'ego i sprawy sądowej, która podzieliła Amerykę. Obowiązkowy.",
       channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"🩸", imdbId:"tt3270538",
+      title:"The Jinx", orig:"The Jinx · HBO · 2015",
+      tags:["True crime","Dokument","Szokujący"],
+      desc:"Miliarder Robert Durst i trzy podejrzane zgony. Finał – jeden z najbardziej szokujących w historii TV.",
+      channel:"HBO Max", badge:"VOD HBO Max"
     }
   },
   r_our_planet: {
@@ -648,6 +811,13 @@ const TREE = {
       title:"Nasz Planet", orig:"Our Planet · Netflix · 2019",
       tags:["Przyrodniczy","Dokument","Spektakularny"],
       desc:"David Attenborough i obrazy, od których szczęka opada. Najpiękniej sfilmowany dokument przyrodniczy w historii.",
+      channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"🐋", imdbId:"tt9813792",
+      title:"Nasz Ocean", orig:"Our Ocean · Netflix · 2023",
+      tags:["Przyrodniczy","Dokument","Spektakularny"],
+      desc:"Głębiny morskie sfotografowane jak nigdy dotąd. Kolejny wizualny majstersztyk od Netflix.",
       channel:"Netflix", badge:"VOD Netflix"
     }
   },
@@ -659,6 +829,13 @@ const TREE = {
       tags:["Stand-up","Muzyczny","Wyjątkowy"],
       desc:"Jednoosobowy show nagrany w izolacji. Zabawny, wzruszający i niepokojący jednocześnie.",
       channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"😂", imdbId:"tt6986718",
+      title:"Nanette", orig:"Hannah Gadsby: Nanette · Netflix · 2018",
+      tags:["Stand-up","Osobisty","Przełomowy"],
+      desc:"Show, który zmienił definicję stand-upu. Śmiech przechodzi w coś znacznie głębszego.",
+      channel:"Netflix", badge:"VOD Netflix"
     }
   },
   r_social_doc: {
@@ -668,6 +845,13 @@ const TREE = {
       title:"Dylemat społeczny", orig:"The Social Dilemma · Netflix · 2020",
       tags:["Dokument","Społeczny","Niepokojący"],
       desc:"Twórcy Facebooka i Instagrama opowiadają, jak zaprojektowali uzależnienie. Obowiązkowy.",
+      channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"🧬", imdbId:"tt3263926",
+      title:"The Act of Killing", orig:"The Act of Killing · 2012",
+      tags:["Dokument","Historyczny","Przełomowy"],
+      desc:"Indonezyjscy kaci odtwarzają własne zbrodnie. Jeden z najbardziej wstrząsających dokumentów w historii.",
       channel:"Netflix", badge:"VOD Netflix"
     }
   },
@@ -679,6 +863,13 @@ const TREE = {
       tags:["Talent show","Rozrywka","Kolorowy"],
       desc:"Najsłynniejszy konkurs dragowy świata. Kreatywność i kostiumy, które trzeba zobaczyć.",
       channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"🏆", imdbId:"tt0770832",
+      title:"America's Got Talent", orig:"America's Got Talent · od 2006",
+      tags:["Talent show","Rozrywka","Emocjonujący"],
+      desc:"Najbardziej różnorodny talent show na świecie. Zawsze znajdziesz kogoś, kto cię zaskoczy.",
+      channel:"Netflix", badge:"VOD Netflix"
     }
   },
   r_lifestyle: {
@@ -688,6 +879,13 @@ const TREE = {
       title:"Chef's Table", orig:"Chef's Table · Netflix · od 2015",
       tags:["Kulinarny","Dokument","Inspirujący"],
       desc:"Portrety najlepszych szefów kuchni świata. Kino dokumentalne w najczystszej formie.",
+      channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"🌮", imdbId:"tt8539566",
+      title:"Ugly Delicious", orig:"Ugly Delicious · Netflix · od 2018",
+      tags:["Kulinarny","Podróże","Ciekawy"],
+      desc:"David Chang bada kulturę jedzenia przez pryzmat konkretnych potraw. Inteligentnie i smacznie.",
       channel:"Netflix", badge:"VOD Netflix"
     }
   },
@@ -772,6 +970,7 @@ function init() {
   // show intro, hide chat
   introWrap.style.display = 'block';
   chatWrap.style.display  = 'none';
+  document.body.classList.remove('chat-active');
   msgsEl.innerHTML = '';
   choicesEl.innerHTML = '';
   restartEl.style.display = 'none';
@@ -827,6 +1026,7 @@ function startConv(node, clickedBtn) {
   /* hide intro, show chat */
   introWrap.style.display = 'none';
   chatWrap.style.display  = 'flex';
+  document.body.classList.add('chat-active');
 
   if (!clickedBtn) addBubble('u', label);
 
@@ -846,7 +1046,7 @@ function renderNode(key) {
   if (!node) return;
   choicesEl.innerHTML = '';
   typeSeq(node.msgs, () => {
-    if (node.result) showResult(node.result);
+    if (node.result) showResult({ ...node.result, _alt: node.alt });
     else             showChoices(node.choices);
   });
 }
@@ -964,15 +1164,52 @@ function showResult(r) {
 
   setTimeout(() => {
     typeSeq(["to mój typ na ten wieczór!\n\njeśli chcesz coś innego – wróć i spróbuj jeszcze raz"], () => {
-      restartEl.style.display = 'block';
       choicesEl.innerHTML = '';
+      restartEl.innerHTML = '';
+      if (r._alt) {
+        const seenBtn = document.createElement('button');
+        seenBtn.textContent = 'Już to widziałem/am';
+        restartEl.appendChild(seenBtn);
+        seenBtn.onclick = () => {
+          playClick();
+          restartEl.style.display = 'none';
+          addBubble('u', 'Już to widziałem/am');
+          setTimeout(() => {
+            typeSeq(["dobra, to w podobnym stylu – mam coś innego dla Ciebie:"], () => {
+              showResult(r._alt);
+            });
+          }, 400);
+        };
+      }
+      const againBtn = document.createElement('button');
+      againBtn.innerHTML = '🔄 Jeszcze raz od początku';
+      againBtn.onclick = restartChat;
+      restartEl.appendChild(againBtn);
+      restartEl.style.display = 'block';
       scrollBot();
+      setTimeout(() => {
+        if (window.innerWidth <= 900) {
+          document.body.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+          document.documentElement.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+        } else {
+          appEl.scrollTop = appEl.scrollHeight;
+        }
+        restartEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }, 200);
     });
   }, 350);
 }
 
+const appEl = document.getElementById('app');
 function scrollBot() {
-  setTimeout(() => msgsEl.scrollTop = msgsEl.scrollHeight, 50);
+  setTimeout(() => {
+    if (window.innerWidth <= 900) {
+      document.body.scrollTo(0, document.body.scrollHeight);
+      document.documentElement.scrollTo(0, document.documentElement.scrollHeight);
+    } else {
+      appEl.scrollTop = appEl.scrollHeight;
+    }
+  }, 50);
 }
 
 function restartChat() { init(); }
