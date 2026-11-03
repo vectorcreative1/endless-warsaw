@@ -553,11 +553,20 @@ const TREE = {
   },
 
   serial_genre: {
-    msgs: ["co bardziej – napięcie, dramat, czy sci-fi?"],
+    msgs: ["co bardziej – klimat mroczny, dramatyczny, czy coś innego?"],
     choices: [
-      { ic:"😰", text:"Napięcie i suspens",         next:"r_succession" },
-      { ic:"🌌", text:"Sci-fi / fantasy",           next:"r_severance" },
-      { ic:"🎭", text:"Dramat obyczajowy",          next:"r_white_lotus" },
+      { ic:"🌑", text:"Mroczny – thriller / horror",  next:"serial_dark" },
+      { ic:"🌌", text:"Sci-Fi / fantasy",             next:"r_severance" },
+      { ic:"🎭", text:"Dramat obyczajowy",            next:"r_white_lotus" },
+    ]
+  },
+
+  serial_dark: {
+    msgs: ["lubię to 😈 bardziej thriller i suspens, horror, czy kryminał i detektyw?"],
+    choices: [
+      { ic:"😰", text:"Thriller / suspens",          next:"r_succession" },
+      { ic:"👻", text:"Horror",                       next:"r_serial_horror" },
+      { ic:"🔍", text:"Kryminał / detektyw",         next:"r_serial_detective" },
     ]
   },
 
@@ -719,6 +728,42 @@ const TREE = {
   },
 
   // ── RESULTS – SERIALE ─────────────────────────
+  r_serial_horror: {
+    msgs: ["horror serialowy to osobna liga 👻"],
+    result: {
+      emoji:"👻", imdbId:"tt6763664",
+      title:"Nawiedzony dom na wzgórzu", orig:"The Haunting of Hill House · Netflix · 2018",
+      tags:["Horror","Dramat","Atmosferyczny"],
+      desc:"Rodzina wraca do nawiedzonego domu dzieciństwa. Nie straszny od skoku – przerażający do szpiku kości.",
+      channel:"Netflix", badge:"VOD Netflix"
+    },
+    alt: {
+      emoji:"🕯️", imdbId:"tt10574558",
+      title:"Midnight Mass", orig:"Midnight Mass · Netflix · 2021",
+      tags:["Horror","Dramat","Mike Flanagan"],
+      desc:"Mała wyspa, nowy ksiądz i coś, co budzi się nocą. Najlepszy horror religijny w historii seriali.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+
+  r_serial_detective: {
+    msgs: ["kryminał z klimatem – trafiłeś w punkt 🔍"],
+    result: {
+      emoji:"🔦", imdbId:"tt2356777",
+      title:"True Detective", orig:"True Detective · HBO · sezon 1 · 2014",
+      tags:["Kryminał","Thriller","Prestiżowy"],
+      desc:"Dwóch detektywów i sprawa, która wraca po 17 latach. Sezon 1 z McConaugheyem – absolutna perfekcja.",
+      channel:"HBO Max", badge:"VOD HBO Max"
+    },
+    alt: {
+      emoji:"🧠", imdbId:"tt5290382",
+      title:"Mindhunter", orig:"Mindhunter · Netflix · 2017",
+      tags:["Kryminał","Psychologiczny","FBI"],
+      desc:"Agenci FBI profilują seryjnych morderców. Zimny, precyzyjny i uzależniający jak żaden inny.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+
   r_succession: {
     msgs: ["to jest właśnie to – uzależniający 😰"],
     result: {
