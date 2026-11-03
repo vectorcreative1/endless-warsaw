@@ -512,6 +512,7 @@ const TREE = {
     msgs: ["dobry wybór! a w jakim jesteś dziś nastroju?"],
     choices: [
       { ic:"🔪", text:"Napięcie i thriller",       next:"film_thriller" },
+      { ic:"🚀", text:"Sci-Fi",                    next:"r_film_scifi" },
       { ic:"😂", text:"Komedia, chcę się śmiać",   next:"film_comedy" },
       { ic:"❤️", text:"Coś lekkiego i ciepłego",   next:"r_crazy_rich" },
       { ic:"🧠", text:"Coś, o czym będę myśleć",   next:"film_drama" },
@@ -695,6 +696,24 @@ const TREE = {
       title:"Zielona księga", orig:"Green Book · Peter Farrelly · 2018",
       tags:["Dramat","Komedia","Oscar"],
       desc:"Czarny pianista i biały ochroniarz w drodze przez rasistowskie Południe. Ciepłe i mądre.",
+      channel:"Netflix", badge:"VOD Netflix"
+    }
+  },
+
+  r_film_scifi: {
+    msgs: ["sci-fi to osobny świat 🚀 mam coś idealnego"],
+    result: {
+      emoji:"🪐", imdbId:"tt1160419",
+      title:"Diuna", orig:"Dune · Denis Villeneuve · 2021",
+      tags:["Sci-Fi","Epicki","Widowiskowy"],
+      desc:"Pustynna planeta, tajemnicza przyprawa i wybrany, który nie chce być bohaterem. Wizualny majstersztyk Villeneuve'a.",
+      channel:"HBO Max", badge:"VOD HBO Max"
+    },
+    alt: {
+      emoji:"🛸", imdbId:"tt2543164",
+      title:"Nowy początek", orig:"Arrival · Denis Villeneuve · 2016",
+      tags:["Sci-Fi","Dramat","Emocjonalny"],
+      desc:"Lingwistka próbuje porozumieć się z obcymi. Jeden z najmądrzejszych filmów sci-fi ostatniej dekady.",
       channel:"Netflix", badge:"VOD Netflix"
     }
   },
