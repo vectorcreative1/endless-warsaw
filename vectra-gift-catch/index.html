@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Vectra – Łap prezenty</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:#111;overflow:hidden;touch-action:none;user-select:none}
+  canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#000}
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1072"></canvas>
+<script>
+/* =========================================================
+   VECTRA – ŁAP PREZENTY  (prototyp mechaniki, grafika pikselowa)
+   Logiczna rozdzielczość 1920x1072 (jak PSD). Wszystkie pozycje w tych jednostkach.
+   ========================================================= */
+const W = 1920, H = 1072, PX = 12;         // rozmiar jak w PSD; PX = "piksel" placeholderów
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+function fit(){ const s = Math.min(innerWidth / W, innerHeight / H); cv.style.width = W*s+'px'; cv.style.height = H*s+'px'; }
+addEventListener('resize', fit); fit();
+
+/* ---------- USTAWIENIA GRY ---------- */
+const CFG = {
+  steps: 5,          // ile pozycji ma prezent na półce (jak w grach LCD)
+  startTick: 650,    // ms między krokami na starcie
+  minTick: 220,      // najszybciej
+  levelBase: 10,     // ile prezentów trzeba złapać na 1. poziomie (pasek się zapełnia)
+  levelGrow: 2,      // o ile więcej na każdym kolejnym poziomie
+  levelSpeed: .88,   // każdy poziom: krok trwa 88% poprzedniego (= ~12% szybciej)
+  pointsPer: 10,     // punkty za prezent × numer poziomu
+  lives: 3,          // życia na start
+  maxLives: 5,       // więcej się nie da (za poziom dostaje się +1 życie)
+  missPause: 1500,   // pauza po zgubieniu prezentu (ms) – widać upadek i okruchy
+};
+
+const STR = {
+  title: 'VECTRA · ŁAP PREZENTY',
+  start: 'SPACJA / dotknij ekranu – start',
+  keys:  'Strzałki lub WASD · Q A P L · dotyk: ćwiartki ekranu',
+  over:  'KONIEC GRY',
+  pause: 'PAUZA',
+  best:  'REKORD',
+  level: 'POZIOM',
+  faster:'Szybciej!',
+};
+
+/* ---------- GEOMETRIA ----------
+   Tory: 0 = lewy górny, 1 = lewy dolny, 2 = prawy górny, 3 = prawy dolny
+   a = gdzie prezent się pojawia, b = ostatnia pozycja na krawędzi półki   */
+// Pozycje półek wzięte z game_gifts.psd; a/b = środek prezentu (dół lekko schowany za półką)
+const GIFT = 100;                                  // wysokość prezentu w px
+const TRACKS = [
+  { side:-1, a:[  90, 90], b:[ 596,337], edge: 744 },    // lewa górna   (edge = x końca deski)
+  { side:-1, a:[  90,370], b:[ 501,570], edge: 626 },    // lewa dolna
+  { side: 1, a:[1830,115], b:[1345,342], edge:1205 },    // prawa górna
+  { side: 1, a:[1830,417], b:[1438,590], edge:1319 },    // prawa dolna
+];
+// bag = punkt w worku danej pozy, gdzie prezent znika (bohater rysowany jest NA prezencie,
+// więc prezent chowa się za przednią krawędzią worka). Dobrane pod hero_*.png.
+// Nogi bohatera stoją we wszystkich pozach w jednym miejscu (x≈960), a półki są przesunięte tak,
+// by prezent z bezwładnością sam doleciał do worka (110–160 px za krawędzią półki).
+// bag = punkt ~60 px pod górą przedniego futra worka: tam prezent jest już schowany za workiem
+const BAGS = [[849,684],[707,870],[1102,690],[1242,877]];
+// Górna krawędź futra worka w każdej pozie (x rosnąco). Gdy dół prezentu jej dotknie,
+// prezent znika (iskierki) i od razu się liczy – nie widać, że wlatuje za worek.
+const LIPS = [
+  [[718,605],[742,599],[766,616],[790,614],[814,611],[838,625],[862,618],[886,572],[904,579]],
+  [[657,800],[681,794],[705,808],[729,802],[753,800],[777,805],[801,798],[825,783],[849,748]],
+  [[1034,618],[1058,631],[1082,630],[1106,628],[1130,624],[1154,614],[1178,607],[1202,585],[1226,590]],
+  [[1106,755],[1130,782],[1154,806],[1178,816],[1202,806],[1226,813],[1250,816],[1274,806],[1292,806]],
+];
+function lipYAt(i, x){
+  const lp = LIPS[i];
+  if (x < lp[0][0] - 25 || x > lp[lp.length-1][0] + 25) return Infinity;   // poza otworem worka
+  if (x <= lp[0][0]) return lp[0][1];
+  for (let j = 1; j < lp.length; j++) if (x <= lp[j][0]){
+    const [x0, y0] = lp[j-1], [x1, y1] = lp[j]; return y0 + (y1 - y0) * (x - x0) / (x1 - x0);
+  }
+  return lp[lp.length-1][1];
+}
+// Lot = fizyka: prezent dojeżdża z tą samą prędkością do samego końca deski (te kroków),
+// dopiero za krawędzią działa grawitacja FLY_G – widać, jak spadając przyspiesza (~10x).
+// Ostatnia pozycja na półce (b) jest dobrana tak, by cała droga do worka trwała dokładnie
+// FLY_STEPS kroków – wtedy na krawędzi nie ma szarpnięcia prędkości.
+const FLY_G = 650, FLY_STEPS = 2;
+const LAST = CFG.steps - 1 + FLY_STEPS;      // krok, w którym prezent jest w worku (albo go minął)
+function flyPos(t, tau){
+  if (tau <= t.te) return [t.b[0] + t.vx*tau, t.b[1] + t.vy*tau];
+  const u = tau - t.te; return [t.edge + t.vx*u, t.ey + t.vy*u + FLY_G*u*u/2];
+}
+function flyTimeToY(t, y){ return t.te + (-t.vy + Math.sqrt(t.vy*t.vy + 2*FLY_G*(y - t.ey))) / FLY_G; }
+TRACKS.forEach((t, i) => {
+  const n = CFG.steps - 1;
+  t.vx = (t.b[0] - t.a[0]) / n; t.vy = (t.b[1] - t.a[1]) / n;
+  t.te = (t.edge - t.b[0]) / t.vx; t.ey = t.b[1] + t.vy * t.te;
+  t.bag = BAGS[i];
+  t.T = flyTimeToY(t, t.bag[1]);
+});
+const GROUND = 950, HERO_X = 976;
+const SNOW_Y = 1000;       // linia śniegu dla zgubionego prezentu – co niżej, chowa się w zaspie
+const FALL_G = 3200;       // grawitacja okruchów (px/s²)
+
+// grafika półek: plik + pozycja lewego górnego rogu na płótnie 1920x1072
+const SHELF_POS = [[-16,64],[-30,346],[1203,98],[1317,401]];
+// Obrazki półek są ucięte przy krawędzi ekranu. Gdy półka jest przesunięta do środka, za nią
+// rysujemy jej kopię przesuniętą na zewnątrz wzdłuż nachylenia – deska wygląda na dłuższą.
+const SHELF_SLOPE = [.486, .485, -.469, -.441];
+// bohater: lewy górny róg każdej pozy. Skala po wielkości głowy (TL .85, BL .88, TR .765, BR .715),
+// buty we wszystkich pozach w tym samym miejscu na śniegu
+const HERO_POS = [[690,471],[645,472],[742,504],[847,503]];
+
+/* ---------- GRAFIKA ----------
+   null = jeszcze brak pliku -> rysuje się placeholder pikselowy.
+   Bohater: najlepiej PNG 1920x1072 z przezroczystością (wtedy pozycja zgadza się sama).
+   Prezenty: małe PNG rysowane w punkcie. */
+const ASSETS = {
+  bg:     'assets/bg.jpg',
+  shelves:['assets/slider_left_up.png','assets/slider_left_down.png','assets/slider_right_up.png','assets/slider_right_down.png'],
+  // lewa góra, lewy dół, prawa góra, prawy dół (przeskalowane tak, by głowa była wszędzie tej samej wielkości)
+  hero:   ['assets/hero_top_left.png','assets/hero_bottom_left.png','assets/hero_top_right.png','assets/hero_bottom_right.png'],
+  // prezenty narysowane prosto, dla lewej strony – gra sama je nachyla, a po prawej odbija lustrzanie
+  // gift_4 pominięty – na razie to kopia gift_1. Można też przebarwić: {src:'...', hue:120}
+  gifts:  ['assets/gift_1.png','assets/gift_2.png','assets/gift_3.png','assets/gift_5.png','assets/gift_6.png'],
+};
+function tint(img, hue){
+  try { const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+        const x = c.getContext('2d'); x.filter = `hue-rotate(${hue}deg)`; x.drawImage(img, 0, 0); return c; }
+  catch(e){ return null; }
+}
+function load(src){
+  const i = new Image(); i.ok = false;
+  const hue = src && src.hue; src = src && (src.src || src);
+  if (src){ i.onload = () => { if (hue) i.cv = tint(i, hue); i.ok = true; }; i.src = src; }
+  return i;
+}
+const IMG = {
+  bg: load(ASSETS.bg),
+  shelves: ASSETS.shelves.map(load),
+  hero: ASSETS.hero.map(load),
+  gifts: ASSETS.gifts.map(load),
+  icon: load('assets/gift_icon.png'),
+  life: load('assets/life_icon.png'),
+};
+
+/* ---------- DŹWIĘK ---------- */
+let AC = null, muted = false;
+function beep(f, d = .08, type = 'square', v = .05){
+  if (muted) return;
+  try {
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const o = AC.createOscillator(), g = AC.createGain(), t = AC.currentTime;
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d);
+  } catch(e){}
+}
+
+/* ---------- MUZYKA ----------
+   "Jingle Bells" (melodia z XIX w., domena publiczna) jako chiptune z WebAudio – bez plików.
+   Melodia (square) + bas (triangle) + dzwoneczki (szum) co ósemkę. M = wycisz. */
+const NOTE = { C3:131, D3:147, F3:175, G3:196, C5:523, D5:587, E5:659, F5:698, G5:784 };
+const MELODY = ('E5 1,E5 1,E5 2,E5 1,E5 1,E5 2,E5 1,G5 1,C5 1.5,D5 .5,E5 4,' +
+  'F5 1,F5 1,F5 1.5,F5 .5,F5 1,E5 1,E5 1,E5 .5,E5 .5,E5 1,D5 1,D5 1,E5 1,D5 2,G5 2,' +
+  'E5 1,E5 1,E5 2,E5 1,E5 1,E5 2,E5 1,G5 1,C5 1.5,D5 .5,E5 4,' +
+  'F5 1,F5 1,F5 1.5,F5 .5,F5 1,E5 1,E5 1,E5 .5,E5 .5,G5 1,G5 1,F5 1,D5 1,C5 4')
+  .split(',').map(s => { const [n, d] = s.split(' '); return [NOTE[n], +d]; });
+const BASS = ['C3','C3','C3','C3','F3','C3','G3','G3','C3','C3','C3','C3','F3','C3','G3','C3'];   // 1 na takt
+// tempo rośnie z poziomem: +15% na poziom (140, 161, 182 … BPM), maks. 250 BPM
+const beatLen = () => 60 / Math.min(250, 140 * (1 + .15 * (level - 1)));
+const music = { on:false, out:null, noise:null, next:0, bells:0, i:0, beat:0 };
+function musicStart(){
+  if (music.on) return;
+  try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); } catch(e){ return; }
+  if (AC.state === 'suspended') AC.resume();
+  if (!music.out){
+    music.out = AC.createGain(); music.out.connect(AC.destination);
+    const len = AC.sampleRate * .1, buf = AC.createBuffer(1, len, AC.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    music.noise = buf;
+  }
+  music.out.gain.cancelScheduledValues(AC.currentTime);
+  music.out.gain.value = muted ? 0 : 1;
+  music.on = true; music.i = 0; music.beat = 0; music.next = music.bells = AC.currentTime + .15;
+  music.timer = setInterval(musicSchedule, 50);
+}
+// koniec gry: muzyka cichnie, a potem smutne "wa-wa-wa-waaa" (opadający puzon)
+function musicStop(){
+  if (!music.on) return;
+  music.on = false; clearInterval(music.timer);
+  const t = AC.currentTime, g = music.out.gain;
+  g.cancelScheduledValues(t); g.setValueAtTime(g.value, t); g.linearRampToValueAtTime(0, t + .35);
+}
+function gameOverSound(){
+  if (muted || !AC) return;
+  const t0 = AC.currentTime + .4;
+  [[392, 0, .38], [370, .42, .38], [349, .84, .38], [330, 1.26, 1.3]].forEach(([f, at, d], i) => {
+    const o = AC.createOscillator(), lp = AC.createBiquadFilter(), g = AC.createGain(), t = t0 + at;
+    o.type = 'sawtooth'; o.frequency.setValueAtTime(f, t);
+    if (i === 3){                                         // ostatnia nuta: opada i drży
+      o.frequency.linearRampToValueAtTime(f * .94, t + d);
+      const lfo = AC.createOscillator(), lg = AC.createGain();
+      lfo.frequency.value = 6; lg.gain.value = 7; lfo.connect(lg).connect(o.frequency); lfo.start(t); lfo.stop(t + d);
+    }
+    lp.type = 'lowpass'; lp.frequency.setValueAtTime(1400, t); lp.frequency.linearRampToValueAtTime(600, t + d);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.09, t + .04);
+    g.gain.setValueAtTime(.09, t + d * .7); g.gain.linearRampToValueAtTime(0, t + d);
+    o.connect(lp).connect(g).connect(AC.destination); o.start(t); o.stop(t + d + .05);
+  });
+}
+function mNote(f, t, d, type, v){
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = type; o.frequency.value = f;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .01); g.gain.exponentialRampToValueAtTime(.001, t + d);
+  o.connect(g).connect(music.out); o.start(t); o.stop(t + d + .02);
+}
+function mBell(t, v){
+  const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain();
+  s.buffer = music.noise; f.type = 'highpass'; f.frequency.value = 7000;
+  g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(.001, t + .06);
+  s.connect(f).connect(g).connect(music.out); s.start(t); s.stop(t + .08);
+}
+function musicSchedule(){
+  const horizon = AC.currentTime + .3;
+  while (music.next < horizon){
+    const [f, d] = MELODY[music.i];
+    const BEAT = beatLen();
+    mNote(f, music.next, d * BEAT * .85, 'square', .03);
+    if (music.beat % 2 === 0){                              // bas co pół taktu: pryma, potem kwinta
+      const root = NOTE[BASS[Math.floor(music.beat / 4) % BASS.length]];
+      mNote(music.beat % 4 === 0 ? root : root * 1.5, music.next, 2 * BEAT * .8, 'triangle', .09);
+    }
+    music.next += d * BEAT; music.beat += d;
+    if (++music.i >= MELODY.length){ music.i = 0; music.beat = 0; }
+  }
+  while (music.bells < horizon){ mBell(music.bells, .025); music.bells += beatLen() / 2; }
+}
+
+/* ---------- ŚNIEG ----------
+   Pikselowe płatki w dwóch warstwach: dalsze (małe, wolne) za półkami, bliższe (większe) przed bohaterem. */
+const newFlake = anyY => {
+  const front = Math.random() < .3;
+  return { x: Math.random() * W, y: anyY ? Math.random() * H : -20, front,
+           s: front ? 3.5 + Math.random() * 3 : 1.8 + Math.random() * 1.7,   // promień płatka
+           v: front ? 90 + Math.random() * 70 : 35 + Math.random() * 40, ph: Math.random() * 6.3, sw: 10 + Math.random() * 20 };
+};
+const FLAKES = Array.from({ length: 220 }, () => newFlake(true));
+function updateSnow(dt){
+  for (const f of FLAKES){ f.y += f.v * dt / 1000; f.ph += dt / 900; if (f.y > H) Object.assign(f, newFlake(false)); }
+}
+function drawSnow(front){
+  ctx.fillStyle = '#fff'; ctx.globalAlpha = front ? .9 : .65;
+  ctx.beginPath();
+  for (const f of FLAKES) if (f.front === front){
+    const x = f.x + Math.sin(f.ph) * f.sw;
+    ctx.moveTo(x + f.s, f.y); ctx.arc(x, f.y, f.s, 0, Math.PI * 2);   // okrągłe płatki
+  }
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+/* ---------- STAN ---------- */
+let state = 'title';        // title | play | pause | over
+let gifts = [], score = 0, lives = CFG.lives, tickMs = CFG.startTick;
+let lifeFx = null;                    // animacja nowego życia: { t0, slot }
+// +1 życie (z animacją: głowa wylatuje ze środka ekranu do swojego miejsca) – start po "delay" ms
+function gainLife(now, delay = 0){
+  if (lives >= CFG.maxLives) return;
+  lives++; lifeFx = { t0: now + delay, slot: lives - 1 };
+  [523, 659, 784, 1047, 1319].forEach((f, i) => setTimeout(() => beep(f, .18, 'triangle', .07), delay + LIFE_FLY * 1000 + i * 70));
+}
+const LIFE_FLY = .7, LIFE_ANIM = 1.2;   // s: lot do miejsca, cała animacja
+let caught = 0, level = 1, lvlCaught = 0, levelFx = -1e9, barShown = 0;   // poziomy i pasek postępu
+const levelNeed = () => CFG.levelBase + (level - 1) * CFG.levelGrow;
+const levelTick = () => Math.max(CFG.minTick, Math.round(CFG.startTick * Math.pow(CFG.levelSpeed, level - 1)));
+let prog = 0, freezeUntil = 0, tickParity = 0;   // prog: 0..1 postęp między krokami (płynny ruch)
+let pose = { side:-1, level:0 };
+let breakFx = null, catchFx = 0, catchAt = [0, 0];
+let best = 0; try { best = +localStorage.getItem('vectraGiftBest') || 0; } catch(e){}
+const GIFT_COLORS = ['#38a6c9','#38a6c9','#38a6c9','#38a6c9','#38a6c9','#3d9a3d'];
+
+const poseTrack = () => (pose.side < 0 ? 0 : 2) + pose.level;
+
+function startGame(now){
+  gifts = []; score = 0; lives = CFG.lives; lifeFx = null; caught = 0; level = 1; lvlCaught = 0; barShown = 0; levelFx = -1e9;
+  tickMs = levelTick();
+  breakFx = null; state = 'play'; prog = -1; freezeUntil = 0;
+  musicStart();                       // przeglądarka pozwala na dźwięk dopiero po kliknięciu / klawiszu
+}
+
+function tick(now){
+  tickParity ^= 1; beep(tickParity ? 880 : 660, .03, 'square', .02);
+  gifts.forEach(g => g.step++);
+  const done = gifts.filter(g => g.step >= LAST + 1);
+  gifts = gifts.filter(g => g.step < LAST + 1);
+  for (const g of done) resolve(g, now);
+  if (state !== 'play') return;
+
+  // max 1 nowy prezent na krok => do worka trafia max 1 prezent na krok (zawsze da się złapać)
+  const maxActive = Math.min(1 + level, LAST);
+  if (gifts.length === 0 || (gifts.length < maxActive && Math.random() < .55)){
+    gifts.push({ track: Math.floor(Math.random()*4), step: 0, kind: Math.floor(Math.random()*ASSETS.gifts.length) });
+  }
+}
+
+// at = punkt, w którym prezent dotknął futra worka (złapany wcześniej, w locie)
+function resolve(g, now, at){
+  if (at || g.track === poseTrack()){
+    caught++; lvlCaught++; score += CFG.pointsPer * level;
+    catchAt = at || [TRACKS[g.track].bag[0], TRACKS[g.track].bag[1] - 60];
+    catchFx = now + 260; beep(1320, .09, 'square', .06);
+    if (lvlCaught >= levelNeed()){                       // pasek pełny -> następny poziom, nowa prędkość
+      level++; lvlCaught = 0; barShown = 0; tickMs = levelTick(); levelFx = now;
+      [784, 988, 1175, 1568].forEach((f, i) => setTimeout(() => beep(f, .14, 'square', .06), i * 90));
+      gainLife(now, 500);                                // nagroda za poziom: +1 życie
+    }
+    if (score > best){ best = score; try { localStorage.setItem('vectraGiftBest', best); } catch(e){} }
+  } else {
+    lives--; beep(140, .4, 'sawtooth', .07);
+    // leci dalej po tej samej paraboli i w tym samym tempie co w locie do worka
+    const t = TRACKS[g.track], p = giftPose(g.track, LAST);
+    breakFx = { track: g.track, kind: g.kind, t0: now, until: now + CFG.missPause,
+                rate: t.T / FLY_STEPS / (tickMs / 1000), ang0: p.ang, flip: p.flip };
+    freezeUntil = now + CFG.missPause;
+    if (lives <= 0){ state = 'over'; musicStop(); gameOverSound(); }
+  }
+}
+
+/* ---------- STEROWANIE ---------- */
+function setPose(side, level){ if (side != null) pose.side = side; if (level != null) pose.level = level; }
+addEventListener('keydown', e => {
+  const k = e.key.toLowerCase(), now = performance.now();
+  if ([' ','enter'].includes(k)){ e.preventDefault(); if (state !== 'play') { if (state === 'pause') state = 'play'; else startGame(now); } return; }
+  if (k === 'escape'){ if (state === 'play') state = 'pause'; else if (state === 'pause') state = 'play'; return; }
+  if (k === 'm'){ muted = !muted; if (music.out) music.out.gain.value = muted ? 0 : 1; return; }
+  const map = {
+    arrowleft:[-1,null], a:[-1,null], arrowright:[1,null], d:[1,null],
+    arrowup:[null,0], w:[null,0], arrowdown:[null,1], s:[null,1],
+    q:[-1,0], z:[-1,1], p:[1,0], l:[1,1],
+    '7':[-1,0], '1':[-1,1], '9':[1,0], '3':[1,1],
+  };
+  // A jest już "w lewo"; Q/Z/P/L ustawiają od razu całą pozę
+  if (map[k]){ e.preventDefault(); setPose(...map[k]); }
+});
+cv.addEventListener('pointerdown', e => {
+  const r = cv.getBoundingClientRect(), now = performance.now();
+  if (state !== 'play'){ if (state === 'pause') state = 'play'; else startGame(now); return; }
+  const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+  setPose(x < .5 ? -1 : 1, y < .5 ? 0 : 1);
+});
+
+/* ---------- RYSOWANIE (placeholdery pikselowe) ---------- */
+const snap = v => Math.round(v / PX) * PX;
+function px(x, y, w, h, c){ ctx.fillStyle = c; ctx.fillRect(snap(x), snap(y), snap(w) || PX, snap(h) || PX); }
+function pline(x1, y1, x2, y2, c, t = PX){
+  const n = Math.ceil(Math.hypot(x2-x1, y2-y1) / (PX/2));
+  ctx.fillStyle = c;
+  for (let i = 0; i <= n; i++){ const x = x1 + (x2-x1)*i/n, y = y1 + (y2-y1)*i/n; ctx.fillRect(snap(x - t/2), snap(y - t/2), t, t); }
+}
+/* s = pozycja ciągła: 0..steps-1 na półce (s<0 = wjeżdża zza krawędzi ekranu),
+   steps-1..LAST = dojeżdża do końca deski, zsuwa się z niej i spada do worka.
+   front = prezent już prawie zszedł z deski -> rysujemy go przed półką */
+function giftPose(tr, s){
+  const t = TRACKS[tr], n = CFG.steps - 1;
+  const dx = t.b[0] - t.a[0], dy = t.b[1] - t.a[1];
+  const ang = Math.atan2(dy, Math.abs(dx));            // nachylenie półki (w układzie lewej strony)
+  const flip = t.side < 0 ? 1 : -1;                     // prawa strona = lustro
+  if (s <= n){ const k = s / n; return { x: t.a[0] + dx*k, y: t.a[1] + dy*k, ang, flip, front: false }; }
+  const tau = Math.min(FLY_STEPS, s - n) / FLY_STEPS * t.T;
+  const [x, y] = flyPos(t, tau), k = Math.max(0, tau - t.te) / (t.T - t.te);
+  return { x, y, ang: ang + k * 0.6, flip, front: (x - t.edge) * -t.side > GIFT * .45 };
+}
+
+function drawBg(){
+  if (IMG.bg.ok) return ctx.drawImage(IMG.bg, 0, 0, W, H);
+  const bands = ['#ffd84a','#ffcf3a','#ffc52c','#ffbb22','#ffb01a'];
+  for (let i = 0; i < bands.length; i++) px(0, i * H/bands.length, W, H/bands.length + PX, bands[i]);
+  // domki
+  const houses = [[0,560,180,'#7b4a3a'],[180,600,160,'#a35a48'],[340,630,140,'#5d6b7a'],[1120,620,150,'#5d6b7a'],[1270,590,170,'#a35a48'],[1440,560,160,'#7b4a3a']];
+  for (const [x,y,w,c] of houses){
+    px(x, y, w, GROUND - y, c); px(x - PX, y - 2*PX, w + 2*PX, 3*PX, '#fff');
+    for (let wx = x + 30; wx < x + w - 30; wx += 50) for (let wy = y + 40; wy < GROUND - 60; wy += 70) px(wx, wy, 20, 30, '#ffe58a');
+  }
+  // choinka
+  for (let i = 0; i < 6; i++) px(1000 - i*25, 520 + i*50, 50 + i*50, 50, '#1f8a3a');
+  px(1010, 820, 30, 30, '#5a3a1e'); px(1015, 500, 20, 20, '#ffd84a');
+  // śnieg
+  px(0, GROUND, W, H - GROUND, '#f4f8ff'); px(0, GROUND, W, PX, '#d8e4f5');
+}
+
+function drawShelf(i){
+  const im = IMG.shelves[i];
+  if (im.ok){
+    const [x, y] = SHELF_POS[i], side = TRACKS[i].side, k = SHELF_SLOPE[i], L = im.width * .55;
+    if (side < 0 ? x > 0 : x + im.width < W)               // widać ucięty koniec -> dorysuj przedłużenie
+      ctx.drawImage(im, x + side*L, y + side*L*k);
+    return ctx.drawImage(im, x, y);
+  }
+  const t = TRACKS[i], slope = (t.b[1]-t.a[1]) / (t.b[0]-t.a[0]);
+  const x0 = t.side < 0 ? 0 : t.b[0] - 40, x1 = t.side < 0 ? t.b[0] + 40 : W;
+  for (let x = x0; x < x1; x += PX){
+    const y = t.a[1] + (x - t.a[0]) * slope + 30;
+    px(x, y, PX, 40, '#8a5a32'); px(x, y + 30, PX, PX, '#5e3b1f'); px(x, y - PX, PX, PX, '#ffffff');
+  }
+}
+
+function drawGift(x, y, kind, ang = 0, flip = 1){
+  const im = IMG.gifts[kind], src = im && im.ok ? (im.cv || im) : null;
+  ctx.save(); ctx.translate(x, y); ctx.scale(flip, 1); ctx.rotate(ang);
+  if (src){
+    const h = GIFT, w = h * src.width / src.height;
+    ctx.drawImage(src, -w/2, -h/2, w, h);
+  } else {
+    const s = GIFT * .7, c = GIFT_COLORS[kind % GIFT_COLORS.length];
+    px(-s/2, -s/2, s, s, c);
+    px(-PX/2, -s/2, PX, s, '#ffe58a'); px(-s/2, -PX/2, s, PX, '#ffe58a');
+  }
+  ctx.restore();
+}
+const drawGiftAt = (g, s) => { const p = giftPose(g.track, s); drawGift(p.x, p.y, g.kind, p.ang, p.flip); };
+
+function drawHero(now){
+  const tr = poseTrack();
+  if (IMG.hero[tr].ok){
+    ctx.drawImage(IMG.hero[tr], HERO_POS[tr][0], HERO_POS[tr][1]);
+    if (now < catchFx){                                  // pikselowe iskierki nad workiem przy złapaniu
+      const [bx, by] = catchAt, k = 1 - (catchFx - now) / 260;
+      ctx.globalAlpha = 1 - k * .6;
+      for (let i = 0; i < 10; i++){ const a = i * Math.PI/5 + .3; px(bx + Math.cos(a)*(20 + 70*k), by - 10 + Math.sin(a)*(14 + 50*k), PX, PX, i % 2 ? '#fff' : '#ffe58a'); }
+      ctx.globalAlpha = 1;
+    }
+    return;
+  }
+  const t = TRACKS[tr], lean = t.side * 20, BLUE = '#2aa8ff', DARK = '#1468b0', G = GROUND;
+  // nogi
+  pline(HERO_X - 15, G - 140, HERO_X - 20, G - 10, BLUE); pline(HERO_X + 15, G - 140, HERO_X + 20, G - 10, BLUE);
+  px(HERO_X - 50, G - 20, 40, 20, '#ddd'); px(HERO_X + 10, G - 20, 40, 20, '#ddd');
+  // tułów
+  px(HERO_X - 30, G - 200, 60, 60, BLUE); px(HERO_X - 10, G - 180, 20, 20, '#bff4ff');
+  // głowa
+  const hx = HERO_X - 50 + lean, hy = G - 310;
+  px(hx, hy, 100, 90, BLUE); px(hx, hy + 80, 100, PX, DARK);
+  const ex = t.side * 10;
+  px(hx + 25 + ex, hy + 25, 20, 20, '#fff'); px(hx + 55 + ex, hy + 25, 20, 20, '#fff');
+  px(hx + 30 + ex*1.5, hy + 30, PX, PX, '#000'); px(hx + 60 + ex*1.5, hy + 30, PX, PX, '#000');
+  px(hx + 30, hy + 60, 40, PX, '#0a2a4a');
+  // ręce do worka
+  const [bx, by] = t.bag;
+  pline(HERO_X - 30, G - 190, bx - 25, by + 10, BLUE); pline(HERO_X + 30, G - 190, bx + 25, by + 10, BLUE);
+  // worek
+  px(bx - 45, by - 20, 90, 70, '#d42a2a'); px(bx - 35, by - 30, 70, 20, '#8e1414'); px(bx - 45, by - 20, 90, PX, '#f0b429');
+  if (now < catchFx){ for (let i = 0; i < 6; i++){ const a = i * Math.PI/3; px(bx + Math.cos(a)*70, by - 20 + Math.sin(a)*50, PX, PX, '#fff'); } }
+}
+
+/* Zgubiony prezent: leci dalej łukiem, obraca się na bok, wbija w śnieg (dół ucięty),
+   a dookoła rozpryskują się pikselowe okruchy w kolorach prezentu. */
+function drawBreak(now){
+  const f = breakFx; if (!f || now > f.until) return;
+  const t = TRACKS[f.track], tt = (now - f.t0) / 1000;
+  const touchY = SNOW_Y - GIFT * .47;                   // środek prezentu, gdy bokiem dotyka śniegu
+  // ta sama parabola co lot do worka (tau = czas w "krokach"), więc ruch jest płynny od półki aż do śniegu
+  const tauL = flyTimeToY(t, touchY);
+  const tau = t.T + tt * f.rate;
+  ctx.save();
+  ctx.globalAlpha = Math.max(0, Math.min(1, (f.until - now) / 400));   // na końcu znika
+  if (tau < tauL){
+    const k = (tau - t.T) / (tauL - t.T), [x, y] = flyPos(t, tau);
+    drawGift(x, y, f.kind, f.ang0 + (Math.PI/2 - f.ang0) * k, f.flip);
+  } else {
+    const lx = flyPos(t, tauL)[0], lt = (tau - tauL) / f.rate;
+    if (!f.crumbs){ f.crumbs = makeCrumbs(f.kind); beep(220, .15, 'square', .06); }
+    const sink = Math.min(1, lt / .08);                  // szybkie wbicie w zaspę
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, SNOW_Y); ctx.clip();
+    drawGift(lx, touchY + (SNOW_Y - 15 - touchY) * sink, f.kind, Math.PI/2, f.flip);
+    ctx.restore();
+    drawCrumbs(f.crumbs, lx, lt);
+  }
+  ctx.restore();
+}
+
+function makeCrumbs(kind){
+  const im = IMG.gifts[kind], src = im && im.ok ? (im.cv || im) : null, list = [];
+  for (let i = 0; i < 24; i++){
+    const a = -Math.PI/2 + (Math.random() - .5) * 2.6, sp = 250 + Math.random() * 500;
+    list.push({
+      sx: src ? src.width * (.2 + Math.random()*.6) : 0, sy: src ? src.height * (.3 + Math.random()*.55) : 0,
+      vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, s: [6, 8, 10, 12][i % 4],
+      rest: SNOW_Y - 8 + Math.random() * 28,            // gdzie okruch ląduje na śniegu
+    });
+  }
+  return { src, list, color: GIFT_COLORS[kind % GIFT_COLORS.length] };
+}
+
+function drawCrumbs(cr, x0, t){
+  const y0 = SNOW_Y - 10;
+  ctx.imageSmoothingEnabled = false;
+  for (const c of cr.list){
+    const tr = (-c.vy + Math.sqrt(c.vy*c.vy + 2*FALL_G*(c.rest - y0))) / FALL_G, tc = Math.min(t, tr);
+    const X = Math.round((x0 + c.vx*tc) / 6) * 6, Y = Math.round((y0 + c.vy*tc + FALL_G*tc*tc/2) / 6) * 6;
+    if (cr.src) ctx.drawImage(cr.src, c.sx, c.sy, 2, 2, X, Y, c.s, c.s);   // kolor brany z samego prezentu
+    else { ctx.fillStyle = cr.color; ctx.fillRect(X, Y, c.s, c.s); }
+  }
+  ctx.imageSmoothingEnabled = true;
+}
+
+/* ---------- HUD ---------- */
+// Zaokrąglony font: Fredoka (Google Fonts, z polskimi znakami); bez internetu – Arial Rounded
+const FONT = '"Fredoka", "Arial Rounded MT Bold", "Nunito", system-ui, sans-serif';
+function outlined(s, x, y, size, fill = '#fff', stroke = '#5a1a0a', align = 'center'){
+  ctx.font = `700 ${size}px ${FONT}`; ctx.textAlign = align; ctx.textBaseline = 'middle';
+  ctx.lineJoin = 'round'; ctx.lineWidth = Math.max(4, size * .2); ctx.strokeStyle = stroke;
+  ctx.strokeText(s, x, y); ctx.fillStyle = fill; ctx.fillText(s, x, y);
+}
+const text = (s, x, y, size, c = '#fff', align = 'center') => outlined(s, x, y, size, c, '#4a1608', align);
+function rr(x, y, w, h, r){
+  ctx.beginPath(); ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+function grad(y0, y1, stops){ const g = ctx.createLinearGradient(0, y0, 0, y1); stops.forEach(([o, c]) => g.addColorStop(o, c)); return g; }
+// czerwona kapsuła z ciemną obwódką (jak na makiecie)
+function capsule(x, y, w, h){
+  ctx.save(); ctx.shadowColor = 'rgba(80,20,0,.35)'; ctx.shadowBlur = 12; ctx.shadowOffsetY = 5;
+  rr(x, y, w, h, h/2); ctx.fillStyle = '#7d1610'; ctx.fill(); ctx.restore();
+  rr(x + 5, y + 5, w - 10, h - 10, h/2 - 5); ctx.fillStyle = grad(y, y + h, [[0,'#f25a40'],[1,'#b8241a']]); ctx.fill();
+  rr(x + 14, y + 8, w - 28, (h - 16) * .35, (h - 16) * .17); ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fill();
+}
+function drawScoreBar(dt){
+  const x = 28, y = 24, w = 470, h = 84;
+  const target = Math.min(1, lvlCaught / levelNeed());
+  barShown += (target - barShown) * Math.min(1, dt / 120);      // płynne zapełnianie
+  capsule(x, y, w, h);
+  // tor paska
+  const tx = x + 18, ty = y + 17, tw = w - 18 - 96, th = h - 34;
+  rr(tx, ty, tw, th, th/2); ctx.fillStyle = '#7f150e'; ctx.fill();
+  rr(tx + 2, ty + 2, tw - 4, th - 4, th/2 - 2); ctx.fillStyle = '#9a2116'; ctx.fill();
+  if (barShown > .005){
+    const fw = Math.max(th, (tw - 4) * barShown);
+    rr(tx + 2, ty + 2, fw, th - 4, th/2 - 2); ctx.fillStyle = grad(ty, ty + th, [[0,'#fff48a'],[.45,'#ffd21e'],[1,'#f0a200']]); ctx.fill();
+    if (fw > th) { rr(tx + th*.35, ty + 6, fw - th*.7, th * .26, th * .13); ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.fill(); }
+  }
+  outlined(String(score), tx + tw - 16, ty + th/2 + 2, 40, '#fff', '#5a1a0a', 'right');
+  // kółko z ikoną prezentu
+  const cx = x + w - 44, cy = y + h/2, cr = 54;
+  ctx.save(); ctx.shadowColor = 'rgba(80,20,0,.35)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
+  ctx.beginPath(); ctx.arc(cx, cy, cr, 0, Math.PI*2); ctx.fillStyle = '#7d1610'; ctx.fill(); ctx.restore();
+  ctx.beginPath(); ctx.arc(cx, cy, cr - 6, 0, Math.PI*2);
+  const rg = ctx.createRadialGradient(cx - 12, cy - 16, 4, cx, cy, cr); rg.addColorStop(0, '#d8382b'); rg.addColorStop(1, '#8e1910');
+  ctx.fillStyle = rg; ctx.fill();
+  const ic = IMG.icon;
+  if (ic.ok){ const s = 64 / ic.height, bump = 1 + .25 * Math.max(0, (catchFx - performance.now()) / 180);
+    ctx.drawImage(ic, cx - ic.width*s*bump/2, cy - ic.height*s*bump/2, ic.width*s*bump, ic.height*s*bump); }
+  outlined(`${STR.best}: ${best}`, x + 24, y + h + 26, 24, '#fff', '#5a1a0a', 'left');
+  // poziom – zaraz na prawo od kółka z prezentem, sam tekst (biały z obwódką)
+  outlined(`${STR.level} ${level}`, cx + cr + 22, cy + 2, 42, '#fff', '#5a1a0a', 'left');
+}
+// życia w prawym górnym rogu: głowy bohatera (life_icon), zgubione – blade
+function drawLives(now){
+  const ic = IMG.life; if (!ic.ok) return;
+  const s = 70 / ic.height, w = ic.width*s, h = ic.height*s, step = 92, y = 26;
+  const slots = Math.max(CFG.lives, lives);                       // 3 miejsca, a gdy więcej żyć – więcej
+  const slotX = i => W/HUD_SCALE - 28 - w/2 - (slots - 1 - i) * step;   // środek miejsca (prawa krawędź stała)
+  const fx = lifeFx, ft = fx ? (now - fx.t0) / 1000 : 0;
+  if (fx && ft > LIFE_ANIM) lifeFx = null;
+  for (let i = 0; i < slots; i++){
+    if (fx && i === fx.slot && ft < LIFE_ANIM) continue;         // to miejsce rysuje animacja
+    ctx.globalAlpha = i < lives ? 1 : .25;
+    ctx.drawImage(ic, slotX(i) - w/2, y, w, h);
+  }
+  ctx.globalAlpha = 1;
+  if (!fx || ft < 0 || ft >= LIFE_ANIM) return;
+  // animacja: lot łukiem ze środka ekranu (z napisu poziomu) do miejsca, potem sprężynka + iskierki
+  const tx = slotX(fx.slot), ty = y + h/2, sx = W/2/HUD_SCALE, sy = H*.27/HUD_SCALE + 140;
+  let x, yy, sc;
+  if (ft < LIFE_FLY){
+    const k = ft / LIFE_FLY, e = 1 - Math.pow(1 - k, 3);              // ease-out
+    x = sx + (tx - sx) * e; yy = sy + (ty - sy) * e - Math.sin(Math.PI * e) * 160;
+    sc = 2.2 - 1.2 * e;
+  } else {
+    const k = (ft - LIFE_FLY) / (LIFE_ANIM - LIFE_FLY);
+    x = tx; yy = ty; sc = 1 + .45 * Math.exp(-6 * k) * Math.cos(k * 14);   // sprężynka
+    ctx.globalAlpha = 1 - k;
+    for (let j = 0; j < 12; j++){                                     // iskierki dookoła
+      const a = j * Math.PI / 6, r = 30 + 60 * k;
+      ctx.fillStyle = j % 2 ? '#fff' : '#ffe14a';
+      ctx.fillRect(Math.round(x + Math.cos(a) * r) - 5, Math.round(yy + Math.sin(a) * r * .8) - 5, 10, 10);
+    }
+    ctx.globalAlpha = 1;
+  }
+  ctx.drawImage(ic, x - w*sc/2, yy - h*sc/2, w*sc, h*sc);
+  if (ft < LIFE_FLY) outlined('+1', x + w*sc*.55, yy - h*sc*.45, 34 * Math.min(1.4, sc), '#fff', '#5a1a0a');
+}
+// duży napis po wejściu na nowy poziom
+function drawLevelUp(now){
+  const t = (now - levelFx) / 1600; if (t < 0 || t > 1) return;
+  const pop = t < .15 ? .6 + t / .15 * .5 : t < .25 ? 1.1 - (t - .15) / .1 * .1 : 1;
+  ctx.save(); ctx.globalAlpha = t > .8 ? (1 - t) / .2 : 1;
+  ctx.translate(W/2, H*.27); ctx.scale(pop, pop);
+  outlined(`${STR.level} ${level}!`, 0, 0, 110, '#ffe14a', '#7d1610');
+  outlined(STR.faster, 0, 90, 46, '#fff', '#7d1610');
+  ctx.restore();
+}
+const HUD_SCALE = .8;                 // cały HUD (pasek, poziom, życia) – 80% rozmiaru
+function drawHud(dt, now){
+  ctx.save(); ctx.scale(HUD_SCALE, HUD_SCALE);
+  drawScoreBar(dt); drawLives(now);
+  ctx.restore();
+  if (state === 'play') drawLevelUp(now);
+}
+
+function overlay(lines){
+  px(0, 0, W, H, 'rgba(0,0,0,.55)');
+  lines.forEach(([s, size, c], i) => text(s, W/2, H/2 - 120 + i * 80, size, c));
+}
+
+/* ---------- PĘTLA ---------- */
+let lastNow = 0;
+function frame(now){
+  const dt = Math.min(100, now - (lastNow || now)); lastNow = now;
+  if (state === 'play' && now >= freezeUntil){
+    prog += dt / tickMs;
+    if (prog >= 1){
+      prog = Math.min(prog - 1, .5);
+      if (breakFx && now > breakFx.until) breakFx = null;
+      tick(now);
+    }
+  }
+  const p = Math.max(0, Math.min(1, prog));
+  updateSnow(dt);
+  drawBg();
+  drawSnow(false);                    // dalszy śnieg – za półkami
+  // prezenty na półce i te, które dopiero zsuwają się z krawędzi – ZA półkami (dół chowa się za deską);
+  // te, które już zeszły z deski – przed półkami, ale POD bohaterem: wpadanie do worka zasłania sam worek
+  const loose = [], tr = poseTrack();
+  for (const g of gifts){
+    const gp = giftPose(g.track, g.step - 1 + p);
+    if (!gp.front) { drawGift(gp.x, gp.y, g.kind, gp.ang, gp.flip); continue; }
+    // dotknął futra podstawionego worka -> znika i od razu się liczy
+    if (state === 'play' && g.track === tr){
+      const ly = lipYAt(g.track, gp.x);
+      if (gp.y + GIFT * .42 >= ly){ g.gone = true; resolve(g, now, [gp.x, ly]); continue; }
+    }
+    loose.push([g, gp]);
+  }
+  if (gifts.some(g => g.gone)) gifts = gifts.filter(g => !g.gone);
+  for (let i = 0; i < 4; i++) drawShelf(i);
+  loose.forEach(([g, gp]) => drawGift(gp.x, gp.y, g.kind, gp.ang, gp.flip));
+  drawBreak(now);                     // zgubiony prezent i okruchy – POD bohaterem i workiem
+  drawHero(now);
+  drawSnow(true);                     // bliższy śnieg – przed bohaterem
+  drawHud(dt, now);
+  if (state === 'title') { overlay([[STR.title, 64, '#ffd84a'], [STR.start, 32, '#fff'], [STR.keys, 24, '#ccc'], ['M – dźwięk · Esc – pauza', 24, '#ccc']]); }
+  if (state === 'pause') overlay([[STR.pause, 72, '#fff'], [STR.start, 28, '#ccc']]);
+  if (state === 'over')  overlay([[STR.over, 80, '#ff5a5a'], [`${score}`, 72, '#ffd84a'], [`${STR.level} ${level} · ${STR.best}: ${best}`, 32, '#fff'], [STR.start, 28, '#ccc']]);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
