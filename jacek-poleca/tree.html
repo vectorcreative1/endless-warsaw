@@ -102,6 +102,16 @@ td { padding: 9px 10px; vertical-align: middle; }
 
 /* changed row highlight */
 tr.changed td { background: #fffbee !important; }
+
+/* rounded corners: top — first row after subcat-header */
+tr.subcat-header + tr td:first-child { border-top-left-radius: 12px; }
+tr.subcat-header + tr td:last-child  { border-top-right-radius: 12px; }
+
+/* rounded corners: bottom — row before spacer or last row */
+tr:has(+ tr.spacer) td:first-child  { border-bottom-left-radius: 12px; }
+tr:has(+ tr.spacer) td:last-child   { border-bottom-right-radius: 12px; }
+tr.alt-row:last-child td:first-child { border-bottom-left-radius: 12px; }
+tr.alt-row:last-child td:last-child  { border-bottom-right-radius: 12px; }
 </style>
 </head>
 <body>
