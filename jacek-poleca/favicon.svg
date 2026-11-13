@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="6" fill="#8B1A2B"/>
+  <!-- dot -->
+  <circle cx="10" cy="10" r="4" fill="#F3B702"/>
+  <!-- slash stroke -->
+  <rect x="14" y="8" width="6" height="18" rx="3" fill="#F3B702" transform="rotate(20 17 17)"/>
+</svg>
