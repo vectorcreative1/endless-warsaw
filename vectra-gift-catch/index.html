@@ -290,6 +290,7 @@ const GIFT_COLORS = ['#38a6c9','#38a6c9','#38a6c9','#38a6c9','#38a6c9','#3d9a3d'
 const poseTrack = () => (pose.side < 0 ? 0 : 2) + pose.level;
 
 function startGame(now){
+  logoAnim = state === 'title' ? now : -1e9;   // logo jedzie do góry tylko przy pierwszym starcie
   gifts = []; score = 0; lives = CFG.lives; lifeFx = null; caught = 0; level = 1; lvlCaught = 0; barShown = 0; levelFx = -1e9;
   tickMs = levelTick();
   breakFx = null; state = 'play'; prog = -1; freezeUntil = 0;
@@ -621,9 +622,40 @@ function overlay(lines, y0 = H/2 - 120, dim = .55){
   lines.forEach(([s, size, c], i) => text(s, W/2, y0 + i * 80, size, c));
 }
 // Logo "Łap prezenty" (chmurka z Jutrkiem) – pozycja jak w makiecie 1920×1072
-// tylko na ekranie startowym: na środku, tekst pod nim (857×746 po przycięciu)
-const LOGO = { x: 661, y: 194, w: 597, h: 520 };
-function drawLogo(){ if (IMG.logo.ok) ctx.drawImage(IMG.logo, LOGO.x, LOGO.y, LOGO.w, LOGO.h); }
+// Logo (857×746 po przycięciu): na starcie na środku na żółtej tabliczce, po starcie zmniejsza się i jedzie do góry
+const LOGO_TITLE = { x: 661, y: 194, w: 597, h: 520 };
+const LOGO_PLAY  = { x: 770, y: 22,  w: 379, h: 330 };
+const PLATE = { x: 600, y: 150, w: 720, h: 750, r: 48 };
+const VECTRA_YELLOW = '255, 200, 0';
+const LOGO_ANIM_MS = 800;
+let logoAnim = -1e9;                 // moment startu animacji logo (ms)
+function drawLogoAt(r){ if (IMG.logo.ok) ctx.drawImage(IMG.logo, r.x, r.y, r.w, r.h); }
+function drawPlate(alpha){
+  if (alpha <= 0) return;
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.shadowColor = 'rgba(120, 70, 0, .35)'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 12;
+  ctx.fillStyle = `rgba(${VECTRA_YELLOW}, .82)`;
+  rr(PLATE.x, PLATE.y, PLATE.w, PLATE.h, PLATE.r); ctx.fill();
+  ctx.shadowColor = 'transparent';
+  ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(255, 255, 255, .55)'; ctx.stroke();
+  ctx.restore();
+}
+function drawTitle(){
+  drawPlate(1);
+  drawLogoAt(LOGO_TITLE);
+  const y0 = LOGO_TITLE.y + LOGO_TITLE.h + 60;
+  outlined(STR.start, W/2, y0, 32, '#26397E', 'rgba(255, 236, 160, .9)');
+  outlined(STR.keys, W/2, y0 + 80, 24, '#26397E', 'rgba(255, 236, 160, .9)');
+}
+function drawPlayLogo(now){
+  const k = Math.max(0, Math.min(1, (now - logoAnim) / LOGO_ANIM_MS));
+  const e = 1 - Math.pow(1 - k, 3);
+  drawPlate(1 - Math.min(1, k * 2.5));
+  const lerp = (a, b) => a + (b - a) * e;
+  drawLogoAt({ x: lerp(LOGO_TITLE.x, LOGO_PLAY.x), y: lerp(LOGO_TITLE.y, LOGO_PLAY.y),
+               w: lerp(LOGO_TITLE.w, LOGO_PLAY.w), h: lerp(LOGO_TITLE.h, LOGO_PLAY.h) });
+}
 
 /* ---------- PĘTLA ---------- */
 let lastNow = 0;
@@ -640,6 +672,7 @@ function frame(now){
   const p = Math.max(0, Math.min(1, prog));
   updateSnow(dt);
   drawBg();
+  if (state !== 'title') drawPlayLogo(now);
   drawSnow(false);                   // dalszy śnieg – za półkami
   // prezenty na półce i te, które dopiero zsuwają się z krawędzi – ZA półkami (dół chowa się za deską);
   // te, które już zeszły z deski – przed półkami, ale POD bohaterem: wpadanie do worka zasłania sam worek
@@ -663,8 +696,8 @@ function frame(now){
   drawHud(dt, now);
   if (state === 'title') {
     // na ekranie startowym logo zastępuje tekstowy tytuł i świeci nad przyciemnieniem
-    if (IMG.logo.ok) { overlay([[STR.start, 32, '#fff'], [STR.keys, 24, '#ccc']], LOGO.y + LOGO.h + 60, .78); drawLogo(); }
-    else overlay([[STR.title, 64, '#ffd84a'], [STR.start, 32, '#fff'], [STR.keys, 24, '#ccc']], H/2 - 120, .78);
+    if (IMG.logo.ok) drawTitle();
+    else overlay([[STR.title, 64, '#ffd84a'], [STR.start, 32, '#fff'], [STR.keys, 24, '#ccc']]);
   }
   if (state === 'pause') overlay([[STR.pause, 72, '#fff'], [STR.start, 28, '#ccc']]);
   if (state === 'over')  overlay([[STR.over, 80, '#ff5a5a'], [`${score}`, 72, '#ffd84a'], [`${STR.level} ${level} · ${STR.best}: ${best}`, 32, '#fff'], [STR.start, 28, '#ccc']]);
