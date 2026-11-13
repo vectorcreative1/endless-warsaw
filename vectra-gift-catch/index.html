@@ -148,6 +148,7 @@ const IMG = {
   gifts: ASSETS.gifts.map(load),
   icon: load('assets/gift_icon.png'),
   life: load('assets/life_icon.png'),
+  logo: load('assets/logo_lap_prezenty.png'),
 };
 
 /* ---------- DŹWIĘK ---------- */
@@ -615,10 +616,13 @@ function drawHud(dt, now){
   if (state === 'play') drawLevelUp(now);
 }
 
-function overlay(lines){
+function overlay(lines, y0 = H/2 - 120){
   px(0, 0, W, H, 'rgba(0,0,0,.55)');
-  lines.forEach(([s, size, c], i) => text(s, W/2, H/2 - 120 + i * 80, size, c));
+  lines.forEach(([s, size, c], i) => text(s, W/2, y0 + i * 80, size, c));
 }
+// Logo "Łap prezenty" (chmurka z Jutrkiem) – pozycja jak w makiecie 1920×1072
+const LOGO = { x: 721, y: 38, w: 500, h: 399 };
+function drawLogo(){ if (IMG.logo.ok) ctx.drawImage(IMG.logo, LOGO.x, LOGO.y, LOGO.w, LOGO.h); }
 
 /* ---------- PĘTLA ---------- */
 let lastNow = 0;
@@ -635,7 +639,8 @@ function frame(now){
   const p = Math.max(0, Math.min(1, prog));
   updateSnow(dt);
   drawBg();
-  drawSnow(false);                    // dalszy śnieg – za półkami
+  drawLogo();
+  drawSnow(false);                   // dalszy śnieg – za półkami
   // prezenty na półce i te, które dopiero zsuwają się z krawędzi – ZA półkami (dół chowa się za deską);
   // te, które już zeszły z deski – przed półkami, ale POD bohaterem: wpadanie do worka zasłania sam worek
   const loose = [], tr = poseTrack();
@@ -656,7 +661,11 @@ function frame(now){
   drawHero(now);
   drawSnow(true);                     // bliższy śnieg – przed bohaterem
   drawHud(dt, now);
-  if (state === 'title') { overlay([[STR.title, 64, '#ffd84a'], [STR.start, 32, '#fff'], [STR.keys, 24, '#ccc']]); }
+  if (state === 'title') {
+    // na ekranie startowym logo zastępuje tekstowy tytuł i świeci nad przyciemnieniem
+    if (IMG.logo.ok) { overlay([[STR.start, 32, '#fff'], [STR.keys, 24, '#ccc']], 560); drawLogo(); }
+    else overlay([[STR.title, 64, '#ffd84a'], [STR.start, 32, '#fff'], [STR.keys, 24, '#ccc']]);
+  }
   if (state === 'pause') overlay([[STR.pause, 72, '#fff'], [STR.start, 28, '#ccc']]);
   if (state === 'over')  overlay([[STR.over, 80, '#ff5a5a'], [`${score}`, 72, '#ffd84a'], [`${STR.level} ${level} · ${STR.best}: ${best}`, 32, '#fff'], [STR.start, 28, '#ccc']]);
   requestAnimationFrame(frame);
