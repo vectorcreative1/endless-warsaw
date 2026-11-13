@@ -16,8 +16,8 @@ body {
   max-width: 960px;
   margin: 0 auto;
 }
-h1 { font-size: 20px; font-weight: 800; color: #6b0a1a; margin-bottom: 4px; }
-.note { font-size: 11px; color: #888; margin-bottom: 20px; line-height: 1.7; }
+h1 { font-size: 20px; font-weight: 800; color: #0D1B4B; margin-bottom: 4px; }
+.note { font-size: 11px; color: #0D1B4B; margin-bottom: 20px; line-height: 1.7; opacity: .7; }
 
 /* sticky update bar */
 .update-bar {
@@ -62,7 +62,7 @@ tr.spacer td   { height: 6px; background: transparent; }
 tr.subcat-header td { background: transparent; padding: 14px 10px 6px; border: none; }
 .subcat-pill {
   font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
-  color: #0D1B4B; background: #e8ecf5; border: 1.5px solid #c0cae0;
+  color: #0D1B4B; background: #fff; border: none;
   display: inline-block; padding: 3px 12px; border-radius: 100px;
 }
 td { padding: 9px 10px; vertical-align: middle; }
@@ -378,9 +378,6 @@ DATA.forEach(section => {
   root.appendChild(catTitle);
 
   const table = document.createElement('table');
-  const thead = document.createElement('thead');
-  thead.innerHTML = '<tr><th style="width:28%">Ścieżka</th><th style="width:80px"></th><th>Tytuł</th><th>Link IMDB</th><th style="width:50px">Plakat</th></tr>';
-  table.appendChild(thead);
   const tbody = document.createElement('tbody');
 
   let lastSubcat = null;
