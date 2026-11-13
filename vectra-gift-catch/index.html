@@ -624,7 +624,8 @@ function overlay(lines, y0 = H/2 - 120, dim = .55){
 // Logo "Łap prezenty" (chmurka z Jutrkiem) – pozycja jak w makiecie 1920×1072
 // Logo (857×746 po przycięciu): na starcie na środku na żółtej tabliczce, po starcie zmniejsza się i jedzie do góry
 const LOGO_TITLE = { x: 661, y: 194, w: 597, h: 520 };
-const LOGO_PLAY  = { x: 770, y: 22,  w: 379, h: 330 };
+const LOGO_PLAY  = { x: 793, y: 24,  w: 333, h: 290 };
+const PULSE_AMP = .025, PULSE_MS = 3200;    // w grze logo bardzo delikatnie "oddycha" (±2,5%, cykl 3,2 s)
 const VECTRA_YELLOW = '255, 200, 0';
 const LOGO_ANIM_MS = 800;
 let logoAnim = -1e9;                 // moment startu animacji logo (ms)
@@ -649,8 +650,16 @@ function drawPlayLogo(now){
   const e = 1 - Math.pow(1 - k, 3);
   drawPlate(1 - Math.min(1, k * 2.5));
   const lerp = (a, b) => a + (b - a) * e;
-  drawLogoAt({ x: lerp(LOGO_TITLE.x, LOGO_PLAY.x), y: lerp(LOGO_TITLE.y, LOGO_PLAY.y),
-               w: lerp(LOGO_TITLE.w, LOGO_PLAY.w), h: lerp(LOGO_TITLE.h, LOGO_PLAY.h) });
+  let x = lerp(LOGO_TITLE.x, LOGO_PLAY.x), y = lerp(LOGO_TITLE.y, LOGO_PLAY.y),
+      w = lerp(LOGO_TITLE.w, LOGO_PLAY.w), h = lerp(LOGO_TITLE.h, LOGO_PLAY.h);
+  // pulsowanie: łagodnie się włącza po dojechaniu na miejsce, skaluje od środka
+  const since = now - logoAnim - LOGO_ANIM_MS;
+  if (since > 0){
+    const ramp = Math.min(1, since / 1200);
+    const s = 1 + PULSE_AMP * ramp * Math.sin(since / PULSE_MS * Math.PI * 2);
+    x -= w * (s - 1) / 2; y -= h * (s - 1) / 2; w *= s; h *= s;
+  }
+  drawLogoAt({ x, y, w, h });
 }
 
 /* ---------- PĘTLA ---------- */
