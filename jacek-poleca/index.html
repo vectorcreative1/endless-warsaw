@@ -468,6 +468,46 @@ body.chat-active #bg-mobile img {
 </style>
 </head>
 <body>
+
+<!-- PASSWORD GATE -->
+<div id="gate" style="
+  display:none; position:fixed; inset:0; z-index:9999;
+  background:#6b0a1a;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
+">
+  <img src="logo_film_club.png" alt="Vectra Film Club" style="width:260px; opacity:.9;">
+  <input id="gate-input" type="password" placeholder="hasło" autocomplete="current-password" style="
+    margin-top:8px; padding:12px 20px; border-radius:100px; border:none; outline:none;
+    font-family:'Poppins',sans-serif; font-size:15px; font-weight:600;
+    width:220px; text-align:center; letter-spacing:.1em;
+  ">
+  <div id="gate-err" style="color:#F3B702; font-size:12px; font-family:'Poppins',sans-serif; opacity:0; transition:opacity .2s;">nieprawidłowe hasło</div>
+</div>
+<script>
+(function(){
+  const PWD = 'vectra2025';
+  const KEY = 'jpc_auth';
+  const gate = document.getElementById('gate');
+  const inp  = document.getElementById('gate-input');
+  const err  = document.getElementById('gate-err');
+  if(sessionStorage.getItem(KEY) === '1'){ gate.style.display='none'; return; }
+  gate.style.display='flex';
+  document.body.style.overflow='hidden';
+  inp.addEventListener('keydown', e => {
+    if(e.key !== 'Enter') return;
+    if(inp.value === PWD){
+      sessionStorage.setItem(KEY,'1');
+      gate.style.display='none';
+      document.body.style.overflow='';
+    } else {
+      err.style.opacity='1';
+      inp.value='';
+      setTimeout(()=>{ err.style.opacity='0'; }, 2000);
+    }
+  });
+})();
+</script>
+
 <div id="bg-hero"><img src="bg_jacek_new.jpg" alt=""></div>
 <div id="bg-mobile"><img src="mobile_full_screen_new.webp" alt=""></div>
 <div id="app">
