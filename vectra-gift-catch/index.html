@@ -625,7 +625,6 @@ function overlay(lines, y0 = H/2 - 120, dim = .55){
 // Logo (857×746 po przycięciu): na starcie na środku na żółtej tabliczce, po starcie zmniejsza się i jedzie do góry
 const LOGO_TITLE = { x: 661, y: 194, w: 597, h: 520 };
 const LOGO_PLAY  = { x: 770, y: 22,  w: 379, h: 330 };
-const PLATE = { x: 600, y: 150, w: 720, h: 750, r: 48 };
 const VECTRA_YELLOW = '255, 200, 0';
 const LOGO_ANIM_MS = 800;
 let logoAnim = -1e9;                 // moment startu animacji logo (ms)
@@ -634,11 +633,8 @@ function drawPlate(alpha){
   if (alpha <= 0) return;
   ctx.save();
   ctx.globalAlpha = alpha;
-  ctx.shadowColor = 'rgba(120, 70, 0, .35)'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 12;
-  ctx.fillStyle = `rgba(${VECTRA_YELLOW}, .82)`;
-  rr(PLATE.x, PLATE.y, PLATE.w, PLATE.h, PLATE.r); ctx.fill();
-  ctx.shadowColor = 'transparent';
-  ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(255, 255, 255, .55)'; ctx.stroke();
+  ctx.fillStyle = `rgba(${VECTRA_YELLOW}, .8)`;   // cały ekran przykryty żółtym Vectry zamiast przyciemnienia
+  ctx.fillRect(0, 0, W, H);
   ctx.restore();
 }
 function drawTitle(){
