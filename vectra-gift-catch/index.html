@@ -2,8 +2,15 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Vectra – Łap prezenty</title>
+<!-- dodane do ekranu głównego: pełny ekran bez paska przeglądarki, tylko poziomo -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Łap prezenty">
+<meta name="theme-color" content="#111111">
 <link rel="icon" href="assets/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -13,10 +20,28 @@
 <style>
   html,body{margin:0;height:100%;background:#111;overflow:hidden;touch-action:none;user-select:none}
   canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#000}
+  /* telefon trzymany pionowo -> prosimy o obrót */
+  #rotate{display:none;position:fixed;inset:0;z-index:10;background:#FFC800;color:#26397E;
+          font:700 26px/1.25 "Fredoka","Arial Rounded MT Bold",system-ui,sans-serif;text-align:center;
+          flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:24px;box-sizing:border-box}
+  #rotate svg{width:120px;height:120px;animation:turn 2.4s ease-in-out infinite}
+  #rotate small{font-size:18px;font-weight:600;opacity:.8}
+  @keyframes turn{0%,20%{transform:rotate(0)}50%,80%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
+  @media (orientation:portrait) and (pointer:coarse){ #rotate{display:flex} }
+  @media (prefers-reduced-motion:reduce){ #rotate svg{animation:none;transform:rotate(-90deg)} }
 </style>
 </head>
 <body>
 <canvas id="c" width="1920" height="1072"></canvas>
+<div id="rotate" role="alert">
+  <svg viewBox="0 0 120 120" aria-hidden="true">
+    <rect x="38" y="14" width="44" height="92" rx="9" fill="#26397E"/>
+    <rect x="43" y="24" width="34" height="68" rx="3" fill="#FFF3C4"/>
+    <circle cx="60" cy="99" r="3" fill="#FFF3C4"/>
+  </svg>
+  <div>Obróć telefon poziomo,<br>żeby zagrać</div>
+  <small>Gra działa tylko w poziomie</small>
+</div>
 <script>
 /* =========================================================
    VECTRA – ŁAP PREZENTY  (prototyp mechaniki, grafika pikselowa)
@@ -25,7 +50,26 @@
 const W = 1920, H = 1072, PX = 12;         // rozmiar jak w PSD; PX = "piksel" placeholderów
 const cv = document.getElementById('c'), ctx = cv.getContext('2d');
 function fit(){ const s = Math.min(innerWidth / W, innerHeight / H); cv.style.width = W*s+'px'; cv.style.height = H*s+'px'; }
-addEventListener('resize', fit); fit();
+addEventListener('resize', fit); addEventListener('orientationchange', () => setTimeout(fit, 250)); fit();
+
+/* ---------- TELEFON: pełny ekran + tylko poziomo ---------- */
+const TOUCH = matchMedia('(pointer: coarse)').matches;
+const PORTRAIT = matchMedia('(orientation: portrait) and (pointer: coarse)');
+function goFullscreen(){
+  const d = document, el = d.documentElement;
+  if (d.fullscreenElement || d.webkitFullscreenElement) return lockLandscape();
+  const req = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (!req) return;                                   // iPhone Safari: nie ma – zostaje "Dodaj do ekranu głównego"
+  try {
+    const p = req.call(el, { navigationUI: 'hide' });
+    if (p && p.then) p.then(lockLandscape, () => {}); else lockLandscape();
+  } catch (e) {}
+}
+function lockLandscape(){
+  try { screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {}); } catch (e) {}
+}
+// przeglądarka pozwala włączyć pełny ekran tylko z gestu – po puszczeniu palca
+if (TOUCH) addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') goFullscreen(); });
 
 /* ---------- USTAWIENIA GRY ---------- */
 const CFG = {
@@ -351,7 +395,11 @@ addEventListener('keydown', e => {
   // A jest już "w lewo"; Q/Z/P/L ustawiają od razu całą pozę
   if (map[k]){ e.preventDefault(); setPose(...map[k]); }
 });
+// obrót do pionu w trakcie gry -> pauza (ekran "obróć telefon" zasłania grę)
+const onPortrait = () => { if (PORTRAIT.matches && state === 'play') state = 'pause'; };
+if (PORTRAIT.addEventListener) PORTRAIT.addEventListener('change', onPortrait); else PORTRAIT.addListener(onPortrait);
 cv.addEventListener('pointerdown', e => {
+  if (PORTRAIT.matches) return;
   const r = cv.getBoundingClientRect(), now = performance.now();
   if (state !== 'play'){ if (state === 'pause') state = 'play'; else startGame(now); return; }
   const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
