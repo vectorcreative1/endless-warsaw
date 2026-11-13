@@ -653,7 +653,7 @@ function frame(now){
   drawHero(now);
   drawSnow(true);                     // bliższy śnieg – przed bohaterem
   drawHud(dt, now);
-  if (state === 'title') { overlay([[STR.title, 64, '#ffd84a'], [STR.start, 32, '#fff'], [STR.keys, 24, '#ccc'], ['M – dźwięk · Esc – pauza', 24, '#ccc']]); }
+  if (state === 'title') { overlay([[STR.title, 64, '#ffd84a'], [STR.start, 32, '#fff'], [STR.keys, 24, '#ccc']]); }
   if (state === 'pause') overlay([[STR.pause, 72, '#fff'], [STR.start, 28, '#ccc']]);
   if (state === 'over')  overlay([[STR.over, 80, '#ff5a5a'], [`${score}`, 72, '#ffd84a'], [`${STR.level} ${level} · ${STR.best}: ${best}`, 32, '#fff'], [STR.start, 28, '#ccc']]);
   requestAnimationFrame(frame);
