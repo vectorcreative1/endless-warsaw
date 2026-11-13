@@ -621,7 +621,7 @@ function overlay(lines, y0 = H/2 - 120){
   lines.forEach(([s, size, c], i) => text(s, W/2, y0 + i * 80, size, c));
 }
 // Logo "Łap prezenty" (chmurka z Jutrkiem) – pozycja jak w makiecie 1920×1072
-const LOGO = { x: 721, y: 38, w: 500, h: 399 };
+const LOGO = { x: 726, y: 30, w: 491, h: 440 };   // logo z napisem vectra (878×786)
 function drawLogo(){ if (IMG.logo.ok) ctx.drawImage(IMG.logo, LOGO.x, LOGO.y, LOGO.w, LOGO.h); }
 
 /* ---------- PĘTLA ---------- */
